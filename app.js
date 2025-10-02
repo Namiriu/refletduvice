@@ -191,7 +191,7 @@
   const gateInput = document.getElementById('gateInput');
   const gateBtn = document.getElementById('gateBtn');
   const gateError = document.getElementById('gateError');
-  const PASSPHRASE_HASH = 'sha256:d6d3a9f8c8db1ea2fb9b90d5b6f5a9c21a0c7a5d2f0b1a6b5dd7a0f9d9a9c1b2';
+  const PASSPHRASE_HASH = 'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
 
   async function sha256Hex(s){
     const enc = new TextEncoder().encode(s);
