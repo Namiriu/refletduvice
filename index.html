@@ -11,6 +11,33 @@
     :root { --bg:#0f0f10; --fg:#eaeaea; --muted:#a0a0a0; --card:#18181b; --accent:#e11d48; --ok:#10b981; --warn:#f59e0b; }
     *{box-sizing:border-box} body{margin:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial;
       background:#0b0b0c url("img/bg.webp") center/cover fixed no-repeat;}
+    /* Jauge visuelle personnalisée */
+.progress {
+  background: url("img/gauge_track.png") center/cover no-repeat;
+  height: 48px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.bar {
+  height: 100%;
+  background: url("img/gauge_fill.png") left center / contain repeat-x;
+  transition: width .2s ease-out;
+}
+/* Boutons d'insanité personnalisés */
+button {
+  width: 128px;
+  height: 128px;
+  border: none;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent; /* masque le texte */
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
     header{padding:16px 20px;border-bottom:1px solid #232325;position:sticky;top:0;background:rgba(15,15,16,.9);backdrop-filter:blur(6px);z-index:10}
     h1{margin:0;font-size:18px}
     main{max-width:880px;margin:0 auto;padding:20px;display:grid;gap:16px}
@@ -45,6 +72,20 @@
     .error{color:#f87171;font-size:12px;min-height:18px;margin-top:8px}
     .badge{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #2a2a2e;background:#1f1f23;font-size:12px}
     .section-title{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#b9b9b9;margin-bottom:8px}
+    /* Liens entre ID et visuel */
+#btnPlus1  { background-image: url("img/btn_plus1.png"); }
+#btnPlus2  { background-image: url("img/btn_plus2.png"); }
+#btnPlus3  { background-image: url("img/btn_plus3.png"); }
+#btnPlus5  { background-image: url("img/btn_plus5.png"); }
+#btnPlus10 { background-image: url("img/btn_plus10.png"); }
+#btnPlus20 { background-image: url("img/btn_plus20.png"); }
+
+#btnMinus1  { background-image: url("img/btn_moins1.png"); }
+#btnMinus2  { background-image: url("img/btn_moins2.png"); }
+#btnMinus3  { background-image: url("img/btn_moins3.png"); }
+#btnMinus5  { background-image: url("img/btn_moins5.png"); }
+#btnMinus10 { background-image: url("img/btn_moins10.png"); }
+#btnMinus20 { background-image: url("img/btn_moins20.png"); }
   </style>
 </head>
 <body>
