@@ -1,5 +1,5 @@
 // Basic offline cache; requires HTTPS or localhost to activate
-const CACHE = 'instability-v4';
+const CACHE = 'instability-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -23,8 +23,7 @@ const ASSETS = [
   './img/btn_moins3.png',
   './img/btn_moins5.png',
   './img/btn_moins10.png',
-  './img/btn_moins20.png',
-
+  './img/btn_moins20.png'
 ];
 self.addEventListener('install', (e)=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
