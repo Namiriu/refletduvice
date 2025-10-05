@@ -77,14 +77,23 @@
     save();
   }
 
-  function mkButtons(arr, sign){
-    return arr.map(v=>{
-      const b=document.createElement('button');
-      b.textContent = (sign>0?'+':'-') + v;
-      b.addEventListener('click', ()=>{ state.value = clamp(state.value + sign*v); render(); maybeHaunt(0.15); });
-      return b;
+function mkButtons(arr, sign){
+  return arr.map(v=>{
+    const b = document.createElement('button');
+    b.textContent = (sign>0?'+':'-') + v;
+    // Ajout de classes pour le skin visuel
+    b.classList.add('btn');
+    if (sign > 0) { b.classList.add('btn-plus', 'btn-p'+v); }
+    else          { b.classList.add('btn-minus','btn-m'+v); }
+
+    b.addEventListener('click', ()=>{
+      state.value = clamp(state.value + sign*v);
+      render(); 
+      maybeHaunt(0.15);
     });
-  }
+    return b;
+  });
+}
 
   mkButtons(PLUS, +1).forEach(b=>rowPlus.appendChild(b));
   mkButtons(MINUS, -1).forEach(b=>rowMinus.appendChild(b));
