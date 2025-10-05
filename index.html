@@ -31,15 +31,24 @@
     button:disabled{opacity:.5;cursor:not-allowed}
     button:hover{filter:brightness(1.08)}
 
-    /* Boutons +/- avec visuels */
-    .btn{
-      width:96px;height:96px;border:none;padding:0;
-      background-size:contain;background-repeat:no-repeat;background-position:center;
-      color:transparent;cursor:pointer;
-    }
-    .btn:hover  { filter:brightness(1.06) }
-    .btn:active { transform:translateY(1px); filter:brightness(0.96) }
-    .btn:disabled{ opacity:.6; cursor:not-allowed }
+    /* Boutons : plus petits */
+.btn{
+  width: 80px;
+  height: 80px;
+  border: none;
+  padding: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent;
+  cursor: pointer;
+}
+.btn:hover{ filter:brightness(1.06) }
+.btn:active{ transform:translateY(1px); filter:brightness(0.96) }
+.btn:disabled{ opacity:.6; cursor:not-allowed }
+
+/* Grille un peu plus serrée */
+.row{ grid-template-columns: repeat(6, 1fr); gap: 6px; }
 
     /* Mapping visuel des + */
     .btn-plus.btn-p1  { background-image:url("img/btn_plus1.png"); }
@@ -112,7 +121,7 @@
         <div class="muted">Jauge d’Instabilité</div>
         <div class="percent" id="percent">0 %</div>
         <div class="progress-wrap">
-          <div class="progress"><div class="bar accent" id="bar"></div></div>
+          <div class="progress"><div class="bar" id="bar"></div></div>
         </div>
 
         <!-- Les boutons +/- sont injectés par app.js et reçoivent les classes .btn / .btn-plus / .btn-minus -->
