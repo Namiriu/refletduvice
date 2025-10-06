@@ -99,6 +99,7 @@ const alertText = document.getElementById('alertText');
 
   function render(){
     bar.style.width = clamp(state.value) + '%';
+    checkThresholdTransition();
     percent.textContent = fmt(state.value);
     document.title = 'Instabilité ' + fmt(state.value);
 
@@ -207,34 +208,43 @@ function playIfExists(src, vol=0.95){
   a.play().catch(()=>{});
 }
 
-function showAlert(msg, type='reflet', voiceSrc) {
+function showAlert(msg, type = 'reflet', voiceSrc = null) {
   alertText.textContent = msg;
   alertBox.classList.add('show', type);
-  setTimeout(()=> alertBox.classList.remove('show'), 5000); // visible 5s au lieu de 3s
-  setTimeout(()=> alertBox.classList.remove(type), 6000);
 
-  if (voiceSrc) playEffect(voiceSrc, 0.9);
+  // lecture audio si disponible
+  if (voiceSrc) {
+    const a = new Audio(voiceSrc);
+    a.volume = 0.9;
+    a.play().catch(()=>{});
+  }
+
+  // reste affiché 5 s
+  setTimeout(() => alertBox.classList.remove('show'), 5000);
+  setTimeout(() => alertBox.classList.remove(type), 6000);
 }
 
-function checkThresholdTransition(){
-  const currentZone = zoneFromValue(state.value);
+function checkThresholdTransition() {
+  const current = state.value;
+  if (lastZone === undefined) lastZone = current >= 50 ? 'reflet' : 'normal';
 
-  if(currentZone !== lastZone){
-    if(currentZone === 'reflet'){
-      showAlert(
-        'Vous basculez dans le Reflet du vice.\nRetournez le plateau côté Reflet.',
-        VOICES.enter
-      );
-    }else{
-      showAlert(
-        'Vous reprenez pied dans le monde normal.\nRemettez le plateau côté normal.',
-        VOICES.exit
-      );
-    }
-    lastZone = currentZone;
+  if (current >= 50 && lastZone !== 'reflet') {
+    showAlert(
+      'Vous basculez dans le Reflet du vice',
+      'reflet',
+      'audio/voice_enter_reflet.wav'
+    );
+    lastZone = 'reflet';
+  } 
+  else if (current < 50 && lastZone !== 'normal') {
+    showAlert(
+      'Vous reprenez pied dans le monde normal',
+      'normal',
+      'audio/voice_return_normal.mp3'
+    );
+    lastZone = 'normal';
   }
 }
-
 
   // Effets passifs réguliers
   let passiveTimer = null;
