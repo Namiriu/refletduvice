@@ -331,16 +331,16 @@
     <div class="muted" id="version" style="text-align:center;opacity:.6;margin-top:12px"></div>
   </main>
 
-  <!-- Porte d’accès playtest -->
-  <div class="gate" id="gate">
-    <div class="gate-inner">
-      <h2 style="margin:0 0 8px 0;font-size:18px">Accès playtest</h2>
-      <p class="muted" style="margin-top:0">Entrez le mot de passe commun (fourni par l’organisateur).</p>
-      <input id="gateInput" type="password" placeholder="Mot de passe">
-      <div class="error" id="gateError"></div>
-      <button id="gateBtn">Entrer</button>
-    </div>
+<!-- Porte d’accès playtest -->
+<div class="gate" id="gate" style="display:none">
+  <div class="gate-inner">
+    <h2 style="margin:0 0 8px 0;font-size:18px">Accès playtest</h2>
+    <p class="muted" style="margin-top:0">Entrez le mot de passe commun (fourni par l’organisateur).</p>
+    <input id="gateInput" type="password" placeholder="Mot de passe">
+    <div class="error" id="gateError"></div>
+    <button id="gateBtn">Entrer</button>
   </div>
+</div>
 
   <!-- Audio -->
   <audio id="ambient" src="audio/ambient_loop.mp3" loop preload="auto"></audio>
