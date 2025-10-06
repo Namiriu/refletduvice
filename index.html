@@ -181,12 +181,42 @@
     font-size: 46px; font-weight: 800; letter-spacing: .5px; margin:0;
   }
   .progress-wrap{ margin:10px 0 14px; }
+
+    /* --- Effets d'ambiance --- */
+.fx-blur { filter: blur(1px); }
+@keyframes subtle-shake {
+  0%,100% { transform: translate(0,0) }
+  20% { transform: translate(1px, -1px) }
+  40% { transform: translate(-1px, 1px) }
+  60% { transform: translate(1px, 0) }
+  80% { transform: translate(-1px, 0) }
+}
+.fx-shake { animation: subtle-shake .35s ease; }
+
+/* Vignette/halo rouge (au-dessus de tout) */
+.vignette {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .6s ease;
+  z-index: 9998;
+  background:
+    radial-gradient(ellipse at center,
+      rgba(0,0,0,0) 60%,
+      rgba(150,0,0,.22) 85%,
+      rgba(0,0,0,.75) 100%);
+}
   </style>
 </head>
 <body>
   <div class="overlay-flash" id="fxFlash"></div>
   <div class="overlay-black" id="fxBlack"></div>
   <div class="alert" id="alert"><div class="content" id="alertText"></div></div>
+  <div class="overlay-flash" id="fxFlash"></div>
+<div class="overlay-black" id="fxBlack"></div>
+<div class="vignette" id="vignette"></div> <!-- halo/vignette -->
+<div class="alert" id="alert"><div class="content" id="alertText"></div></div>
+
 
   <header><h1>Compagnon — Instabilité</h1></header>
   <main>
@@ -248,7 +278,14 @@
           • Le Camp de fortune est utilisable 3x, uniquement en Monde normal, et nécessite une majorité simple.
         </div>
       </div>
+      <div class="card" style="grid-column:span 5">
+  <div class="section-title">Journal</div>
+  <ul id="historyList" style="list-style:none;margin:0;padding-left:0;font-size:14px;line-height:1.35">
+    <!-- entrées injectées par JS -->
+  </ul>
+</div>
     </div>
+    <div class="muted" id="version" style="text-align:center;opacity:.6;margin-top:12px"></div>
   </main>
 
   <!-- Porte d’accès playtest -->
