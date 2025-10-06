@@ -48,6 +48,7 @@
 
   const fxFlash = document.getElementById('fxFlash');
   const fxBlack = document.getElementById('fxBlack');
+  const btnNew  = document.getElementById('btnNew'); // peut être absent
 
   // Gate
   const gate       = document.getElementById('gate');
@@ -55,7 +56,7 @@
   const gateBtn    = document.getElementById('gateBtn');
   const gateError  = document.getElementById('gateError');
   const GATE_KEY   = 'playtest_gate_hash';
-  // Hash SHA-256 fourni dans ton code (garde-le tel quel : mot de passe = la valeur qui correspond à ce hash)
+  // Hash SHA-256 fourni
   const PASSPHRASE_HASH = 'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
 
   // ---------- État ----------
@@ -208,6 +209,21 @@
     maybeHaunt(true);
   });
 
+  // ---------- Nouvelle partie ----------
+  function newGame(){
+    state.value = 0;
+    state.campLeft = 3;                                // 3 utilisations par partie
+    state.anchorUsed = {"1":false,"2":false,"3":false,"4":false}; // reset par quartier
+    render(); // sauvegarde incluse
+  }
+  if (btnNew){
+    btnNew.addEventListener('click', ()=>{
+      if (confirm('Nouvelle partie ? La jauge et les usages spéciaux seront remis à zéro.')) {
+        newGame();
+      }
+    });
+  }
+
   // ---------- Contexte ----------
   worldRadios.forEach(r=> r.addEventListener('change', ()=>{
     if(r.checked){ state.world = r.value; render(); maybeHaunt(); }
@@ -287,3 +303,4 @@
   }
   document.addEventListener('DOMContentLoaded', init);
 })();
+
