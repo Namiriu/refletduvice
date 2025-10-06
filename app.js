@@ -14,8 +14,8 @@
 
   // SFX “hantés”
   const HAUNT = {
-    perClickProb: 0.14,              // 14% à chaque action
-    passiveEvery: [38000, 68000],    // effets passifs ~38–68s
+    perClickProb: 0.14,
+    passiveEvery: [38000, 68000],
     sfx: [
       'audio/sounds/creepy_crow_caw.mp3',
       'audio/sounds/creepy_ghost_whisper.mp3',
@@ -37,6 +37,7 @@
   const rowMinus   = document.getElementById('rowMinus');
   const audioBtn   = document.getElementById('audioToggle');
   const ambientEl  = document.getElementById('ambient');
+  const fsBtn      = document.getElementById('fsToggle');
 
   const worldRadios = document.querySelectorAll('input[name="world"]');
   const playersSel  = document.getElementById('players');
@@ -64,10 +65,10 @@
   const GATE_KEY   = 'playtest_gate_hash';
   const PASSPHRASE_HASH = 'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
 
-  // Si déjà autorisé, masque la gate immédiatement (avant toute autre logique)
-if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
-  gate.style.display = 'none';
-}
+  // Si déjà autorisé, masque la gate immédiatement
+  if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
+    gate.style.display = 'none';
+  }
 
   // Seuils d’alerte
   const THRESHOLD_ENTER = 50; // ≥ 50% → Reflet du vice
@@ -86,7 +87,7 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
   // ---------- État ----------
   let state = {
     value:     parseInt(localStorage.getItem(LSK('instability'))||'0',10),
-    world:     localStorage.getItem(LSK('world')) || 'normal', // 'normal' | 'reflet'
+    world:     localStorage.getItem(LSK('world')) || 'normal',
     players:   parseInt(localStorage.getItem(LSK('players')) || '3',10),
     quartier:  parseInt(localStorage.getItem(LSK('quartier'))||'1',10),
     anchorUsed: JSON.parse(localStorage.getItem(LSK('anchorUsed'))||'{"1":false,"2":false,"3":false,"4":false}'),
@@ -97,7 +98,7 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
   const clamp = v => Math.max(0, Math.min(100, v));
   const fmt   = v => v + ' %';
 
-  // --- Historique simple (dernier en haut, limite 8) ---
+  // --- Historique simple ---
   const history = [];
   function addHistory(delta) {
     const s = (delta > 0 ? `+${delta}` : `${delta}`) + ' %';
@@ -112,16 +113,14 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
 
   // --- Effets d'ambiance selon la valeur ---
   function applyMoodEffects(val) {
-    // Vignette au-dessus de 90% (opacité progressive 0 → 1)
     if (val >= 90) {
-      const t = Math.min(1, (val - 90) / 10); // 90→100% => 0→1
+      const t = Math.min(1, (val - 90) / 10);
       vignetteEl.style.opacity = (0.55 + 0.35 * t).toFixed(2);
     } else {
       vignetteEl.style.opacity = '0';
     }
   }
 
-  // Petit effet subtil sur chaque changement dans [60,90)
   function microEffect(val) {
     if (val >= 60 && val < 90) {
       if (Math.random() < 0.5) {
@@ -143,6 +142,15 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
     localStorage.setItem(LSK('campLeft'),   String(state.campLeft));
     localStorage.setItem(LSK('musicOn'),    state.musicOn ? '1' : '0');
   }
+
+  // ---- Fullscreen helpers (propres) ----
+  async function enterFullscreen() {
+    try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); } catch(e){}
+  }
+  async function exitFullscreen() {
+    try { if (document.fullscreenElement) await document.exitFullscreen(); } catch(e){}
+  }
+  function isFullscreen(){ return !!document.fullscreenElement; }
 
   function render(){
     bar.style.width = clamp(state.value) + '%';
@@ -170,7 +178,7 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
       anchorInfo.textContent = `Restant : ${used ? 0 : 1} (1 par quartier)`;
       btnCamp.disabled = true;
       campInfo.textContent = `Utilisations restantes : 0`;
-    } else { // normal
+    } else {
       btnAnchor.disabled = true;
       anchorInfo.textContent = `Restant : 0 (1 par quartier)`;
       btnCamp.disabled = state.campLeft <= 0;
@@ -180,6 +188,12 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
     // Musique
     audioBtn.textContent = state.musicOn ? 'MUSIQUE ON' : 'MUSIQUE OFF';
     audioBtn.setAttribute('aria-pressed', state.musicOn ? 'true' : 'false');
+
+    // Libellé du bouton plein écran
+    if (fsBtn){
+      fsBtn.textContent = isFullscreen() ? 'Quitter plein écran' : 'Plein écran';
+      fsBtn.setAttribute('aria-pressed', isFullscreen() ? 'true' : 'false');
+    }
 
     save();
   }
@@ -261,7 +275,6 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
       a.play().catch(()=>{});
     }
 
-    // reste affiché 5 s
     setTimeout(() => alertBox.classList.remove('show'), 5000);
     setTimeout(() => alertBox.classList.remove(type), 6000);
   }
@@ -322,14 +335,12 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
   // ---------- Nouvelle partie ----------
   function newGame(){
     state.value = 0;
-    state.campLeft = 3;                                // 3 utilisations par partie
-    state.anchorUsed = {"1":false,"2":false,"3":false,"4":false}; // reset par quartier
-    // reset journal
+    state.campLeft = 3;
+    state.anchorUsed = {"1":false,"2":false,"3":false,"4":false};
     history.length = 0;
     renderHistory();
-    // remettre la zone et les effets
     lastZone = 'normal';
-    render(); // sauvegarde incluse
+    render();
   }
   if (btnNew){
     btnNew.addEventListener('click', ()=>{
@@ -354,10 +365,10 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
   let ambientIdx = 0;
   function playAmbientCurrent(){
     if(!state.musicOn) return;
-    ambientEl.loop = false;                 // playlist → pas de loop par piste
+    ambientEl.loop = false;
     ambientEl.src  = AMBIENT_TRACKS[ambientIdx % AMBIENT_TRACKS.length];
     ambientEl.volume = 0.55;
-    ambientEl.play().catch(()=>{ /* besoin d’un clic utilisateur */ });
+    ambientEl.play().catch(()=>{});
   }
   ambientEl.addEventListener('ended', ()=>{
     ambientIdx = (ambientIdx + 1) % AMBIENT_TRACKS.length;
@@ -366,13 +377,19 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
 
   audioBtn.addEventListener('click', ()=>{
     state.musicOn = !state.musicOn;
-    if(state.musicOn){
-      playAmbientCurrent();
-    }else{
-      ambientEl.pause();
-    }
+    if(state.musicOn){ playAmbientCurrent(); }
+    else{ ambientEl.pause(); }
     render();
   });
+
+  // ---- Bouton plein écran & sync -------
+  if (fsBtn){
+    fsBtn.addEventListener('click', async ()=>{
+      if (isFullscreen()) await exitFullscreen(); else await enterFullscreen();
+      render();
+    });
+  }
+  document.addEventListener('fullscreenchange', render);
 
   // ---------- Gate ----------
   async function sha256Hex(s){
@@ -382,7 +399,6 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
   }
   function okGate(){
     gate.style.display='none';
-    // registre le SW après la gate
     if ('serviceWorker' in navigator){
       navigator.serviceWorker.register('./service-worker.js');
     }
@@ -404,25 +420,23 @@ if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
   });
   gateInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') gateBtn.click(); });
 
-  // ===== Keep screen awake on mobile (Wake Lock API, with re-acquire) =====
-let wakeLock = null;
-
-async function requestWakeLock() {
-  try {
-    if ('wakeLock' in navigator) {
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener?.('release', () => { /* released */ });
+  // ===== Wake Lock (empêche la veille) =====
+  let wakeLock = null;
+  async function requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener?.('release', () => { /* released */ });
+      }
+    } catch (_) {
+      // certains navigateurs exigent une interaction : on réessaiera au retour de visibilité
     }
-  } catch (_) {
-    // Some browsers require user interaction first; we'll try again on visibilitychange
   }
-}
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && wakeLock !== null) {
-    requestWakeLock();
-  }
-});
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && wakeLock !== null) {
+      requestWakeLock();
+    }
+  });
 
   // ---------- Init ----------
   function init(){
@@ -430,9 +444,7 @@ document.addEventListener('visibilitychange', () => {
     render();
     schedulePassive();
     if(state.musicOn) playAmbientCurrent();
-  
-  // Keep the screen on
-  requestWakeLock();
+    requestWakeLock();
   }
   document.addEventListener('DOMContentLoaded', init);
 })();
