@@ -2,12 +2,17 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Compagnon — Instabilité</title>
   <meta name="theme-color" content="#111111">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Plein écran PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+
   <style>
   :root{
     --bg:#0f0f10; --fg:#eaeaea; --muted:#a0a0a0; --card:#18181b; --accent:#e11d48; --ok:#10b981; --warn:#f59e0b;
@@ -22,6 +27,10 @@
     font-family: var(--font-body);
     color: var(--fg);
     background:#0b0b0c url("img/bg.webp") center/cover fixed no-repeat !important;
+    /* safe-area iOS (encoches) */
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   /* Typo “UI / dramatique” */
@@ -192,32 +201,40 @@
         rgba(150,0,0,.22) 85%,
         rgba(0,0,0,.75) 100%);
   }
-    /* ===== Mobile tweaks ===== */
-@media (max-width: 820px) {
-  /* stop the header from following you on small screens */
-  header { position: static; padding-top: max(12px, env(safe-area-inset-top)); }
 
-  main { padding: 12px; gap: 12px; }
-  .card { padding: 12px; border-radius: 12px; }
+  /* ===== Mobile tweaks ===== */
 
-  /* slightly smaller gauge */
-  .progress { height: 40px; }
-  .bar { top: 5px; bottom: 5px; }
+  /* Empile les cartes en 1 colonne sous ~900px (écrase les grid-column inline) */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .card[style*="grid-column:span"] { grid-column: auto; }
+  }
 
-  /* title + % a bit tighter */
-  .gauge-title { font-size: 18px; }
-  .percent { font-size: 38px; }
+  @media (max-width: 820px) {
+    /* le header ne suit plus, + padding notch */
+    header { position: static; padding-top: max(12px, env(safe-area-inset-top)); }
 
-  /* fit the + / − buttons comfortably */
-  .row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .btn { width: 56px; height: 56px; }
-}
+    main { padding: 12px; gap: 12px; }
+    .card { padding: 12px; border-radius: 12px; }
 
-@media (max-width: 380px) {
-  .percent { font-size: 34px; }
-  .btn { width: 52px; height: 52px; }
-  .row { gap: 6px; }
-}
+    /* jauge un peu moins haute */
+    .progress { height: 40px; }
+    .bar { top: 5px; bottom: 5px; }
+
+    /* titre + % un peu plus compacts */
+    .gauge-title { font-size: 18px; }
+    .percent { font-size: 38px; }
+
+    /* boutons : confort + pas de coupure */
+    .row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .btn { width: 56px; height: 56px; }
+  }
+
+  @media (max-width: 380px) {
+    .percent { font-size: 34px; }
+    .btn { width: 52px; height: 52px; }
+    .row { gap: 6px; }
+  }
   </style>
 </head>
 <body>
