@@ -1,5 +1,5 @@
 // Basic offline cache; requires HTTPS or localhost to activate
-const CACHE = 'instability-v16';
+const CACHE = 'instability-v17';
 const ASSETS = [
   './',
   './index.html',
@@ -33,7 +33,9 @@ const ASSETS = [
   './audio/sounds/forest_whisper.mp3',
   './audio/sounds/scratching_metal.mp3',
   './audio/sounds/whisper_voices.mp3',
-  './audio/sounds/wood_creak_single.mp3'
+  './audio/sounds/wood_creak_single.mp3',
+  './audio/voice_enter_reflet.wav',
+  './audio/voice_return_normal.mp3'
 ];
 self.addEventListener('install', (e)=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
