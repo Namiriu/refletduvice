@@ -245,6 +245,21 @@
   .btn { width: 52px; height: 52px; }
   .row { gap: 6px; }
 }
+
+    /* Bouton plein écran discret */
+.fs-btn{
+  margin-left:auto;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid #2a2a2e;
+  background:#1f1f23;
+  color:var(--fg);
+  font-size:14px;
+  cursor:pointer;
+  opacity:.85;
+}
+.fs-btn:hover{ filter:brightness(1.08); opacity:1 }
+.fs-btn:active{ transform:translateY(1px) }
   </style>
 </head>
 <body>
@@ -272,8 +287,9 @@
         <div class="row" id="rowMinus" style="margin-top:8px"></div>
 
         <div class="controls" style="margin-top:12px">
-          <button id="audioToggle">MUSIQUE ON/OFF</button>
-        </div>
+  <button id="audioToggle">MUSIQUE ON/OFF</button>
+  <button id="fsToggle" class="fs-btn" aria-pressed="false">Plein écran</button>
+</div>
       </div>
 
       <!-- Carte contexte + actions -->
