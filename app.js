@@ -207,18 +207,13 @@ function playIfExists(src, vol=0.95){
   a.play().catch(()=>{});
 }
 
-function showAlert(msg, voiceSrc){
+function showAlert(msg, type='reflet', voiceSrc) {
   alertText.textContent = msg;
-  alertBox.classList.add('show');
-  // petit blackout léger en même temps
-  fxBlack.style.opacity = '1';
-  setTimeout(()=>{ fxBlack.style.opacity='0'; }, 300);
+  alertBox.classList.add('show', type);
+  setTimeout(()=> alertBox.classList.remove('show'), 5000); // visible 5s au lieu de 3s
+  setTimeout(()=> alertBox.classList.remove(type), 6000);
 
-  if(voiceSrc) playIfExists(voiceSrc, 0.95);
-  else playSFX(0.9); // fallback : un SFX hanté
-
-  // disparaît après 3.2s
-  setTimeout(()=>{ alertBox.classList.remove('show'); }, 3200);
+  if (voiceSrc) playEffect(voiceSrc, 0.9);
 }
 
 function checkThresholdTransition(){
