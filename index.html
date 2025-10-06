@@ -27,25 +27,37 @@
     /* Grille des boutons +/- */
     .row{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:12px }
 
-    /* Boutons “classiques” (contexte / spéciaux) */
-    button{
-      padding:12px 8px;border-radius:12px;border:1px solid #2a2a2e;background:#1f1f23;
-      color:var(--fg);font-size:16px;cursor:pointer; outline:none; box-shadow:none;
-    }
-    button:disabled{opacity:.5;cursor:not-allowed}
-    button:hover{filter:brightness(1.08)}
-    button:focus{outline:none; box-shadow:none}
+/* Boutons “classiques” (contexte / spéciaux) — n'affecte PAS .btn */
+button:not(.btn){
+  padding:12px 8px;
+  border-radius:12px;
+  border:1px solid #2a2a2e;
+  background:#1f1f23;
+  color:var(--fg);
+  font-size:16px;
+  cursor:pointer;
+  outline:none; box-shadow:none;
+}
+button:not(.btn):disabled{opacity:.5;cursor:not-allowed}
+button:not(.btn):hover{filter:brightness(1.08)}
+button:not(.btn):focus{outline:none; box-shadow:none}
 
-    /* Boutons +/- visuels (compacts, sans halo) */
-    .btn{
-      width:64px;height:64px;border:none;padding:0; outline:none; box-shadow:none;
-      background-size:contain;background-repeat:no-repeat;background-position:center;
-      color:transparent;cursor:pointer;
-    }
-    .btn:hover  { filter:brightness(1.06) }
-    .btn:active { transform:translateY(1px); filter:brightness(0.96) }
-    .btn:disabled{ opacity:.6; cursor:not-allowed }
-    .btn:focus{ outline:none; box-shadow:none }
+/* Boutons +/- visuels (compacts, 100% transparents) */
+.btn{
+  width:64px; height:64px; padding:0;
+  border:none !important; outline:none !important; box-shadow:none !important;
+  background-color:transparent;            /* <- supprime le halo */
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  color:transparent;
+  cursor:pointer;
+  -webkit-appearance:none; appearance:none; /* enlève le style natif */
+}
+.btn:hover  { filter:brightness(1.06) }
+.btn:active { transform:translateY(1px); filter:brightness(0.96) }
+.btn:disabled{ opacity:.6; cursor:not-allowed }
+.btn:focus{ outline:none; box-shadow:none }
 
     /* Mapping visuel des + */
     .btn-plus.btn-p1  { background-image:url("img/btn_plus1.png"); }
@@ -65,33 +77,31 @@
 
     .progress-wrap{margin:12px 0}
 
-    /* Jauge : remplissage en dessous + cadre par-dessus, fond transparent */
-    .progress{
-      position:relative;
-      width:100%;
-      height:48px;
-      border-radius:8px;
-      overflow:hidden;
-      background:transparent;         /* on voit le fond du site */
-      border:none;                    /* pas de bordure ajoutée */
-    }
-    .bar{
-      position:absolute;
-      inset:0;
-      width:0%;
-      height:100%;
-      transition:width .2s ease-out;
-      background:url("img/gauge_fill.png") 0 0 / auto 100% repeat-x; /* répété en X, collé en hauteur */
-      z-index:0;
-    }
-    .progress::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:url("img/gauge_track.png") center/cover no-repeat;  /* cadre au-dessus */
-      pointer-events:none;
-      z-index:1;
-    }
+    /* Jauge : remplissage inside + cadre par-dessus, fond transparent */
+.progress{
+  position:relative;
+  width:100%;
+  height:48px;
+  border-radius:8px;
+  overflow:hidden;
+  background:transparent;
+  border:none;
+}
+.bar{
+  position:absolute;
+  left:0; right:0;
+  top:6px; bottom:6px;                /* <- réduit la hauteur utile */
+  width:0%;
+  transition:width .2s ease-out;
+  background:url("img/gauge_fill.png") 0 0 / auto 100% repeat-x; /* répète en X, colle à la hauteur */
+  z-index:0;
+}
+.progress::after{
+  content:"";
+  position:absolute; inset:0;
+  background:url("img/gauge_track.png") center/cover no-repeat;  /* cadre au-dessus */
+  pointer-events:none; z-index:1;
+}
 
     .percent{font-size:46px;font-weight:800;letter-spacing:1px;margin:8px 0}
     .muted{color:var(--muted);font-size:14px}
