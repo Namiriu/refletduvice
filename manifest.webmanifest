@@ -1,10 +1,10 @@
 {
-  "name": "Compagnon — Instabilité",
-  "short_name": "Instabilité",
-  "start_url": ".",
+  "name": "RdV Companion",
+  "short_name": "RdV Companion",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f0f10",
   "theme_color": "#111111",
+  "background_color": "#0b0b0c",
   "icons": [
     {
       "src": "icons/icon-192.png",
