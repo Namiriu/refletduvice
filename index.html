@@ -15,7 +15,7 @@
     --font-body: "EB Garamond", Georgia, serif;
   }
 
-  /* ===== Correctif fond & hauteur page ===== */
+  /* ===== Fond & hauteur page ===== */
   html, body { height: 100%; }
   body{
     margin:0;
@@ -23,13 +23,13 @@
     color: var(--fg);
     background:#0b0b0c url("img/bg.webp") center/cover fixed no-repeat !important;
   }
-  main{ min-height:auto; }
 
-  /* éléments “UI / dramatique” ≈ Special Elite */
+  /* Typo “UI / dramatique” */
   h1, .section-title, .percent, .badge, .btn, button, label, .gauge-title, .alert .content{
     font-family: var(--font-ui);
   }
 
+  /* Layout */
   header{padding:16px 20px;border-bottom:1px solid #232325;position:sticky;top:0;background:rgba(15,15,16,.9);backdrop-filter:blur(6px);z-index:10}
   h1{margin:0;font-size:18px}
   main{max-width:880px;margin:0 auto;padding:20px;display:grid;gap:16px}
@@ -115,24 +115,10 @@
     pointer-events:none; z-index:1;
   }
 
-  .percent{font-size:46px;font-weight:800;letter-spacing:1px;margin:8px 0}
   .muted{color:var(--muted);font-size:14px}
   .line{height:1px;background:#232325;margin:12px 0}
   label{font-size:14px}
   .controls{display:flex;gap:8px;flex-wrap:wrap}
-
-  /* Overlays FX */
-  .overlay-flash, .overlay-black{ position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999 }
-  .overlay-flash{background:#fff}
-  .overlay-black{background:#000;transition:opacity .4s}
-
-  /* Gate */
-  .gate{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;padding:20px;z-index:10000}
-  .gate-inner{background:#141416;border:1px solid #2a2a2e;border-radius:16px;max-width:420px;width:100%;padding:20px}
-  .gate input{width:100%;padding:12px;border-radius:10px;border:1px solid #2a2a2e;background:#1b1b1f;color:#fff}
-  .gate button{width:100%;margin-top:12px}
-  .error{color:#f87171;font-size:12px;min-height:18px;margin-top:8px}
-  .section-title{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#b9b9b9;margin-bottom:8px}
 
   /* === ALERTE TRANSITION === */
   .alert {
@@ -182,45 +168,43 @@
   }
   .progress-wrap{ margin:10px 0 14px; }
 
-    /* --- Effets d'ambiance --- */
-.fx-blur { filter: blur(1px); }
-@keyframes subtle-shake {
-  0%,100% { transform: translate(0,0) }
-  20% { transform: translate(1px, -1px) }
-  40% { transform: translate(-1px, 1px) }
-  60% { transform: translate(1px, 0) }
-  80% { transform: translate(-1px, 0) }
-}
-.fx-shake { animation: subtle-shake .35s ease; }
+  /* --- Effets d'ambiance --- */
+  .fx-blur { filter: blur(1px); }
+  @keyframes subtle-shake {
+    0%,100% { transform: translate(0,0) }
+    20% { transform: translate(1px, -1px) }
+    40% { transform: translate(-1px, 1px) }
+    60% { transform: translate(1px, 0) }
+    80% { transform: translate(-1px, 0) }
+  }
+  .fx-shake { animation: subtle-shake .35s ease; }
 
-/* Vignette/halo rouge (au-dessus de tout) */
-.vignette {
-  position: fixed; inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .6s ease;
-  z-index: 9998;
-  background:
-    radial-gradient(ellipse at center,
-      rgba(0,0,0,0) 60%,
-      rgba(150,0,0,.22) 85%,
-      rgba(0,0,0,.75) 100%);
-}
+  /* Vignette/halo rouge (au-dessus de tout) */
+  .vignette {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .6s ease;
+    z-index: 9998;
+    background:
+      radial-gradient(ellipse at center,
+        rgba(0,0,0,0) 60%,
+        rgba(150,0,0,.22) 85%,
+        rgba(0,0,0,.75) 100%);
+  }
   </style>
 </head>
 <body>
+  <!-- Overlays & Alerte (une seule fois) -->
   <div class="overlay-flash" id="fxFlash"></div>
   <div class="overlay-black" id="fxBlack"></div>
+  <div class="vignette" id="vignette"></div>
   <div class="alert" id="alert"><div class="content" id="alertText"></div></div>
-  <div class="overlay-flash" id="fxFlash"></div>
-<div class="overlay-black" id="fxBlack"></div>
-<div class="vignette" id="vignette"></div> <!-- halo/vignette -->
-<div class="alert" id="alert"><div class="content" id="alertText"></div></div>
-
 
   <header><h1>Compagnon — Instabilité</h1></header>
   <main>
     <div class="grid">
+      <!-- Carte jauge -->
       <div class="card" style="grid-column:span 7">
         <div class="gauge-head">
           <div class="gauge-title">Jauge d’Instabilité</div>
@@ -230,7 +214,7 @@
           <div class="progress"><div class="bar" id="bar"></div></div>
         </div>
 
-        <!-- Les boutons +/- sont injectés par app.js et reçoivent .btn / .btn-plus / .btn-minus -->
+        <!-- Boutons +/- injectés par app.js -->
         <div class="row" id="rowPlus"></div>
         <div class="row" id="rowMinus" style="margin-top:8px"></div>
 
@@ -239,6 +223,7 @@
         </div>
       </div>
 
+      <!-- Carte contexte + actions -->
       <div class="card" style="grid-column:span 5">
         <div class="section-title">Contexte de partie</div>
         <div class="controls">
@@ -271,6 +256,7 @@
         </div>
       </div>
 
+      <!-- Carte aide -->
       <div class="card" style="grid-column:span 5">
         <div class="section-title">Aide</div>
         <div class="muted">
@@ -278,13 +264,17 @@
           • Le Camp de fortune est utilisable 3x, uniquement en Monde normal, et nécessite une majorité simple.
         </div>
       </div>
+
+      <!-- Carte Journal -->
       <div class="card" style="grid-column:span 5">
-  <div class="section-title">Journal</div>
-  <ul id="historyList" style="list-style:none;margin:0;padding-left:0;font-size:14px;line-height:1.35">
-    <!-- entrées injectées par JS -->
-  </ul>
-</div>
+        <div class="section-title">Journal</div>
+        <ul id="historyList" style="list-style:none;margin:0;padding-left:0;font-size:14px;line-height:1.35">
+          <!-- entrées injectées par JS -->
+        </ul>
+      </div>
     </div>
+
+    <!-- Version du build -->
     <div class="muted" id="version" style="text-align:center;opacity:.6;margin-top:12px"></div>
   </main>
 
@@ -299,6 +289,7 @@
     </div>
   </div>
 
+  <!-- Audio -->
   <audio id="ambient" src="audio/ambient_loop.mp3" loop preload="auto"></audio>
   <audio id="groan"   src="audio/groan.wav" preload="auto"></audio>
 
