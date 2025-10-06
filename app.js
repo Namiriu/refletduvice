@@ -437,11 +437,86 @@
       requestWakeLock();
     }
   });
+// ====== PWA Install (Android/Chrome) + iOS fallback ======
+let deferredPrompt = null;
+const banner = document.getElementById('installBanner');
+const btnInstall = document.getElementById('installBtn');
+const btnInstallClose = document.getElementById('installClose');
+const installText = document.getElementById('installText');
+
+// Détecte iOS (pas de prompt natif)
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+function showBanner() {
+  if (isStandalone) return; // déjà installé
+  banner.classList.add('show');
+  banner.setAttribute('aria-hidden', 'false');
+
+  if (isIOS) {
+    installText.textContent =
+      'Sur iPhone : touchez “Partager” puis “Ajouter à l’écran d’accueil”.';
+    btnInstall.textContent = 'OK';
+  }
+}
+
+function hideBanner(permanently=false){
+  banner.classList.remove('show');
+  banner.setAttribute('aria-hidden', 'true');
+  if (permanently) localStorage.setItem('hideInstall', '1');
+}
+
+// On capte l’événement d’install (Android/Chrome)
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  maybeShowInstallBanner();
+});
+
+btnInstall?.addEventListener('click', async () => {
+  if (isIOS) { hideBanner(true); return; } // on a juste affiché l’instruction
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  if (choice.outcome === 'accepted') hideBanner(true);
+});
+
+btnInstallClose?.addEventListener('click', () => hideBanner(true));
+
+// Affiche la bannière si paramètre ?install=1 ou si pas encore refusée
+function maybeShowInstallBanner(){
+  if (isStandalone) return;
+  const sp = new URLSearchParams(location.search);
+  const askedFromQR = sp.get('install') === '1';
+  const userRefused = localStorage.getItem('hideInstall') === '1';
+
+  // Android : attendre d’avoir deferredPrompt
+  // iOS : on peut montrer tout de suite
+  if (isIOS) {
+    if (askedFromQR && !userRefused) showBanner();
+  } else {
+    if (!deferredPrompt) return;        // pas prêt → on attend
+    if ((askedFromQR || !userRefused)) showBanner();
+  }
+}
 
   // ---------- Init ----------
   function init(){
     checkGate();
     render();
+    function init(){
+  checkGate();
+  render();
+  schedulePassive();
+  if(state.musicOn) playAmbientCurrent();
+
+  requestWakeLock();
+
+  // Affiche la bannière si le QR contenait ?install=1
+  maybeShowInstallBanner();
+}
+
     schedulePassive();
     if(state.musicOn) playAmbientCurrent();
     requestWakeLock();
