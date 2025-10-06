@@ -202,39 +202,52 @@
         rgba(0,0,0,.75) 100%);
   }
 
-  /* ===== Mobile tweaks ===== */
+/* ===== Responsive ===== */
 
-  /* Empile les cartes en 1 colonne sous ~900px (écrase les grid-column inline) */
-  @media (max-width: 900px) {
-    .grid { grid-template-columns: 1fr; }
-    .card[style*="grid-column:span"] { grid-column: auto; }
-  }
+/* Téléphones en PORTRAIT : on empile (1 colonne) */
+@media (orientation: portrait) {
+  .grid { grid-template-columns: 1fr; }
+  .card[style*="grid-column:span"] { grid-column: auto; } /* annule les spans inline */
 
-  @media (max-width: 820px) {
-    /* le header ne suit plus, + padding notch */
-    header { position: static; padding-top: max(12px, env(safe-area-inset-top)); }
+  header { position: static; padding-top: max(12px, env(safe-area-inset-top)); }
 
-    main { padding: 12px; gap: 12px; }
-    .card { padding: 12px; border-radius: 12px; }
+  main { padding: 12px; gap: 12px; }
+  .card { padding: 12px; border-radius: 12px; }
 
-    /* jauge un peu moins haute */
-    .progress { height: 40px; }
-    .bar { top: 5px; bottom: 5px; }
+  /* Jauge un peu plus compacte */
+  .progress { height: 40px; }
+  .bar { top: 5px; bottom: 5px; }
+  .gauge-title { font-size: 18px; }
+  .percent { font-size: 36px; }
 
-    /* titre + % un peu plus compacts */
-    .gauge-title { font-size: 18px; }
-    .percent { font-size: 38px; }
+  /* Boutons confort */
+  .row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .btn { width: 56px; height: 56px; }
+}
 
-    /* boutons : confort + pas de coupure */
-    .row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .btn { width: 56px; height: 56px; }
-  }
+/* Téléphones en PAYSAGE : on garde 2 colonnes, on serre légèrement */
+@media (orientation: landscape) and (max-height: 480px) {
+  /* header peut rester sticky, utile en paysage */
+  header { position: sticky; top: 0; }
 
-  @media (max-width: 380px) {
-    .percent { font-size: 34px; }
-    .btn { width: 52px; height: 52px; }
-    .row { gap: 6px; }
-  }
+  main { padding: 10px; gap: 12px; }
+
+  .progress { height: 36px; }
+  .bar { top: 4px; bottom: 4px; }
+
+  /* 6 colonnes de boutons -> +/− ne se coupent pas */
+  .row { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .btn { width: 52px; height: 52px; }  /* un peu plus petit pour éviter la coupe */
+
+  .percent { font-size: 34px; }
+}
+
+/* Ultra small width (vieux petits téléphones) */
+@media (max-width: 380px) and (orientation: portrait) {
+  .percent { font-size: 32px; }
+  .btn { width: 52px; height: 52px; }
+  .row { gap: 6px; }
+}
   </style>
 </head>
 <body>
