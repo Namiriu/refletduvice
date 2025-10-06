@@ -204,45 +204,42 @@
 
 /* ===== Responsive ===== */
 
-/* Téléphones en PORTRAIT : on empile (1 colonne) */
+/* Téléphones en PORTRAIT : 1 colonne */
 @media (orientation: portrait) {
   .grid { grid-template-columns: 1fr; }
-  .card[style*="grid-column:span"] { grid-column: auto; } /* annule les spans inline */
+  .card[style*="grid-column:span"] { grid-column: auto; }
 
+  /* header non-collant */
   header { position: static; padding-top: max(12px, env(safe-area-inset-top)); }
 
   main { padding: 12px; gap: 12px; }
   .card { padding: 12px; border-radius: 12px; }
 
-  /* Jauge un peu plus compacte */
   .progress { height: 40px; }
   .bar { top: 5px; bottom: 5px; }
   .gauge-title { font-size: 18px; }
   .percent { font-size: 36px; }
 
-  /* Boutons confort */
   .row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .btn { width: 56px; height: 56px; }
 }
 
-/* Téléphones en PAYSAGE : on garde 2 colonnes, on serre légèrement */
+/* Téléphones en PAYSAGE : 2 colonnes, header NON collant */
 @media (orientation: landscape) and (max-height: 480px) {
-  /* header peut rester sticky, utile en paysage */
-  header { position: sticky; top: 0; }
+  header { position: static; padding-top: max(8px, env(safe-area-inset-top)); }
 
   main { padding: 10px; gap: 12px; }
 
   .progress { height: 36px; }
   .bar { top: 4px; bottom: 4px; }
 
-  /* 6 colonnes de boutons -> +/− ne se coupent pas */
   .row { grid-template-columns: repeat(6, 1fr); gap: 6px; }
-  .btn { width: 52px; height: 52px; }  /* un peu plus petit pour éviter la coupe */
+  .btn { width: 52px; height: 52px; }
 
   .percent { font-size: 34px; }
 }
 
-/* Ultra small width (vieux petits téléphones) */
+/* Très petits écrans en portrait */
 @media (max-width: 380px) and (orientation: portrait) {
   .percent { font-size: 32px; }
   .btn { width: 52px; height: 52px; }
