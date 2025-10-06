@@ -260,6 +260,23 @@
 }
 .fs-btn:hover{ filter:brightness(1.08); opacity:1 }
 .fs-btn:active{ transform:translateY(1px) }
+    .install-banner{
+  position: fixed; left: 12px; right: 12px; bottom: 12px;
+  display: none; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 10px 12px;
+  background: #141416; border: 1px solid #2a2a2e; border-radius: 12px;
+  z-index: 10050;
+}
+.install-banner.show{ display:flex; }
+.install-actions{ display:flex; gap:8px; }
+#installBtn{
+  padding:8px 12px; border-radius:10px; border:1px solid #2a2a2e;
+  background:#1f1f23; color:#eaeaea; cursor:pointer;
+}
+#installClose{
+  padding:8px 10px; border-radius:10px; border:1px solid #2a2a2e;
+  background:#1f1f23; color:#eaeaea; cursor:pointer;
+}
   </style>
 </head>
 <body>
@@ -345,6 +362,16 @@
 
     <!-- Version du build -->
     <div class="muted" id="version" style="text-align:center;opacity:.6;margin-top:12px"></div>
+    <!-- Bannière install PWA -->
+<div id="installBanner" class="install-banner" aria-hidden="true">
+  <div class="install-msg">
+    <span id="installText">Installer l’application sur cet appareil ?</span>
+  </div>
+  <div class="install-actions">
+    <button id="installBtn">Installer</button>
+    <button id="installClose" aria-label="Fermer">✕</button>
+  </div>
+</div>
   </main>
 
 <!-- Porte d’accès playtest -->
