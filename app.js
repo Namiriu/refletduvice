@@ -399,12 +399,35 @@
   });
   gateInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') gateBtn.click(); });
 
+  // ===== Keep screen awake on mobile (Wake Lock API, with re-acquire) =====
+let wakeLock = null;
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener?.('release', () => { /* released */ });
+    }
+  } catch (_) {
+    // Some browsers require user interaction first; we'll try again on visibilitychange
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && wakeLock !== null) {
+    requestWakeLock();
+  }
+});
+
   // ---------- Init ----------
   function init(){
     checkGate();
     render();
     schedulePassive();
     if(state.musicOn) playAmbientCurrent();
+  
+  // Keep the screen on
+  requestWakeLock();
   }
   document.addEventListener('DOMContentLoaded', init);
 })();
