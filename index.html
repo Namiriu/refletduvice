@@ -192,6 +192,32 @@
         rgba(150,0,0,.22) 85%,
         rgba(0,0,0,.75) 100%);
   }
+    /* ===== Mobile tweaks ===== */
+@media (max-width: 820px) {
+  /* stop the header from following you on small screens */
+  header { position: static; padding-top: max(12px, env(safe-area-inset-top)); }
+
+  main { padding: 12px; gap: 12px; }
+  .card { padding: 12px; border-radius: 12px; }
+
+  /* slightly smaller gauge */
+  .progress { height: 40px; }
+  .bar { top: 5px; bottom: 5px; }
+
+  /* title + % a bit tighter */
+  .gauge-title { font-size: 18px; }
+  .percent { font-size: 38px; }
+
+  /* fit the + / − buttons comfortably */
+  .row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .btn { width: 56px; height: 56px; }
+}
+
+@media (max-width: 380px) {
+  .percent { font-size: 34px; }
+  .btn { width: 52px; height: 52px; }
+  .row { gap: 6px; }
+}
   </style>
 </head>
 <body>
