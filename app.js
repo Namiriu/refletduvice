@@ -6,7 +6,7 @@
 
   // Ambiances longues (playlist). Ajoute tes pistes ici si tu en as d’autres.
   const AMBIENT_TRACKS = [
-    'audio/ambient_loop.wav', // existant
+    'audio/ambient_loop.mp3', // existant
     // 'audio/ambient_2.mp3',
     // 'audio/ambient_3.mp3',
   ];
