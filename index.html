@@ -9,180 +9,178 @@
   <link rel="icon" href="icons/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
   <style>
-   :root{
-  --bg:#0f0f10; --fg:#eaeaea; --muted:#a0a0a0; --card:#18181b; --accent:#e11d48; --ok:#10b981; --warn:#f59e0b;
-  --font-ui: "Special Elite", system-ui, sans-serif;
-  --font-body: "EB Garamond", Georgia, serif;
-}
+  :root{
+    --bg:#0f0f10; --fg:#eaeaea; --muted:#a0a0a0; --card:#18181b; --accent:#e11d48; --ok:#10b981; --warn:#f59e0b;
+    --font-ui: "Special Elite", system-ui, sans-serif;
+    --font-body: "EB Garamond", Georgia, serif;
+  }
 
-/* corps du texte ≈ Garamond */
-body{ font-family: var(--font-body); }
+  /* ===== Correctif fond & hauteur page ===== */
+  html, body { height: 100%; }
+  body{
+    margin:0;
+    font-family: var(--font-body);
+    color: var(--fg);
+    background:#0b0b0c url("img/bg.webp") center/cover fixed no-repeat !important;
+  }
+  main{ min-height: calc(100vh - 60px); }
 
-/* éléments “UI / dramatique” ≈ Special Elite */
-h1, .section-title, .percent, .badge, .btn, button, label, .gauge-title, .alert .content{
-  font-family: var(--font-ui);
-}
+  /* éléments “UI / dramatique” ≈ Special Elite */
+  h1, .section-title, .percent, .badge, .btn, button, label, .gauge-title, .alert .content{
+    font-family: var(--font-ui);
+  }
 
-    header{padding:16px 20px;border-bottom:1px solid #232325;position:sticky;top:0;background:rgba(15,15,16,.9);backdrop-filter:blur(6px);z-index:10}
-    h1{margin:0;font-size:18px}
-    main{max-width:880px;margin:0 auto;padding:20px;display:grid;gap:16px}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-    .card{background:var(--card);border:1px solid #232325;border-radius:16px;padding:16px}
+  header{padding:16px 20px;border-bottom:1px solid #232325;position:sticky;top:0;background:rgba(15,15,16,.9);backdrop-filter:blur(6px);z-index:10}
+  h1{margin:0;font-size:18px}
+  main{max-width:880px;margin:0 auto;padding:20px;display:grid;gap:16px}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+  .card{background:var(--card);border:1px solid #232325;border-radius:16px;padding:16px}
 
-    /* Grille des boutons +/- */
-    .row{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:12px }
+  /* Grille des boutons +/- */
+  .row{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:12px }
 
-/* Boutons “classiques” (contexte / spéciaux) — n'affecte PAS .btn */
-button:not(.btn){
-  padding:12px 8px;
-  border-radius:12px;
-  border:1px solid #2a2a2e;
-  background:#1f1f23;
-  color:var(--fg);
-  font-size:16px;
-  cursor:pointer;
-  outline:none; box-shadow:none;
-}
-button:not(.btn):disabled{opacity:.5;cursor:not-allowed}
-button:not(.btn):hover{filter:brightness(1.08)}
-button:not(.btn):focus{outline:none; box-shadow:none}
+  /* Boutons “classiques” (contexte / spéciaux) — n'affecte PAS .btn */
+  button:not(.btn){
+    padding:12px 8px;
+    border-radius:12px;
+    border:1px solid #2a2a2e;
+    background:#1f1f23;
+    color:var(--fg);
+    font-size:16px;
+    cursor:pointer;
+    outline:none; box-shadow:none;
+  }
+  button:not(.btn):disabled{opacity:.5;cursor:not-allowed}
+  button:not(.btn):hover{filter:brightness(1.08)}
+  button:not(.btn):focus{outline:none; box-shadow:none}
 
-/* Boutons +/- visuels (compacts, 100% transparents) */
-.btn{
-  width:64px; height:64px; padding:0;
-  border:none !important; outline:none !important; box-shadow:none !important;
-  background-color:transparent;            /* <- supprime le halo */
-  background-size:contain;
-  background-repeat:no-repeat;
-  background-position:center;
-  color:transparent;
-  cursor:pointer;
-  -webkit-appearance:none; appearance:none; /* enlève le style natif */
-}
-.btn:hover  { filter:brightness(1.06) }
-.btn:active { transform:translateY(1px); filter:brightness(0.96) }
-.btn:disabled{ opacity:.6; cursor:not-allowed }
-.btn:focus{ outline:none; box-shadow:none }
+  /* Boutons +/- visuels (compacts, 100% transparents) */
+  .btn{
+    width:64px; height:64px; padding:0;
+    border:none !important; outline:none !important; box-shadow:none !important;
+    background-color:transparent;
+    background-size:contain;
+    background-repeat:no-repeat;
+    background-position:center;
+    color:transparent;
+    cursor:pointer;
+    -webkit-appearance:none; appearance:none;
+  }
+  .btn:hover  { filter:brightness(1.06) }
+  .btn:active { transform:translateY(1px); filter:brightness(0.96) }
+  .btn:disabled{ opacity:.6; cursor:not-allowed }
+  .btn:focus{ outline:none; box-shadow:none }
 
-    /* Mapping visuel des + */
-    .btn-plus.btn-p1  { background-image:url("img/btn_plus1.png"); }
-    .btn-plus.btn-p2  { background-image:url("img/btn_plus2.png"); }
-    .btn-plus.btn-p3  { background-image:url("img/btn_plus3.png"); }
-    .btn-plus.btn-p5  { background-image:url("img/btn_plus5.png"); }
-    .btn-plus.btn-p10 { background-image:url("img/btn_plus10.png"); }
-    .btn-plus.btn-p20 { background-image:url("img/btn_plus20.png"); }
+  /* Mapping visuel des + */
+  .btn-plus.btn-p1  { background-image:url("img/btn_plus1.png"); }
+  .btn-plus.btn-p2  { background-image:url("img/btn_plus2.png"); }
+  .btn-plus.btn-p3  { background-image:url("img/btn_plus3.png"); }
+  .btn-plus.btn-p5  { background-image:url("img/btn_plus5.png"); }
+  .btn-plus.btn-p10 { background-image:url("img/btn_plus10.png"); }
+  .btn-plus.btn-p20 { background-image:url("img/btn_plus20.png"); }
 
-    /* Mapping visuel des − */
-    .btn-minus.btn-m1  { background-image:url("img/btn_moins1.png"); }
-    .btn-minus.btn-m2  { background-image:url("img/btn_moins2.png"); }
-    .btn-minus.btn-m3  { background-image:url("img/btn_moins3.png"); }
-    .btn-minus.btn-m5  { background-image:url("img/btn_moins5.png"); }
-    .btn-minus.btn-m10 { background-image:url("img/btn_moins10.png"); }
-    .btn-minus.btn-m20 { background-image:url("img/btn_moins20.png"); }
+  /* Mapping visuel des − */
+  .btn-minus.btn-m1  { background-image:url("img/btn_moins1.png"); }
+  .btn-minus.btn-m2  { background-image:url("img/btn_moins2.png"); }
+  .btn-minus.btn-m3  { background-image:url("img/btn_moins3.png"); }
+  .btn-minus.btn-m5  { background-image:url("img/btn_moins5.png"); }
+  .btn-minus.btn-m10 { background-image:url("img/btn_moins10.png"); }
+  .btn-minus.btn-m20 { background-image:url("img/btn_moins20.png"); }
 
-    .progress-wrap{margin:12px 0}
+  .progress-wrap{margin:12px 0}
 
-    /* Jauge : remplissage inside + cadre par-dessus, fond transparent */
-.progress{
-  position:relative;
-  width:100%;
-  height:48px;
-  border-radius:8px;
-  overflow:hidden;
-  background:transparent;
-  border:none;
-}
-.bar{
-  position:absolute;
-  left:0; right:0;
-  top:6px; bottom:6px;                /* <- réduit la hauteur utile */
-  width:0%;
-  transition:width .2s ease-out;
-  background:url("img/gauge_fill.png") 0 0 / auto 100% repeat-x; /* répète en X, colle à la hauteur */
-  z-index:0;
-}
-.progress::after{
-  content:"";
-  position:absolute; inset:0;
-  background:url("img/gauge_track.png") center/cover no-repeat;  /* cadre au-dessus */
-  pointer-events:none; z-index:1;
-}
+  /* Jauge : remplissage inside + cadre par-dessus, fond transparent */
+  .progress{
+    position:relative;
+    width:100%;
+    height:48px;
+    border-radius:8px;
+    overflow:hidden;
+    background:transparent;
+    border:none;
+  }
+  .bar{
+    position:absolute;
+    left:0; right:0;
+    top:6px; bottom:6px; /* réduit la hauteur utile */
+    width:0%;
+    transition:width .2s ease-out;
+    background:url("img/gauge_fill.png") 0 0 / auto 100% repeat-x;
+    z-index:0;
+  }
+  .progress::after{
+    content:"";
+    position:absolute; inset:0;
+    background:url("img/gauge_track.png") center/cover no-repeat;  /* cadre au-dessus */
+    pointer-events:none; z-index:1;
+  }
 
-    .percent{font-size:46px;font-weight:800;letter-spacing:1px;margin:8px 0}
-    .muted{color:var(--muted);font-size:14px}
-    .line{height:1px;background:#232325;margin:12px 0}
-    label{font-size:14px}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .percent{font-size:46px;font-weight:800;letter-spacing:1px;margin:8px 0}
+  .muted{color:var(--muted);font-size:14px}
+  .line{height:1px;background:#232325;margin:12px 0}
+  label{font-size:14px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
 
-    /* Overlays des effets (gérés en JS, invisibles dans l’UI) */
-    .overlay-flash, .overlay-black{ position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999 }
-    .overlay-flash{background:#fff}
-    .overlay-black{background:#000;transition:opacity .4s}
+  /* Overlays FX */
+  .overlay-flash, .overlay-black{ position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999 }
+  .overlay-flash{background:#fff}
+  .overlay-black{background:#000;transition:opacity .4s}
 
-    /* Porte d’accès playtest */
-    .gate{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;padding:20px;z-index:10000}
-    .gate-inner{background:#141416;border:1px solid #2a2a2e;border-radius:16px;max-width:420px;width:100%;padding:20px}
-    .gate input{width:100%;padding:12px;border-radius:10px;border:1px solid #2a2a2e;background:#1b1b1f;color:#fff}
-    .gate button{width:100%;margin-top:12px}
-    .error{color:#f87171;font-size:12px;min-height:18px;margin-top:8px}
-    .section-title{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#b9b9b9;margin-bottom:8px}
+  /* Gate */
+  .gate{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;padding:20px;z-index:10000}
+  .gate-inner{background:#141416;border:1px solid #2a2a2e;border-radius:16px;max-width:420px;width:100%;padding:20px}
+  .gate input{width:100%;padding:12px;border-radius:10px;border:1px solid #2a2a2e;background:#1b1b1f;color:#fff}
+  .gate button{width:100%;margin-top:12px}
+  .error{color:#f87171;font-size:12px;min-height:18px;margin-top:8px}
+  .section-title{font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#b9b9b9;margin-bottom:8px}
 
-    /* === ALERTE TRANSITION === */
-.alert {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.8); /* plus sombre */
-  opacity: 0;
-  pointer-events: none;
-  z-index: 10000;
-  transition: opacity 1s ease;
-}
+  /* === ALERTE TRANSITION === */
+  .alert {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.8);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10000;
+    transition: opacity 1s ease;
+  }
+  .alert.show { opacity: 1; pointer-events: auto; }
 
-.alert.show {
-  opacity: 1;
-  pointer-events: auto;
-}
+  .alert .content {
+    text-align: center;
+    font-size: 2.6rem;
+    font-family: var(--font-ui);
+    text-shadow: 0 0 12px rgba(0,0,0,0.9);
+    max-width: 80%;
+    transition: transform 0.4s ease;
+  }
+  .alert.reflet .content {
+    color: #c71f1f;
+    text-shadow: 0 0 25px rgba(200,30,30,0.9);
+    transform: scale(1.1);
+  }
+  .alert.normal .content {
+    color: #f8f8f8;
+    text-shadow: 0 0 25px rgba(255,255,255,0.7);
+  }
 
-.alert .content {
-  text-align: center;
-  font-size: 2.6rem;
-  font-family: 'Cinzel', serif;
-  text-shadow: 0 0 12px rgba(0,0,0,0.9);
-  max-width: 80%;
-  transition: transform 0.4s ease;
-}
-
-/* Style spécifique pour Reflet du Vice */
-.alert.reflet .content {
-  color: #c71f1f;
-  text-shadow: 0 0 25px rgba(200,30,30,0.9);
-  transform: scale(1.1);
-  font-family: 'Creepster', cursive;
-}
-
-/* Style spécifique pour retour au Monde Normal */
-.alert.normal .content {
-  color: #f8f8f8;
-  text-shadow: 0 0 25px rgba(255,255,255,0.7);
-  font-family: 'Cinzel', serif;
-}
-
-    .gauge-head{
-  display:flex; justify-content:center; align-items:baseline; gap:12px;
-  margin: 4px 0 6px 0; text-align:center;
-}
-.gauge-title{
-  color: var(--muted);
-  font-size: 20px; /* ajuste si tu veux */
-  letter-spacing: .2px;
-}
-.percent{
-  font-size: 46px; font-weight: 800; letter-spacing: .5px; margin:0; /* plus serré */
-}
-.progress-wrap{ margin:10px 0 14px; }
+  /* Tête de jauge centrée */
+  .gauge-head{
+    display:flex; justify-content:center; align-items:baseline; gap:12px;
+    margin: 4px 0 6px 0; text-align:center;
+  }
+  .gauge-title{
+    color: var(--muted);
+    font-size: 20px;
+    letter-spacing: .2px;
+  }
+  .percent{
+    font-size: 46px; font-weight: 800; letter-spacing: .5px; margin:0;
+  }
+  .progress-wrap{ margin:10px 0 14px; }
   </style>
 </head>
 <body>
@@ -194,10 +192,10 @@ button:not(.btn):focus{outline:none; box-shadow:none}
   <main>
     <div class="grid">
       <div class="card" style="grid-column:span 7">
-<div class="gauge-head">
-  <div class="gauge-title">Jauge d’Instabilité</div>
-  <div class="percent" id="percent">0 %</div>
-</div>
+        <div class="gauge-head">
+          <div class="gauge-title">Jauge d’Instabilité</div>
+          <div class="percent" id="percent">0 %</div>
+        </div>
         <div class="progress-wrap">
           <div class="progress"><div class="bar" id="bar"></div></div>
         </div>
@@ -238,9 +236,9 @@ button:not(.btn):focus{outline:none; box-shadow:none}
           <span class="muted" id="campInfo">Utilisations restantes : 3</span>
         </div>
         <div class="controls" style="margin-top:8px">
-  <button id="btnNew">Nouvelle partie</button>
-  <span class="muted">Réinitialise la jauge et les usages spéciaux.</span>
-      </div>
+          <button id="btnNew">Nouvelle partie</button>
+          <span class="muted">Réinitialise la jauge et les usages spéciaux.</span>
+        </div>
       </div>
 
       <div class="card" style="grid-column:span 5">
