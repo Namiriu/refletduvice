@@ -59,6 +59,20 @@
   // Hash SHA-256 fourni
   const PASSPHRASE_HASH = 'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
 
+  // Seuils
+const THRESHOLD_ENTER = 50; // ≥ 50% → Reflet du vice
+const THRESHOLD_EXIT  = 49; // ≤ 49% → Retour normal
+
+// Optionnels : voix dédiées (uploade si tu veux)
+const VOICES = {
+  enter: 'audio/voice_enter_reflet.wav',   // facultatif
+  exit:  'audio/voice_return_normal.mp3'   // facultatif
+};
+
+// Alerte UI
+const alertBox  = document.getElementById('alert');
+const alertText = document.getElementById('alertText');
+
   // ---------- État ----------
   let state = {
     value:     parseInt(localStorage.getItem(LSK('instability'))||'0',10),
@@ -127,6 +141,7 @@
       b.addEventListener('click', ()=>{
         state.value = clamp(state.value + sign*v);
         render();
+        checkThresholdTransition();
         maybeHaunt();
       });
       return b;
@@ -179,6 +194,53 @@
     if (force || Math.random() < HAUNT.perClickProb) triggerHaunt();
   }
 
+  function zoneFromValue(v){ return v >= THRESHOLD_ENTER ? 'reflet' : 'normal'; }
+
+let lastZone = zoneFromValue(
+  parseInt(localStorage.getItem(LSK('instability'))||'0',10)
+);
+
+function playIfExists(src, vol=0.95){
+  if(!src) return;
+  const a = new Audio(src);
+  a.volume = vol;
+  a.play().catch(()=>{});
+}
+
+function showAlert(msg, voiceSrc){
+  alertText.textContent = msg;
+  alertBox.classList.add('show');
+  // petit blackout léger en même temps
+  fxBlack.style.opacity = '1';
+  setTimeout(()=>{ fxBlack.style.opacity='0'; }, 300);
+
+  if(voiceSrc) playIfExists(voiceSrc, 0.95);
+  else playSFX(0.9); // fallback : un SFX hanté
+
+  // disparaît après 3.2s
+  setTimeout(()=>{ alertBox.classList.remove('show'); }, 3200);
+}
+
+function checkThresholdTransition(){
+  const currentZone = zoneFromValue(state.value);
+
+  if(currentZone !== lastZone){
+    if(currentZone === 'reflet'){
+      showAlert(
+        'Vous basculez dans le Reflet du vice.\nRetournez le plateau côté Reflet.',
+        VOICES.enter
+      );
+    }else{
+      showAlert(
+        'Vous reprenez pied dans le monde normal.\nRemettez le plateau côté normal.',
+        VOICES.exit
+      );
+    }
+    lastZone = currentZone;
+  }
+}
+
+
   // Effets passifs réguliers
   let passiveTimer = null;
   function schedulePassive(){
@@ -198,6 +260,7 @@
     state.anchorUsed[q] = true;
     state.value = clamp(state.value - 15);
     render();
+    checkThresholdTransition();
     maybeHaunt(true); // effet garanti
   });
 
@@ -206,6 +269,7 @@
     state.campLeft -= 1;
     state.value = clamp(state.value - 30);
     render();
+    checkThresholdTransition();
     maybeHaunt(true);
   });
 
