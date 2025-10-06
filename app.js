@@ -64,6 +64,11 @@
   const GATE_KEY   = 'playtest_gate_hash';
   const PASSPHRASE_HASH = 'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
 
+  // Si déjà autorisé, masque la gate immédiatement (avant toute autre logique)
+if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
+  gate.style.display = 'none';
+}
+
   // Seuils d’alerte
   const THRESHOLD_ENTER = 50; // ≥ 50% → Reflet du vice
   const THRESHOLD_EXIT  = 49; // ≤ 49% → Retour normal
