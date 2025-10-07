@@ -56,6 +56,37 @@
   const fxFlash = document.getElementById('fxFlash');
   const fxBlack = document.getElementById('fxBlack');
   const btnNew  = document.getElementById('btnNew'); // peut être absent
+  // Fin de partie
+const goModal   = document.getElementById('gameOver');
+const goYes     = document.getElementById('goYes');
+const goNo      = document.getElementById('goNo');
+let gameOverShown = false;
+
+function showGameOver(){
+  gameOverShown = true;
+  // verrouille visuellement
+  fxBlack.style.opacity = '1';
+  setTimeout(()=>{ fxBlack.style.opacity = '.9'; }, 200);
+  // affiche la modale
+  goModal.classList.add('show');
+}
+
+function hideGameOver(){
+  goModal.classList.remove('show');
+  fxBlack.style.opacity = '0';
+  gameOverShown = false;
+}
+
+// ferme “proprement” côté web (pas garanti de fermer l’onglet)
+async function tryQuitApp(){
+  try{ if (document.fullscreenElement) await document.exitFullscreen(); }catch(_){}
+  ambientEl.pause();
+  // Tentatives “douces”
+  window.history.length > 1 ? window.history.back() : null;
+  // Tentative de fermeture (ne marche que si la page a été ouverte par script)
+  const w = window.open('', '_self'); try{ w.close(); }catch(_){}
+  // Fallback: on laisse la modale, l’utilisateur fermera l’onglet/app PWA.
+}
 
   // Gate
   const gate       = document.getElementById('gate');
@@ -206,14 +237,16 @@
       if (sign > 0) { b.classList.add('btn-plus',  'btn-p'+v); }
       else          { b.classList.add('btn-minus', 'btn-m'+v); }
 
-      b.addEventListener('click', ()=>{
-        const delta = sign * v;
-        state.value = clamp(state.value + delta);
-        addHistory(delta);
-        microEffect(state.value);
-        render();
-        maybeHaunt();
-      });
+     b.addEventListener('click', ()=>{
+  const delta = sign * v;
+  if (gameOverShown) return;           // bloque si fin affichée
+  state.value = clamp(state.value + delta);
+  addHistory(delta);
+  microEffect(state.value);
+  render();
+  checkGameOver();                     // <-- AJOUT
+  maybeHaunt();
+});
       return b;
     });
   }
@@ -298,6 +331,14 @@
     }
   }
 
+  function checkGameOver(){
+  if (state.value >= 100 && !gameOverShown){
+    state.value = 100; // clamp final
+    render();          // maj barre/titre/jauge
+    showGameOver();
+  }
+}
+
   // Effets passifs réguliers
   let passiveTimer = null;
   function schedulePassive(){
@@ -310,27 +351,32 @@
   }
 
   // ---------- Actions spéciales ----------
-  btnAnchor.addEventListener('click', ()=>{
-    if(state.world!=='reflet') return;
-    const q = String(state.quartier);
-    if(state.anchorUsed[q]) return;
-    state.anchorUsed[q] = true;
-    state.value = clamp(state.value - 15);
-    addHistory(-15);
-    microEffect(state.value);
-    render();
-    maybeHaunt(true);
-  });
+ btnAnchor.addEventListener('click', ()=>{
+  if(state.world!=='reflet') return;
+  if (gameOverShown) return;           // bloque si fin affichée
+  const q = String(state.quartier);
+  if(state.anchorUsed[q]) return;
+  state.anchorUsed[q] = true;
+  state.value = clamp(state.value - 15);
+  addHistory(-15);
+  microEffect(state.value);
+  render();
+  checkGameOver();                     // <-- AJOUT
+  maybeHaunt(true);
+});
+
 
   btnCamp.addEventListener('click', ()=>{
-    if(state.world!=='normal' || state.campLeft<=0) return;
-    state.campLeft -= 1;
-    state.value = clamp(state.value - 30);
-    addHistory(-30);
-    microEffect(state.value);
-    render();
-    maybeHaunt(true);
-  });
+  if(state.world!=='normal' || state.campLeft<=0) return;
+  if (gameOverShown) return;           // bloque si fin affichée
+  state.campLeft -= 1;
+  state.value = clamp(state.value - 30);
+  addHistory(-30);
+  microEffect(state.value);
+  render();
+  checkGameOver();                     // <-- AJOUT
+  maybeHaunt(true);
+});
 
   // ---------- Nouvelle partie ----------
   function newGame(){
@@ -349,6 +395,19 @@
       }
     });
   }
+  // --- Fin de partie : actions Oui/Non ---
+if (goYes){
+  goYes.addEventListener('click', ()=>{
+    hideGameOver();
+    newGame();   // réutilise ta fonction existante (réinitialise tout)
+  });
+}
+if (goNo){
+  goNo.addEventListener('click', ()=>{
+    try{ navigator.vibrate?.(120); }catch(_){}
+    tryQuitApp();
+  });
+}
 
   // ---------- Contexte ----------
   worldRadios.forEach(r=> r.addEventListener('change', ()=>{
