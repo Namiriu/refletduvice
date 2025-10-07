@@ -189,19 +189,21 @@
     quartierSel.value = String(state.quartier);
 
     // Actions spéciales
-    const q    = String(state.quartier);
-    const used = !!state.anchorUsed[q];
-    if (state.world === 'reflet'){
-      btnAnchor.disabled = used;
-      anchorInfo.textContent = `Restant : ${used ? 0 : 1} (1 par quartier)`;
-      btnCamp.disabled = true;
-      campInfo.textContent = `Utilisations restantes : 0`;
-    } else {
-      btnAnchor.disabled = true;
-      anchorInfo.textContent = `Restant : 0 (1 par quartier)`;
-      btnCamp.disabled = state.campLeft <= 0;
-      campInfo.textContent = `Utilisations restantes : ${state.campLeft}`;
-    }
+const q    = String(state.quartier);
+const used = !!state.anchorUsed[q];
+
+// Point d’ancrage : seulement en Reflet du vice (1 fois / quartier)
+btnAnchor.disabled = (state.world !== 'reflet') || used;
+anchorInfo.textContent =
+  state.world === 'reflet'
+    ? `Restant : ${used ? 0 : 1} (1 par quartier)`
+    : `Restant : 0 (1 par quartier)`;
+
+// Camp de fortune : autorisé dans les deux mondes, effet différent
+btnCamp.disabled = state.campLeft <= 0;
+campInfo.textContent = `Utilisations restantes : ${state.campLeft} — ${
+  state.world === 'reflet' ? '−20 % en Reflet' : '−30 % en Monde normal'
+}`;
 
     // Musique + plein écran
     audioBtn.textContent = state.musicOn ? 'MUSIQUE ON' : 'MUSIQUE OFF';
@@ -313,16 +315,20 @@
     maybeHaunt(true);
   });
 
-  btnCamp.addEventListener('click', ()=>{
-    if(state.world!=='normal' || state.campLeft<=0 || gameOverShown) return;
-    state.campLeft -= 1;
-    state.value = clamp(state.value - 30);
-    addHistory(-30);
-    microEffect(state.value);
-    render();
-    checkGameOver();
-    maybeHaunt(true);
-  });
+ btnCamp.addEventListener('click', ()=>{
+  if (state.campLeft <= 0) return;
+  if (gameOverShown) return;
+
+  const delta = (state.world === 'reflet') ? -20 : -30; // règle officielle
+  state.campLeft -= 1;
+  state.value = clamp(state.value + delta);
+
+  addHistory(delta);
+  microEffect(state.value);
+  render();
+  checkGameOver();
+  maybeHaunt(true);
+});
 
   // ---------- Nouvelle partie ----------
   function newGame(){
