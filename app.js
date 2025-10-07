@@ -55,38 +55,35 @@
 
   const fxFlash = document.getElementById('fxFlash');
   const fxBlack = document.getElementById('fxBlack');
-  const btnNew  = document.getElementById('btnNew'); // peut être absent
-  // Fin de partie
-const goModal   = document.getElementById('gameOver');
-const goYes     = document.getElementById('goYes');
-const goNo      = document.getElementById('goNo');
-let gameOverShown = false;
+  const btnNew  = document.getElementById('btnNew');
 
-function showGameOver(){
-  gameOverShown = true;
-  // verrouille visuellement
-  fxBlack.style.opacity = '1';
-  setTimeout(()=>{ fxBlack.style.opacity = '.9'; }, 200);
-  // affiche la modale
-  goModal.classList.add('show');
-}
+  // ---- Fin de partie (ID corrigé: "gameover") ----
+  const goModal   = document.getElementById('gameover');
+  const goYes     = document.getElementById('goYes');
+  const goNo      = document.getElementById('goNo');
+  let gameOverShown = false;
 
-function hideGameOver(){
-  goModal.classList.remove('show');
-  fxBlack.style.opacity = '0';
-  gameOverShown = false;
-}
-
-// ferme “proprement” côté web (pas garanti de fermer l’onglet)
-async function tryQuitApp(){
-  try{ if (document.fullscreenElement) await document.exitFullscreen(); }catch(_){}
-  ambientEl.pause();
-  // Tentatives “douces”
-  window.history.length > 1 ? window.history.back() : null;
-  // Tentative de fermeture (ne marche que si la page a été ouverte par script)
-  const w = window.open('', '_self'); try{ w.close(); }catch(_){}
-  // Fallback: on laisse la modale, l’utilisateur fermera l’onglet/app PWA.
-}
+  function showGameOver(){
+    if (!goModal) return;
+    gameOverShown = true;
+    // voile dramatique
+    fxBlack.style.opacity = '1';
+    setTimeout(()=>{ fxBlack.style.opacity = '.9'; }, 200);
+    // modale
+    goModal.classList.add('show');
+  }
+  function hideGameOver(){
+    if (!goModal) return;
+    goModal.classList.remove('show');
+    fxBlack.style.opacity = '0';
+    gameOverShown = false;
+  }
+  async function tryQuitApp(){
+    try{ if (document.fullscreenElement) await document.exitFullscreen(); }catch(_){}
+    ambientEl.pause();
+    if (window.history.length > 1) window.history.back();
+    try{ window.open('','_self').close(); }catch(_){}
+  }
 
   // Gate
   const gate       = document.getElementById('gate');
@@ -95,8 +92,6 @@ async function tryQuitApp(){
   const gateError  = document.getElementById('gateError');
   const GATE_KEY   = 'playtest_gate_hash';
   const PASSPHRASE_HASH = 'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
-
-  // Si déjà autorisé, masque la gate immédiatement
   if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
     gate.style.display = 'none';
   }
@@ -151,7 +146,6 @@ async function tryQuitApp(){
       vignetteEl.style.opacity = '0';
     }
   }
-
   function microEffect(val) {
     if (val >= 60 && val < 90) {
       if (Math.random() < 0.5) {
@@ -174,28 +168,22 @@ async function tryQuitApp(){
     localStorage.setItem(LSK('musicOn'),    state.musicOn ? '1' : '0');
   }
 
-  // ---- Fullscreen helpers (propres) ----
-  async function enterFullscreen() {
-    try { if (!document.fullscreenElement) await document.documentElement.requestFullscreen(); } catch(e){}
-  }
-  async function exitFullscreen() {
-    try { if (document.fullscreenElement) await document.exitFullscreen(); } catch(e){}
-  }
-  function isFullscreen(){ return !!document.fullscreenElement; }
+  // ---- Fullscreen helpers ----
+  async function enterFullscreen(){ try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); }catch(_){}} 
+  async function exitFullscreen(){ try{ if(document.fullscreenElement) await document.exitFullscreen(); }catch(_){}} 
+  const isFullscreen = ()=>!!document.fullscreenElement;
 
   function render(){
     bar.style.width = clamp(state.value) + '%';
     percent.textContent = fmt(state.value);
     document.title = 'Instabilité ' + fmt(state.value);
 
-    // seuils 49/50
-    checkThresholdTransition();
+    checkThresholdTransition(); // 49/50
 
-    // Effets d’ambiance + version
     applyMoodEffects(state.value);
     if (versionEl) versionEl.textContent = VERSION;
 
-    // Monde / sélecteurs
+    // Contexte
     worldRadios.forEach(r => r.checked = (r.value === state.world));
     playersSel.value  = String(state.players);
     quartierSel.value = String(state.quartier);
@@ -203,7 +191,6 @@ async function tryQuitApp(){
     // Actions spéciales
     const q    = String(state.quartier);
     const used = !!state.anchorUsed[q];
-
     if (state.world === 'reflet'){
       btnAnchor.disabled = used;
       anchorInfo.textContent = `Restant : ${used ? 0 : 1} (1 par quartier)`;
@@ -216,11 +203,9 @@ async function tryQuitApp(){
       campInfo.textContent = `Utilisations restantes : ${state.campLeft}`;
     }
 
-    // Musique
+    // Musique + plein écran
     audioBtn.textContent = state.musicOn ? 'MUSIQUE ON' : 'MUSIQUE OFF';
     audioBtn.setAttribute('aria-pressed', state.musicOn ? 'true' : 'false');
-
-    // Libellé du bouton plein écran
     if (fsBtn){
       fsBtn.textContent = isFullscreen() ? 'Quitter plein écran' : 'Plein écran';
       fsBtn.setAttribute('aria-pressed', isFullscreen() ? 'true' : 'false');
@@ -237,16 +222,16 @@ async function tryQuitApp(){
       if (sign > 0) { b.classList.add('btn-plus',  'btn-p'+v); }
       else          { b.classList.add('btn-minus', 'btn-m'+v); }
 
-     b.addEventListener('click', ()=>{
-  const delta = sign * v;
-  if (gameOverShown) return;           // bloque si fin affichée
-  state.value = clamp(state.value + delta);
-  addHistory(delta);
-  microEffect(state.value);
-  render();
-  checkGameOver();                     // <-- AJOUT
-  maybeHaunt();
-});
+      b.addEventListener('click', ()=>{
+        if (gameOverShown) return;
+        const delta = sign * v;
+        state.value = clamp(state.value + delta);
+        addHistory(delta);
+        microEffect(state.value);
+        render();
+        checkGameOver();
+        maybeHaunt();
+      });
       return b;
     });
   }
@@ -256,72 +241,35 @@ async function tryQuitApp(){
   // ---------- Effets hantés ----------
   function randInt(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
   function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-  function flashWhite(ms=120){
-    fxFlash.style.opacity = '1';
-    setTimeout(()=> fxFlash.style.opacity='0', ms);
-  }
-  function flashBlack(ms=420){
-    fxBlack.style.opacity = '1';
-    setTimeout(()=> fxBlack.style.opacity='0', ms);
-  }
+  function flashWhite(ms=120){ fxFlash.style.opacity='1'; setTimeout(()=> fxFlash.style.opacity='0', ms); }
+  function flashBlack(ms=420){ fxBlack.style.opacity='1'; setTimeout(()=> fxBlack.style.opacity='0', ms); }
   function blackout(ms=900){
-    fxBlack.style.transition = 'opacity .12s';
-    fxBlack.style.opacity = '1';
-    setTimeout(()=>{
-      fxBlack.style.opacity='0';
-      fxBlack.style.transition = 'opacity .4s';
-    }, ms);
+    fxBlack.style.transition='opacity .12s'; fxBlack.style.opacity='1';
+    setTimeout(()=>{ fxBlack.style.opacity='0'; fxBlack.style.transition='opacity .4s'; }, ms);
   }
-
-  function playSFX(vol=0.9){
-    try{
-      const a = new Audio(pick(HAUNT.sfx));
-      a.volume = vol;
-      a.play().catch(()=>{});
-    }catch(e){}
-  }
-
+  function playSFX(vol=0.9){ try{ const a=new Audio(pick(HAUNT.sfx)); a.volume=vol; a.play().catch(()=>{});}catch(_){}} 
   function triggerHaunt(){
     const which = randInt(1,4);
-    switch(which){
-      case 1: flashWhite(randInt(90,160)); break;
-      case 2: flashBlack(randInt(200,480)); break;
-      case 3: blackout(randInt(700,1100)); break;
-      case 4: /* sfx only */ break;
-    }
+    if (which===1) flashWhite(randInt(90,160));
+    else if (which===2) flashBlack(randInt(200,480));
+    else if (which===3) blackout(randInt(700,1100));
     if (Math.random() < 0.85) playSFX(0.9);
   }
-
-  function maybeHaunt(force=false){
-    if (force || Math.random() < HAUNT.perClickProb) triggerHaunt();
-  }
+  function maybeHaunt(force=false){ if (force || Math.random() < HAUNT.perClickProb) triggerHaunt(); }
 
   // ---------- Alertes 49 / 50 ----------
-  function showAlert(msg, type = 'reflet', voiceSrc = null) {
+  function showAlert(msg, type='reflet', voiceSrc=null) {
     alertText.textContent = msg;
     alertBox.classList.add('show', type);
-
-    if (voiceSrc) {
-      const a = new Audio(voiceSrc);
-      a.volume = 0.9;
-      a.play().catch(()=>{});
-    }
-
-    setTimeout(() => alertBox.classList.remove('show'), 5000);
-    setTimeout(() => alertBox.classList.remove(type), 6000);
+    if (voiceSrc) { const a=new Audio(voiceSrc); a.volume=0.9; a.play().catch(()=>{}); }
+    setTimeout(()=> alertBox.classList.remove('show'), 5000);
+    setTimeout(()=> alertBox.classList.remove(type), 6000);
   }
-
-  function zoneFromValue(v){ return v >= THRESHOLD_ENTER ? 'reflet' : 'normal'; }
-
-  let lastZone = zoneFromValue(
-    parseInt(localStorage.getItem(LSK('instability'))||'0',10)
-  );
-
+  const zoneFromValue = v => v >= THRESHOLD_ENTER ? 'reflet' : 'normal';
+  let lastZone = zoneFromValue(parseInt(localStorage.getItem(LSK('instability'))||'0',10));
   function checkThresholdTransition() {
     const current = state.value;
     if (lastZone === undefined) lastZone = current >= 50 ? 'reflet' : 'normal';
-
     if (current >= 50 && lastZone !== 'reflet') {
       showAlert('Vous basculez dans le Reflet du vice','reflet', VOICES.enter);
       lastZone = 'reflet';
@@ -331,13 +279,14 @@ async function tryQuitApp(){
     }
   }
 
+  // ---------- Fin de partie (100%) ----------
   function checkGameOver(){
-  if (state.value >= 100 && !gameOverShown){
-    state.value = 100; // clamp final
-    render();          // maj barre/titre/jauge
-    showGameOver();
+    if (state.value >= 100 && !gameOverShown){
+      state.value = 100;
+      render();
+      showGameOver();
+    }
   }
-}
 
   // Effets passifs réguliers
   let passiveTimer = null;
@@ -351,32 +300,29 @@ async function tryQuitApp(){
   }
 
   // ---------- Actions spéciales ----------
- btnAnchor.addEventListener('click', ()=>{
-  if(state.world!=='reflet') return;
-  if (gameOverShown) return;           // bloque si fin affichée
-  const q = String(state.quartier);
-  if(state.anchorUsed[q]) return;
-  state.anchorUsed[q] = true;
-  state.value = clamp(state.value - 15);
-  addHistory(-15);
-  microEffect(state.value);
-  render();
-  checkGameOver();                     // <-- AJOUT
-  maybeHaunt(true);
-});
-
+  btnAnchor.addEventListener('click', ()=>{
+    if(state.world!=='reflet' || gameOverShown) return;
+    const q = String(state.quartier);
+    if(state.anchorUsed[q]) return;
+    state.anchorUsed[q] = true;
+    state.value = clamp(state.value - 15);
+    addHistory(-15);
+    microEffect(state.value);
+    render();
+    checkGameOver();
+    maybeHaunt(true);
+  });
 
   btnCamp.addEventListener('click', ()=>{
-  if(state.world!=='normal' || state.campLeft<=0) return;
-  if (gameOverShown) return;           // bloque si fin affichée
-  state.campLeft -= 1;
-  state.value = clamp(state.value - 30);
-  addHistory(-30);
-  microEffect(state.value);
-  render();
-  checkGameOver();                     // <-- AJOUT
-  maybeHaunt(true);
-});
+    if(state.world!=='normal' || state.campLeft<=0 || gameOverShown) return;
+    state.campLeft -= 1;
+    state.value = clamp(state.value - 30);
+    addHistory(-30);
+    microEffect(state.value);
+    render();
+    checkGameOver();
+    maybeHaunt(true);
+  });
 
   // ---------- Nouvelle partie ----------
   function newGame(){
@@ -386,39 +332,28 @@ async function tryQuitApp(){
     history.length = 0;
     renderHistory();
     lastZone = 'normal';
+    hideGameOver();
     render();
   }
   if (btnNew){
     btnNew.addEventListener('click', ()=>{
-      if (confirm('Nouvelle partie ? La jauge et les usages spéciaux seront remis à zéro.')) {
-        newGame();
-      }
+      if (confirm('Nouvelle partie ? La jauge et les usages spéciaux seront remis à zéro.')) newGame();
     });
   }
+
   // --- Fin de partie : actions Oui/Non ---
-if (goYes){
-  goYes.addEventListener('click', ()=>{
-    hideGameOver();
-    newGame();   // réutilise ta fonction existante (réinitialise tout)
-  });
-}
-if (goNo){
-  goNo.addEventListener('click', ()=>{
+  goYes?.addEventListener('click', ()=>{ newGame(); });
+  goNo?.addEventListener('click', ()=>{
     try{ navigator.vibrate?.(120); }catch(_){}
     tryQuitApp();
   });
-}
 
   // ---------- Contexte ----------
   worldRadios.forEach(r=> r.addEventListener('change', ()=>{
     if(r.checked){ state.world = r.value; render(); maybeHaunt(); }
   }));
-  playersSel.addEventListener('change', ()=>{
-    state.players = parseInt(playersSel.value,10)||3; render();
-  });
-  quartierSel.addEventListener('change', ()=>{
-    state.quartier = parseInt(quartierSel.value,10)||1; render();
-  });
+  playersSel.addEventListener('change', ()=>{ state.players = parseInt(playersSel.value,10)||3; render(); });
+  quartierSel.addEventListener('change', ()=>{ state.quartier = parseInt(quartierSel.value,10)||1; render(); });
 
   // ---------- Musique (playlist ambiance) ----------
   let ambientIdx = 0;
@@ -433,15 +368,13 @@ if (goNo){
     ambientIdx = (ambientIdx + 1) % AMBIENT_TRACKS.length;
     playAmbientCurrent();
   });
-
   audioBtn.addEventListener('click', ()=>{
     state.musicOn = !state.musicOn;
-    if(state.musicOn){ playAmbientCurrent(); }
-    else{ ambientEl.pause(); }
+    if(state.musicOn) playAmbientCurrent(); else ambientEl.pause();
     render();
   });
 
-  // ---- Bouton plein écran & sync -------
+  // ---- Plein écran ----
   if (fsBtn){
     fsBtn.addEventListener('click', async ()=>{
       if (isFullscreen()) await exitFullscreen(); else await enterFullscreen();
@@ -479,106 +412,79 @@ if (goNo){
   });
   gateInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') gateBtn.click(); });
 
-  // ===== Wake Lock (empêche la veille) =====
+  // ===== Wake Lock (anti-veille) =====
   let wakeLock = null;
   async function requestWakeLock() {
     try {
       if ('wakeLock' in navigator) {
         wakeLock = await navigator.wakeLock.request('screen');
-        wakeLock.addEventListener?.('release', () => { /* released */ });
+        wakeLock.addEventListener?.('release', () => {});
       }
-    } catch (_) {
-      // certains navigateurs exigent une interaction : on réessaiera au retour de visibilité
-    }
+    } catch (_){}
   }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && wakeLock !== null) {
       requestWakeLock();
     }
   });
-// ====== PWA Install (Android/Chrome) + iOS fallback ======
-let deferredPrompt = null;
-const banner = document.getElementById('installBanner');
-const btnInstall = document.getElementById('installBtn');
-const btnInstallClose = document.getElementById('installClose');
-const installText = document.getElementById('installText');
 
-// Détecte iOS (pas de prompt natif)
-const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  // ===== PWA Install (Android/Chrome) + iOS fallback =====
+  let deferredPrompt = null;
+  const banner = document.getElementById('installBanner');
+  const btnInstall = document.getElementById('installBtn');
+  const btnInstallClose = document.getElementById('installClose');
+  const installText = document.getElementById('installText');
 
-function showBanner() {
-  if (isStandalone) return; // déjà installé
-  banner.classList.add('show');
-  banner.setAttribute('aria-hidden', 'false');
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-  if (isIOS) {
-    installText.textContent =
-      'Sur iPhone : touchez “Partager” puis “Ajouter à l’écran d’accueil”.';
-    btnInstall.textContent = 'OK';
+  function showBanner() {
+    if (isStandalone) return;
+    banner.classList.add('show');
+    banner.setAttribute('aria-hidden','false');
+    if (isIOS) { installText.textContent = 'Sur iPhone : touchez “Partager” puis “Ajouter à l’écran d’accueil”.'; btnInstall.textContent = 'OK'; }
   }
-}
-
-function hideBanner(permanently=false){
-  banner.classList.remove('show');
-  banner.setAttribute('aria-hidden', 'true');
-  if (permanently) localStorage.setItem('hideInstall', '1');
-}
-
-// On capte l’événement d’install (Android/Chrome)
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  maybeShowInstallBanner();
-});
-
-btnInstall?.addEventListener('click', async () => {
-  if (isIOS) { hideBanner(true); return; } // on a juste affiché l’instruction
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const choice = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  if (choice.outcome === 'accepted') hideBanner(true);
-});
-
-btnInstallClose?.addEventListener('click', () => hideBanner(true));
-
-// Affiche la bannière si paramètre ?install=1 ou si pas encore refusée
-function maybeShowInstallBanner(){
-  if (isStandalone) return;
-  const sp = new URLSearchParams(location.search);
-  const askedFromQR = sp.get('install') === '1';
-  const userRefused = localStorage.getItem('hideInstall') === '1';
-
-  // Android : attendre d’avoir deferredPrompt
-  // iOS : on peut montrer tout de suite
-  if (isIOS) {
-    if (askedFromQR && !userRefused) showBanner();
-  } else {
-    if (!deferredPrompt) return;        // pas prêt → on attend
-    if ((askedFromQR || !userRefused)) showBanner();
+  function hideBanner(permanently=false){
+    banner.classList.remove('show');
+    banner.setAttribute('aria-hidden','true');
+    if (permanently) localStorage.setItem('hideInstall','1');
   }
-}
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    maybeShowInstallBanner();
+  });
+  btnInstall?.addEventListener('click', async ()=>{
+    if (isIOS) { hideBanner(true); return; }
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (choice.outcome === 'accepted') hideBanner(true);
+  });
+  btnInstallClose?.addEventListener('click', ()=> hideBanner(true));
+
+  function maybeShowInstallBanner(){
+    if (isStandalone) return;
+    const sp = new URLSearchParams(location.search);
+    const askedFromQR = sp.get('install') === '1';
+    const userRefused = localStorage.getItem('hideInstall') === '1';
+    if (isIOS){
+      if (askedFromQR && !userRefused) showBanner();
+    } else {
+      if (!deferredPrompt) return;
+      if (askedFromQR || !userRefused) showBanner();
+    }
+  }
 
   // ---------- Init ----------
   function init(){
     checkGate();
     render();
-    function init(){
-  checkGate();
-  render();
-  schedulePassive();
-  if(state.musicOn) playAmbientCurrent();
-
-  requestWakeLock();
-
-  // Affiche la bannière si le QR contenait ?install=1
-  maybeShowInstallBanner();
-}
-
     schedulePassive();
     if(state.musicOn) playAmbientCurrent();
     requestWakeLock();
+    maybeShowInstallBanner(); // pour le cas iOS ou si deferredPrompt déjà dispo
   }
   document.addEventListener('DOMContentLoaded', init);
 })();
