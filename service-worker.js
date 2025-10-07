@@ -1,5 +1,5 @@
 // Basic offline cache; requires HTTPS or localhost to activate
-const CACHE = 'instability-v33';
+const CACHE = 'instability-v34';
 const ASSETS = [
   './',
   './index.html',
