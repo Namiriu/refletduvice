@@ -8,7 +8,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Plein écran PWA -->
+
+  <!-- PWA plein écran -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
@@ -16,27 +17,20 @@
   <style>
   :root{
     --bg:#0f0f10; --fg:#eaeaea; --muted:#a0a0a0; --card:#18181b; --accent:#e11d48; --ok:#10b981; --warn:#f59e0b;
-    --font-ui: "Special Elite", system-ui, sans-serif;
-    --font-body: "EB Garamond", Georgia, serif;
+    --font-ui:"Special Elite",system-ui,sans-serif;
+    --font-body:"EB Garamond",Georgia,serif;
   }
 
   /* ===== Fond & hauteur page ===== */
-  html, body { height: 100%; }
+  html,body{height:100%}
   body{
-    margin:0;
-    font-family: var(--font-body);
-    color: var(--fg);
+    margin:0; font-family:var(--font-body); color:var(--fg);
     background:#0b0b0c url("img/bg.webp") center/cover fixed no-repeat !important;
-    /* safe-area iOS (encoches) */
-    padding-top: env(safe-area-inset-top);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-top:env(safe-area-inset-top); padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right);
   }
 
-  /* Typo “UI / dramatique” */
-  h1, .section-title, .percent, .badge, .btn, button, label, .gauge-title, .alert .content{
-    font-family: var(--font-ui);
-  }
+  /* Typo UI */
+  h1,.section-title,.percent,.badge,.btn,button,label,.gauge-title,.alert .content{font-family:var(--font-ui)}
 
   /* Layout */
   header{padding:16px 20px;border-bottom:1px solid #232325;position:sticky;top:0;background:rgba(15,15,16,.9);backdrop-filter:blur(6px);z-index:10}
@@ -46,82 +40,51 @@
   .card{background:var(--card);border:1px solid #232325;border-radius:16px;padding:16px}
 
   /* Grille des boutons +/- */
-  .row{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:12px }
+  .row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
 
-  /* Boutons “classiques” (contexte / spéciaux) — n'affecte PAS .btn */
+  /* Boutons classiques */
   button:not(.btn){
-    padding:12px 8px;
-    border-radius:12px;
-    border:1px solid #2a2a2e;
-    background:#1f1f23;
-    color:var(--fg);
-    font-size:16px;
-    cursor:pointer;
-    outline:none; box-shadow:none;
+    padding:12px 8px;border-radius:12px;border:1px solid #2a2a2e;background:#1f1f23;color:var(--fg);
+    font-size:16px;cursor:pointer;outline:none;box-shadow:none;
   }
   button:not(.btn):disabled{opacity:.5;cursor:not-allowed}
   button:not(.btn):hover{filter:brightness(1.08)}
-  button:not(.btn):focus{outline:none; box-shadow:none}
+  button:not(.btn):focus{outline:none;box-shadow:none}
 
-  /* Boutons +/- visuels (compacts, 100% transparents) */
+  /* Boutons +/- visuels */
   .btn{
-    width:64px; height:64px; padding:0;
-    border:none !important; outline:none !important; box-shadow:none !important;
-    background-color:transparent;
-    background-size:contain;
-    background-repeat:no-repeat;
-    background-position:center;
-    color:transparent;
-    cursor:pointer;
-    -webkit-appearance:none; appearance:none;
+    width:64px;height:64px;padding:0;border:none!important;outline:none!important;box-shadow:none!important;
+    background-color:transparent;background-size:contain;background-repeat:no-repeat;background-position:center;color:transparent;cursor:pointer;
+    -webkit-appearance:none;appearance:none;
   }
-  .btn:hover  { filter:brightness(1.06) }
-  .btn:active { transform:translateY(1px); filter:brightness(0.96) }
-  .btn:disabled{ opacity:.6; cursor:not-allowed }
-  .btn:focus{ outline:none; box-shadow:none }
+  .btn:hover{filter:brightness(1.06)} .btn:active{transform:translateY(1px);filter:brightness(0.96)}
+  .btn:disabled{opacity:.6;cursor:not-allowed} .btn:focus{outline:none;box-shadow:none}
 
-  /* Mapping visuel des + */
-  .btn-plus.btn-p1  { background-image:url("img/btn_plus1.png"); }
-  .btn-plus.btn-p2  { background-image:url("img/btn_plus2.png"); }
-  .btn-plus.btn-p3  { background-image:url("img/btn_plus3.png"); }
-  .btn-plus.btn-p5  { background-image:url("img/btn_plus5.png"); }
-  .btn-plus.btn-p10 { background-image:url("img/btn_plus10.png"); }
-  .btn-plus.btn-p20 { background-image:url("img/btn_plus20.png"); }
-
-  /* Mapping visuel des − */
-  .btn-minus.btn-m1  { background-image:url("img/btn_moins1.png"); }
-  .btn-minus.btn-m2  { background-image:url("img/btn_moins2.png"); }
-  .btn-minus.btn-m3  { background-image:url("img/btn_moins3.png"); }
-  .btn-minus.btn-m5  { background-image:url("img/btn_moins5.png"); }
-  .btn-minus.btn-m10 { background-image:url("img/btn_moins10.png"); }
-  .btn-minus.btn-m20 { background-image:url("img/btn_moins20.png"); }
+  /* Mapping visuel */
+  .btn-plus.btn-p1{background-image:url("img/btn_plus1.png")}
+  .btn-plus.btn-p2{background-image:url("img/btn_plus2.png")}
+  .btn-plus.btn-p3{background-image:url("img/btn_plus3.png")}
+  .btn-plus.btn-p5{background-image:url("img/btn_plus5.png")}
+  .btn-plus.btn-p10{background-image:url("img/btn_plus10.png")}
+  .btn-plus.btn-p20{background-image:url("img/btn_plus20.png")}
+  .btn-minus.btn-m1{background-image:url("img/btn_moins1.png")}
+  .btn-minus.btn-m2{background-image:url("img/btn_moins2.png")}
+  .btn-minus.btn-m3{background-image:url("img/btn_moins3.png")}
+  .btn-minus.btn-m5{background-image:url("img/btn_moins5.png")}
+  .btn-minus.btn-m10{background-image:url("img/btn_moins10.png")}
+  .btn-minus.btn-m20{background-image:url("img/btn_moins20.png")}
 
   .progress-wrap{margin:12px 0}
 
-  /* Jauge : remplissage inside + cadre par-dessus, fond transparent */
-  .progress{
-    position:relative;
-    width:100%;
-    height:48px;
-    border-radius:8px;
-    overflow:hidden;
-    background:transparent;
-    border:none;
-  }
+  /* Jauge */
+  .progress{position:relative;width:100%;height:48px;border-radius:8px;overflow:hidden;background:transparent;border:none}
   .bar{
-    position:absolute;
-    left:0; right:0;
-    top:6px; bottom:6px; /* réduit la hauteur utile */
-    width:0%;
+    position:absolute;left:0;right:0;top:6px;bottom:6px;width:0%;
     transition:width .2s ease-out;
-    background:url("img/gauge_fill.png") 0 0 / auto 100% repeat-x;
-    z-index:0;
+    background:url("img/gauge_fill.png") 0 0/auto 100% repeat-x; z-index:0;
   }
   .progress::after{
-    content:"";
-    position:absolute; inset:0;
-    background:url("img/gauge_track.png") center/cover no-repeat;  /* cadre au-dessus */
-    pointer-events:none; z-index:1;
+    content:"";position:absolute;inset:0;background:url("img/gauge_track.png") center/cover no-repeat;pointer-events:none;z-index:1;
   }
 
   .muted{color:var(--muted);font-size:14px}
@@ -129,187 +92,77 @@
   label{font-size:14px}
   .controls{display:flex;gap:8px;flex-wrap:wrap}
 
-  /* === ALERTE TRANSITION === */
-  .alert {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.8);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 10000;
-    transition: opacity 1s ease;
-  }
-  .alert.show { opacity: 1; pointer-events: auto; }
+  /* Overlays FX */
+  .overlay-flash,.overlay-black{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999}
+  .overlay-flash{background:#fff} .overlay-black{background:#000;transition:opacity .4s}
 
-  .alert .content {
-    text-align: center;
-    font-size: 2.6rem;
-    font-family: var(--font-ui);
-    text-shadow: 0 0 12px rgba(0,0,0,0.9);
-    max-width: 80%;
-    transition: transform 0.4s ease;
-  }
-  .alert.reflet .content {
-    color: #c71f1f;
-    text-shadow: 0 0 25px rgba(200,30,30,0.9);
-    transform: scale(1.1);
-  }
-  .alert.normal .content {
-    color: #f8f8f8;
-    text-shadow: 0 0 25px rgba(255,255,255,0.7);
-  }
+  /* Alerte 49/50 */
+  .alert{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.8);opacity:0;pointer-events:none;z-index:10000;transition:opacity 1s ease}
+  .alert.show{opacity:1;pointer-events:auto}
+  .alert .content{text-align:center;font-size:2.6rem;font-family:var(--font-ui);text-shadow:0 0 12px rgba(0,0,0,.9);max-width:80%;transition:transform .4s ease}
+  .alert.reflet .content{color:#c71f1f;text-shadow:0 0 25px rgba(200,30,30,.9);transform:scale(1.1)}
+  .alert.normal .content{color:#f8f8f8;text-shadow:0 0 25px rgba(255,255,255,.7)}
 
-  /* Tête de jauge centrée */
-  .gauge-head{
-    display:flex; justify-content:center; align-items:baseline; gap:12px;
-    margin: 4px 0 6px 0; text-align:center;
-  }
-  .gauge-title{
-    color: var(--muted);
-    font-size: 20px;
-    letter-spacing: .2px;
-  }
-  .percent{
-    font-size: 46px; font-weight: 800; letter-spacing: .5px; margin:0;
-  }
-  .progress-wrap{ margin:10px 0 14px; }
+  /* Tête de jauge */
+  .gauge-head{display:flex;justify-content:center;align-items:baseline;gap:12px;margin:4px 0 6px;text-align:center}
+  .gauge-title{color:var(--muted);font-size:20px;letter-spacing:.2px}
+  .percent{font-size:46px;font-weight:800;letter-spacing:.5px;margin:0}
+  .progress-wrap{margin:10px 0 14px}
 
-  /* --- Effets d'ambiance --- */
-  .fx-blur { filter: blur(1px); }
-  @keyframes subtle-shake {
-    0%,100% { transform: translate(0,0) }
-    20% { transform: translate(1px, -1px) }
-    40% { transform: translate(-1px, 1px) }
-    60% { transform: translate(1px, 0) }
-    80% { transform: translate(-1px, 0) }
-  }
-  .fx-shake { animation: subtle-shake .35s ease; }
+  /* Effets ambiance */
+  .fx-blur{filter:blur(1px)}
+  @keyframes subtle-shake{0%,100%{transform:translate(0,0)}20%{transform:translate(1px,-1px)}40%{transform:translate(-1px,1px)}60%{transform:translate(1px,0)}80%{transform:translate(-1px,0)}}
+  .fx-shake{animation:subtle-shake .35s ease}
+  .vignette{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .6s ease;z-index:9998;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 60%,rgba(150,0,0,.22) 85%,rgba(0,0,0,.75) 100%)}
 
-  /* Vignette/halo rouge (au-dessus de tout) */
-  .vignette {
-    position: fixed; inset: 0;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity .6s ease;
-    z-index: 9998;
-    background:
-      radial-gradient(ellipse at center,
-        rgba(0,0,0,0) 60%,
-        rgba(150,0,0,.22) 85%,
-        rgba(0,0,0,.75) 100%);
+  /* Responsive */
+  @media (orientation:portrait){
+    .grid{grid-template-columns:1fr}
+    .card[style*="grid-column:span"]{grid-column:auto}
+    header{position:static;padding-top:max(12px,env(safe-area-inset-top))}
+    main{padding:12px;gap:12px}
+    .card{padding:12px;border-radius:12px}
+    .progress{height:40px}.bar{top:5px;bottom:5px}
+    .gauge-title{font-size:18px}.percent{font-size:36px}
+    .row{grid-template-columns:repeat(3,1fr);gap:8px}
+    .btn{width:56px;height:56px}
+  }
+  @media (orientation:landscape) and (max-height:480px){
+    header{position:static;padding-top:max(8px,env(safe-area-inset-top))}
+    main{padding:10px;gap:12px}
+    .progress{height:36px}.bar{top:4px;bottom:4px}
+    .row{grid-template-columns:repeat(6,1fr);gap:6px}
+    .btn{width:52px;height:52px}
+    .percent{font-size:34px}
+  }
+  @media (max-width:380px) and (orientation:portrait){
+    .percent{font-size:32px}.btn{width:52px;height:52px}.row{gap:6px}
   }
 
-/* ===== Responsive ===== */
+  /* Bouton plein écran */
+  .fs-btn{margin-left:auto;padding:8px 10px;border-radius:10px;border:1px solid #2a2a2e;background:#1f1f23;color:var(--fg);font-size:14px;cursor:pointer;opacity:.85}
+  .fs-btn:hover{filter:brightness(1.08);opacity:1} .fs-btn:active{transform:translateY(1px)}
 
-/* Téléphones en PORTRAIT : 1 colonne */
-@media (orientation: portrait) {
-  .grid { grid-template-columns: 1fr; }
-  .card[style*="grid-column:span"] { grid-column: auto; }
+  /* Bannière install PWA */
+  .install-banner{position:fixed;left:12px;right:12px;bottom:12px;display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#141416;border:1px solid #2a2a2e;border-radius:12px;z-index:10050}
+  .install-banner.show{display:flex}
+  .install-actions{display:flex;gap:8px}
+  #installBtn,#installClose{padding:8px 12px;border-radius:10px;border:1px solid #2a2a2e;background:#1f1f23;color:#eaeaea;cursor:pointer}
 
-  /* header non-collant */
-  header { position: static; padding-top: max(12px, env(safe-area-inset-top)); }
-
-  main { padding: 12px; gap: 12px; }
-  .card { padding: 12px; border-radius: 12px; }
-
-  .progress { height: 40px; }
-  .bar { top: 5px; bottom: 5px; }
-  .gauge-title { font-size: 18px; }
-  .percent { font-size: 36px; }
-
-  .row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .btn { width: 56px; height: 56px; }
-}
-
-/* Téléphones en PAYSAGE : 2 colonnes, header NON collant */
-@media (orientation: landscape) and (max-height: 480px) {
-  header { position: static; padding-top: max(8px, env(safe-area-inset-top)); }
-
-  main { padding: 10px; gap: 12px; }
-
-  .progress { height: 36px; }
-  .bar { top: 4px; bottom: 4px; }
-
-  .row { grid-template-columns: repeat(6, 1fr); gap: 6px; }
-  .btn { width: 52px; height: 52px; }
-
-  .percent { font-size: 34px; }
-}
-
-/* Très petits écrans en portrait */
-@media (max-width: 380px) and (orientation: portrait) {
-  .percent { font-size: 32px; }
-  .btn { width: 52px; height: 52px; }
-  .row { gap: 6px; }
-}
-
-    /* Bouton plein écran discret */
-.fs-btn{
-  margin-left:auto;
-  padding:8px 10px;
-  border-radius:10px;
-  border:1px solid #2a2a2e;
-  background:#1f1f23;
-  color:var(--fg);
-  font-size:14px;
-  cursor:pointer;
-  opacity:.85;
-}
-.fs-btn:hover{ filter:brightness(1.08); opacity:1 }
-.fs-btn:active{ transform:translateY(1px) }
-    .install-banner{
-  position: fixed; left: 12px; right: 12px; bottom: 12px;
-  display: none; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 10px 12px;
-  background: #141416; border: 1px solid #2a2a2e; border-radius: 12px;
-  z-index: 10050;
-}
-.install-banner.show{ display:flex; }
-.install-actions{ display:flex; gap:8px; }
-#installBtn{
-  padding:8px 12px; border-radius:10px; border:1px solid #2a2a2e;
-  background:#1f1f23; color:#eaeaea; cursor:pointer;
-}
-#installClose{
-  padding:8px 10px; border-radius:10px; border:1px solid #2a2a2e;
-  background:#1f1f23; color:#eaeaea; cursor:pointer;
-}
-    /* --- Fin de partie --- */
-.modal{
-  position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-  background:rgba(0,0,0,.88); z-index:10060;
-}
-.modal.show{ display:flex; }
-.modal-inner{
-  max-width:560px; width:90%;
-  background:#141416; border:1px solid #2a2a2e; border-radius:16px;
-  padding:22px;
-  text-align:center;
-}
-.modal-title{
-  font-family: var(--font-ui);
-  font-size:28px; letter-spacing:.5px; color:#c71f1f; margin-bottom:8px;
-  text-shadow:0 0 18px rgba(200,30,30,.55);
-}
-.modal-text{
-  font-size:18px; color:#eaeaea; opacity:.9; line-height:1.35; margin-bottom:16px;
-  font-family: var(--font-body);
-}
-.modal-actions{ display:flex; gap:10px; justify-content:center; }
-.modal-btn{
-  padding:10px 14px; border-radius:12px; border:1px solid #2a2a2e;
-  background:#1f1f23; color:#eaeaea; cursor:pointer; font-family: var(--font-ui);
-}
-.modal-btn:hover{ filter:brightness(1.08) }
-.modal-yes{ border-color:#256d1b; }
-.modal-no { border-color:#5b1b1b; }
+  /* --- Fin de partie --- */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);z-index:10060}
+  .modal.show{display:flex}
+  .modal-inner{max-width:560px;width:90%;background:#141416;border:1px solid #2a2a2e;border-radius:16px;padding:22px;text-align:center}
+  .modal-title{font-family:var(--font-ui);font-size:28px;letter-spacing:.5px;color:#c71f1f;margin-bottom:8px;text-shadow:0 0 18px rgba(200,30,30,.55)}
+  .modal-text{font-size:18px;color:#eaeaea;opacity:.9;line-height:1.35;margin-bottom:16px;font-family:var(--font-body)}
+  .modal-actions{display:flex;gap:10px;justify-content:center}
+  .modal-btn{padding:10px 14px;border-radius:12px;border:1px solid #2a2a2e;background:#1f1f23;color:#eaeaea;cursor:pointer;font-family:var(--font-ui)}
+  .modal-btn:hover{filter:brightness(1.08)} .modal-yes{border-color:#256d1b} .modal-no{border-color:#5b1b1b}
   </style>
 </head>
 <body>
-  <!-- Overlays & Alerte (une seule fois) -->
+  <!-- Overlays & Alerte -->
   <div class="overlay-flash" id="fxFlash"></div>
   <div class="overlay-black" id="fxBlack"></div>
   <div class="vignette" id="vignette"></div>
@@ -328,14 +181,13 @@
           <div class="progress"><div class="bar" id="bar"></div></div>
         </div>
 
-        <!-- Boutons +/- injectés par app.js -->
         <div class="row" id="rowPlus"></div>
         <div class="row" id="rowMinus" style="margin-top:8px"></div>
 
         <div class="controls" style="margin-top:12px">
-  <button id="audioToggle">MUSIQUE ON/OFF</button>
-  <button id="fsToggle" class="fs-btn" aria-pressed="false">Plein écran</button>
-</div>
+          <button id="audioToggle">MUSIQUE ON/OFF</button>
+          <button id="fsToggle" class="fs-btn" aria-pressed="false">Plein écran</button>
+        </div>
       </div>
 
       <!-- Carte contexte + actions -->
@@ -347,9 +199,7 @@
         </div>
         <div class="controls" style="margin-top:8px;align-items:center">
           <label for="players">Joueurs :</label>
-          <select id="players">
-            <option>2</option><option selected>3</option><option>4</option>
-          </select>
+          <select id="players"><option>2</option><option selected>3</option><option>4</option></select>
           <label for="quartier">Quartier :</label>
           <select id="quartier">
             <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
@@ -383,55 +233,54 @@
       <!-- Carte Journal -->
       <div class="card" style="grid-column:span 5">
         <div class="section-title">Journal</div>
-        <ul id="historyList" style="list-style:none;margin:0;padding-left:0;font-size:14px;line-height:1.35">
-          <!-- entrées injectées par JS -->
-        </ul>
+        <ul id="historyList" style="list-style:none;margin:0;padding-left:0;font-size:14px;line-height:1.35"></ul>
       </div>
     </div>
 
     <!-- Version du build -->
     <div class="muted" id="version" style="text-align:center;opacity:.6;margin-top:12px"></div>
+
     <!-- Bannière install PWA -->
-<div id="installBanner" class="install-banner" aria-hidden="true">
-  <div class="install-msg">
-    <span id="installText">Installer l’application sur cet appareil ?</span>
-  </div>
-  <div class="install-actions">
-    <button id="installBtn">Installer</button>
-    <button id="installClose" aria-label="Fermer">✕</button>
-  </div>
-</div>
+    <div id="installBanner" class="install-banner" aria-hidden="true">
+      <div class="install-msg"><span id="installText">Installer l’application sur cet appareil ?</span></div>
+      <div class="install-actions">
+        <button id="installBtn">Installer</button>
+        <button id="installClose" aria-label="Fermer">✕</button>
+      </div>
+    </div>
   </main>
 
-<!-- Porte d’accès playtest -->
-<div class="gate" id="gate" style="display:none">
-  <div class="gate-inner">
-    <h2 style="margin:0 0 8px 0;font-size:18px">Accès playtest</h2>
-    <p class="muted" style="margin-top:0">Entrez le mot de passe commun (fourni par l’organisateur).</p>
-    <input id="gateInput" type="password" placeholder="Mot de passe">
-    <div class="error" id="gateError"></div>
-    <button id="gateBtn">Entrer</button>
+  <!-- Porte d’accès playtest -->
+  <div class="gate" id="gate" style="display:none">
+    <div class="gate-inner">
+      <h2 style="margin:0 0 8px 0;font-size:18px">Accès playtest</h2>
+      <p class="muted" style="margin-top:0">Entrez le mot de passe commun (fourni par l’organisateur).</p>
+      <input id="gateInput" type="password" placeholder="Mot de passe">
+      <div class="error" id="gateError"></div>
+      <button id="gateBtn">Entrer</button>
+    </div>
   </div>
-</div>
 
   <!-- Audio -->
   <audio id="ambient" src="audio/ambient_loop.mp3" loop preload="auto"></audio>
   <audio id="groan"   src="audio/groan.wav" preload="auto"></audio>
 
-  <script src="app.js"></script>
-  <!-- Écran de fin de partie -->
-<div id="gameOver" class="modal">
-  <div class="modal-inner">
-    <div class="modal-title">Fin de partie</div>
-    <div class="modal-text">
-      Vous êtes complètement happés par le Vice.<br>
-      Impossible d’en ressortir…
-    </div>
-    <div class="modal-actions">
-      <button id="goYes" class="modal-btn modal-yes">Recommencer</button>
-      <button id="goNo"  class="modal-btn modal-no">Quitter</button>
+  <!-- Écran de fin de partie (PLACÉ AVANT app.js) -->
+  <div id="gameover" class="modal">
+    <div class="modal-inner">
+      <div class="modal-title">Fin de partie</div>
+      <div class="modal-text">
+        Vous êtes complètement happés par le Vice.<br>
+        Impossible d’en ressortir…
+      </div>
+      <div class="modal-actions">
+        <button id="goYes" class="modal-btn modal-yes">Recommencer</button>
+        <button id="goNo"  class="modal-btn modal-no">Quitter</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <!-- Script principal -->
+  <script src="app.js"></script>
 </body>
 </html>
