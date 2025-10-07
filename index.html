@@ -277,6 +277,35 @@
   padding:8px 10px; border-radius:10px; border:1px solid #2a2a2e;
   background:#1f1f23; color:#eaeaea; cursor:pointer;
 }
+    /* --- Fin de partie --- */
+.modal{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.88); z-index:10060;
+}
+.modal.show{ display:flex; }
+.modal-inner{
+  max-width:560px; width:90%;
+  background:#141416; border:1px solid #2a2a2e; border-radius:16px;
+  padding:22px;
+  text-align:center;
+}
+.modal-title{
+  font-family: var(--font-ui);
+  font-size:28px; letter-spacing:.5px; color:#c71f1f; margin-bottom:8px;
+  text-shadow:0 0 18px rgba(200,30,30,.55);
+}
+.modal-text{
+  font-size:18px; color:#eaeaea; opacity:.9; line-height:1.35; margin-bottom:16px;
+  font-family: var(--font-body);
+}
+.modal-actions{ display:flex; gap:10px; justify-content:center; }
+.modal-btn{
+  padding:10px 14px; border-radius:12px; border:1px solid #2a2a2e;
+  background:#1f1f23; color:#eaeaea; cursor:pointer; font-family: var(--font-ui);
+}
+.modal-btn:hover{ filter:brightness(1.08) }
+.modal-yes{ border-color:#256d1b; }
+.modal-no { border-color:#5b1b1b; }
   </style>
 </head>
 <body>
@@ -390,5 +419,19 @@
   <audio id="groan"   src="audio/groan.wav" preload="auto"></audio>
 
   <script src="app.js"></script>
+  <!-- Écran de fin de partie -->
+<div id="gameOver" class="modal">
+  <div class="modal-inner">
+    <div class="modal-title">Fin de partie</div>
+    <div class="modal-text">
+      Vous êtes complètement happés par le Vice.<br>
+      Impossible d’en ressortir…
+    </div>
+    <div class="modal-actions">
+      <button id="goYes" class="modal-btn modal-yes">Recommencer</button>
+      <button id="goNo"  class="modal-btn modal-no">Quitter</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
