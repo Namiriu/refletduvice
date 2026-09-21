@@ -17,6 +17,7 @@
     perClickProb: 0.14,
     passiveEvery: [38000, 68000],
     sfx: [
+      'audio/groan.wav',
       'audio/sounds/creepy_crow_caw.mp3',
       'audio/sounds/creepy_ghost_whisper.mp3',
       'audio/sounds/creepy_laugh.mp3',
@@ -57,7 +58,11 @@
   const fxBlack = document.getElementById('fxBlack');
   const btnNew  = document.getElementById('btnNew');
 
-  // ---- Fin de partie (ID corrigé: "gameover") ----
+  // Modale Point d'Ancrage
+  const anchorModal   = document.getElementById('anchorModal');
+  const anchorConfirm = document.getElementById('anchorConfirm');
+
+  // Fin de partie
   const goModal   = document.getElementById('gameover');
   const goYes     = document.getElementById('goYes');
   const goNo      = document.getElementById('goNo');
@@ -66,10 +71,12 @@
   function showGameOver(){
     if (!goModal) return;
     gameOverShown = true;
-    // voile dramatique
+    
+    // Joue le gémissement au game over
+    playSFXFile('audio/groan.wav');
+
     fxBlack.style.opacity = '1';
     setTimeout(()=>{ fxBlack.style.opacity = '.9'; }, 200);
-    // modale
     goModal.classList.add('show');
   }
   function hideGameOver(){
@@ -100,7 +107,7 @@
   const THRESHOLD_ENTER = 50; // ≥ 50% → Reflet du vice
   const THRESHOLD_EXIT  = 49; // ≤ 49% → Retour normal
 
-  // Voix (optionnelles)
+  // Voix
   const VOICES = {
     enter: 'audio/voice_enter_reflet.wav',
     exit:  'audio/voice_return_normal.mp3'
@@ -112,13 +119,13 @@
 
   // ---------- État ----------
   let state = {
-    value:     parseInt(localStorage.getItem(LSK('instability'))||'0',10),
-    world:     localStorage.getItem(LSK('world')) || 'normal',
-    players:   parseInt(localStorage.getItem(LSK('players')) || '3',10),
-    quartier:  parseInt(localStorage.getItem(LSK('quartier'))||'1',10),
-    anchorUsed: JSON.parse(localStorage.getItem(LSK('anchorUsed'))||'{"1":false,"2":false,"3":false,"4":false}'),
-    campLeft:  parseInt(localStorage.getItem(LSK('campLeft')) || '3',10),
-    musicOn:   localStorage.getItem(LSK('musicOn')) === '1',
+    value:       parseInt(localStorage.getItem(LSK('instability'))||'0',10),
+    world:       localStorage.getItem(LSK('world')) || 'normal',
+    players:     parseInt(localStorage.getItem(LSK('players')) || '3',10),
+    quartier:    parseInt(localStorage.getItem(LSK('quartier'))||'1',10),
+    anchorUsed:  JSON.parse(localStorage.getItem(LSK('anchorUsed'))||'{"1":false,"2":false,"3":false,"4":false}'),
+    campLeft:    parseInt(localStorage.getItem(LSK('campLeft')) || '2',10), // 2 utilisations max
+    musicOn:     localStorage.getItem(LSK('musicOn')) === '1',
   };
 
   const clamp = v => Math.max(0, Math.min(100, v));
@@ -127,7 +134,9 @@
   // --- Historique simple ---
   const history = [];
   function addHistory(delta) {
-    const s = (delta > 0 ? `+${delta}` : `${delta}`) + ' %';
+    const s = typeof delta === 'number' 
+      ? (delta > 0 ? `+${delta}` : `${delta}`) + ' %'
+      : String(delta);
     history.unshift(s);
     if (history.length > 8) history.pop();
     renderHistory();
@@ -189,21 +198,21 @@
     quartierSel.value = String(state.quartier);
 
     // Actions spéciales
-const q    = String(state.quartier);
-const used = !!state.anchorUsed[q];
+    const q    = String(state.quartier);
+    const used = !!state.anchorUsed[q];
 
-// Point d’ancrage : seulement en Reflet du vice (1 fois / quartier)
-btnAnchor.disabled = (state.world !== 'reflet') || used;
-anchorInfo.textContent =
-  state.world === 'reflet'
-    ? `Restant : ${used ? 0 : 1} (1 par quartier)`
-    : `Restant : 0 (1 par quartier)`;
+    // Point d’ancrage : seulement en Reflet du vice (1 fois / quartier)
+    btnAnchor.disabled = (state.world !== 'reflet') || used;
+    anchorInfo.textContent =
+      state.world === 'reflet'
+        ? `Ancrage : ${used ? 'Utilisé' : 'Disponible (+10 %)'}`
+        : `Ancrage : Indisponible (Reflet uniquement)`;
 
-// Camp de fortune : autorisé dans les deux mondes, effet différent
-btnCamp.disabled = state.campLeft <= 0;
-campInfo.textContent = `Utilisations restantes : ${state.campLeft} — ${
-  state.world === 'reflet' ? '−20 % en Reflet' : '−30 % en Monde normal'
-}`;
+    // Camp de fortune : 2 utilisations max par partie
+    btnCamp.disabled = state.campLeft <= 0;
+    campInfo.textContent = `Restants : ${state.campLeft} — ${
+      state.world === 'reflet' ? '−15 % en Reflet' : '−10 % & Soin 2 PV'
+    }`;
 
     // Musique + plein écran
     audioBtn.textContent = state.musicOn ? 'MUSIQUE ON' : 'MUSIQUE OFF';
@@ -249,7 +258,14 @@ campInfo.textContent = `Utilisations restantes : ${state.campLeft} — ${
     fxBlack.style.transition='opacity .12s'; fxBlack.style.opacity='1';
     setTimeout(()=>{ fxBlack.style.opacity='0'; fxBlack.style.transition='opacity .4s'; }, ms);
   }
-  function playSFX(vol=0.9){ try{ const a=new Audio(pick(HAUNT.sfx)); a.volume=vol; a.play().catch(()=>{});}catch(_){}} 
+  function playSFXFile(src, vol=0.9){
+    try {
+      const a = new Audio(src);
+      a.volume = vol;
+      a.play().catch(()=>{});
+    } catch(_){}
+  }
+  function playSFX(vol=0.9){ playSFXFile(pick(HAUNT.sfx), vol); }
   function triggerHaunt(){
     const which = randInt(1,4);
     if (which===1) flashWhite(randInt(90,160));
@@ -263,7 +279,7 @@ campInfo.textContent = `Utilisations restantes : ${state.campLeft} — ${
   function showAlert(msg, type='reflet', voiceSrc=null) {
     alertText.textContent = msg;
     alertBox.classList.add('show', type);
-    if (voiceSrc) { const a=new Audio(voiceSrc); a.volume=0.9; a.play().catch(()=>{}); }
+    if (voiceSrc) { playSFXFile(voiceSrc, 0.9); }
     setTimeout(()=> alertBox.classList.remove('show'), 5000);
     setTimeout(()=> alertBox.classList.remove(type), 6000);
   }
@@ -302,43 +318,74 @@ campInfo.textContent = `Utilisations restantes : ${state.campLeft} — ${
   }
 
   // ---------- Actions spéciales ----------
+
+  // Point d'Ancrage / Résurrection (+ Protection anti double-clic)
+  let isReviveProcessing = false;
   btnAnchor.addEventListener('click', ()=>{
-    if(state.world!=='reflet' || gameOverShown) return;
+    if (state.world !== 'reflet' || gameOverShown || isReviveProcessing) return;
     const q = String(state.quartier);
-    if(state.anchorUsed[q]) return;
+    if (state.anchorUsed[q]) return;
+
+    // Vérouillage anti-double-clic immédiat
+    isReviveProcessing = true;
     state.anchorUsed[q] = true;
-    state.value = clamp(state.value - 15);
-    addHistory(-15);
+    btnAnchor.disabled = true;
+
+    // Lecture de l'audio de résurrection (préparé pour audio/revive.mp4 ou .mp3)
+    playSFXFile('audio/revive.mp4', 1.0);
+
+    // Application de la pénalité d'instabilité
+    state.value = clamp(state.value + 10);
+    addHistory('+10 % (Ancrage)');
     microEffect(state.value);
     render();
     checkGameOver();
     maybeHaunt(true);
+
+    // Affichage modale de rappel de perte de PV
+    if (anchorModal) anchorModal.classList.add('show');
+
+    // Déverrouillage après 500ms
+    setTimeout(() => { isReviveProcessing = false; }, 500);
   });
 
- btnCamp.addEventListener('click', ()=>{
-  if (state.campLeft <= 0) return;
-  if (gameOverShown) return;
+  anchorConfirm?.addEventListener('click', ()=>{
+    if (anchorModal) anchorModal.classList.remove('show');
+  });
 
-  const delta = (state.world === 'reflet') ? -20 : -30; // règle officielle
-  state.campLeft -= 1;
-  state.value = clamp(state.value + delta);
+  // Camp de fortune
+  btnCamp.addEventListener('click', ()=>{
+    if (state.campLeft <= 0 || gameOverShown) return;
 
-  addHistory(delta);
-  microEffect(state.value);
-  render();
-  checkGameOver();
-  maybeHaunt(true);
-});
+    const isNormal = (state.world === 'normal');
+    const delta = isNormal ? -10 : -15;
+
+    state.campLeft -= 1;
+    state.value = clamp(state.value + delta);
+
+    addHistory(delta);
+    microEffect(state.value);
+    render();
+    checkGameOver();
+    maybeHaunt(true);
+
+    if (isNormal) {
+      showAlert('Camp de fortune : -10 % Instabilité. Soignez 2 blessures à chaque joueur !', 'normal');
+    } else {
+      showAlert('Camp de fortune : -15 % Instabilité.', 'reflet');
+    }
+  });
 
   // ---------- Nouvelle partie ----------
   function newGame(){
     state.value = 0;
-    state.campLeft = 3;
+    state.campLeft = 2;
     state.anchorUsed = {"1":false,"2":false,"3":false,"4":false};
     history.length = 0;
     renderHistory();
     lastZone = 'normal';
     hideGameOver();
+    if (anchorModal) anchorModal.classList.remove('show');
     render();
   }
   if (btnNew){
@@ -366,7 +413,7 @@ campInfo.textContent = `Utilisations restantes : ${state.campLeft} — ${
   function playAmbientCurrent(){
     if(!state.musicOn) return;
     ambientEl.loop = false;
-    ambientEl.src  = AMBIENT_TRACKS[ambientIdx % AMBIENT_TRACKS.length];
+    ambientEl.src   = AMBIENT_TRACKS[ambientIdx % AMBIENT_TRACKS.length];
     ambientEl.volume = 0.55;
     ambientEl.play().catch(()=>{});
   }
@@ -490,7 +537,7 @@ campInfo.textContent = `Utilisations restantes : ${state.campLeft} — ${
     schedulePassive();
     if(state.musicOn) playAmbientCurrent();
     requestWakeLock();
-    maybeShowInstallBanner(); // pour le cas iOS ou si deferredPrompt déjà dispo
+    maybeShowInstallBanner();
   }
   document.addEventListener('DOMContentLoaded', init);
 })();
