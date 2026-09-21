@@ -1,351 +1,209 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Compagnon — Instabilité</title>
-  <meta name="theme-color" content="#111111">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
-
-  <!-- PWA plein écran -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compagnon - Instabilité</title>
   <style>
-  :root{
-    --bg:#0f0f10; --fg:#eaeaea; --muted:#a0a0a0; --card:#18181b; --accent:#e11d48; --ok:#10b981; --warn:#f59e0b;
-    --font-ui:"Special Elite",system-ui,sans-serif;
-    --font-body:"EB Garamond",Georgia,serif;
-  }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121212;
+      background-image: radial-gradient(#1e1e1e 1px, transparent 0);
+      background-size: 24px 24px;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
 
-  /* ===== Fond & hauteur page ===== */
-  html,body{height:100%}
-  body{
-    margin:0; font-family:var(--font-body); color:var(--fg);
-    background:#0b0b0c url("img/bg.webp") center/cover fixed no-repeat !important;
-    padding-top:env(safe-area-inset-top); padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right);
-  }
+    /* Porte d'accès (Gate) */
+    .gate {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10, 10, 10, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .gate-inner {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    .gate-inner h2 { margin-bottom: 8px; font-size: 20px; color: #fff; }
+    .gate-inner p.muted { color: #888; font-size: 13px; margin-bottom: 16px; }
+    .gate-inner input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      background: #121212;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .gate-inner input:focus { border-color: #777; }
+    .gate-inner button {
+      width: 100%;
+      padding: 10px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .gate-inner button:hover { background: #3a3a3a; }
+    .gate-inner .error { color: #ff5555; font-size: 13px; margin-bottom: 10px; min-height: 18px; }
 
-  /* Typo UI */
-  h1,.section-title,.percent,.badge,.btn,button,label,.gauge-title,.alert .content{font-family:var(--font-ui)}
+    /* Disposition 2 Colonnes */
+    .playtest-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      width: 100%;
+      max-width: 850px;
+      margin-top: 20px;
+    }
 
-  /* Layout */
-  header{padding:16px 20px;border-bottom:1px solid #232325;position:sticky;top:0;background:rgba(15,15,16,.9);backdrop-filter:blur(6px);z-index:10}
-  h1{margin:0;font-size:18px}
-  main{max-width:880px;margin:0 auto;padding:20px;display:grid;gap:16px}
-  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-  .card{background:var(--card);border:1px solid #232325;border-radius:16px;padding:16px}
+    @media (max-width: 700px) {
+      .playtest-container {
+        grid-template-columns: 1fr;
+      }
+    }
 
-  /* Grille des boutons +/- */
-  .row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
+    /* Cartes */
+    .card {
+      background: #1e1e1e;
+      border: 1px solid #2d2d2d;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .card h2 {
+      font-size: 16px;
+      letter-spacing: 1px;
+      color: #aaa;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
 
-  /* Boutons classiques */
-  button:not(.btn){
-    padding:12px 8px;border-radius:12px;border:1px solid #2a2a2e;background:#1f1f23;color:var(--fg);
-    font-size:16px;cursor:pointer;outline:none;box-shadow:none;
-  }
-  button:not(.btn):disabled{opacity:.5;cursor:not-allowed}
-  button:not(.btn):hover:not(:disabled){filter:brightness(1.08)}
-  button:not(.btn):focus{outline:none;box-shadow:none}
+    /* Colonne Gauche - Masque */
+    .mask-container {
+      width: 100%;
+      max-width: 260px;
+      aspect-ratio: 1 / 1;
+      border: 2px dashed #3a3a3a;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    .mask-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
 
-  /* Boutons +/- visuels */
-  .btn{
-    width:64px;height:64px;padding:0;border:none!important;outline:none!important;box-shadow:none!important;
-    background-color:transparent;background-size:contain;background-repeat:no-repeat;background-position:center;color:transparent;cursor:pointer;
-    -webkit-appearance:none;appearance:none;
-  }
-  .btn:hover{filter:brightness(1.06)} .btn:active{transform:translateY(1px);filter:brightness(0.96)}
-  .btn:disabled{opacity:.6;cursor:not-allowed} .btn:focus{outline:none;box-shadow:none}
+    /* Colonne Droite - Instabilité */
+    .gauge-display {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 10px 0 24px 0;
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+    }
 
-  /* Mapping visuel */
-  .btn-plus.btn-p1{background-image:url("img/btn_plus1.png")}
-  .btn-plus.btn-p2{background-image:url("img/btn_plus2.png")}
-  .btn-plus.btn-p3{background-image:url("img/btn_plus3.png")}
-  .btn-plus.btn-p5{background-image:url("img/btn_plus5.png")}
-  .btn-plus.btn-p10{background-image:url("img/btn_plus10.png")}
-  .btn-plus.btn-p20{background-image:url("img/btn_plus20.png")}
-  .btn-minus.btn-m1{background-image:url("img/btn_moins1.png")}
-  .btn-minus.btn-m2{background-image:url("img/btn_moins2.png")}
-  .btn-minus.btn-m3{background-image:url("img/btn_moins3.png")}
-  .btn-minus.btn-m5{background-image:url("img/btn_moins5.png")}
-  .btn-minus.btn-m10{background-image:url("img/btn_moins10.png")}
-  .btn-minus.btn-m20{background-image:url("img/btn_moins20.png")}
-
-  .progress-wrap{margin:12px 0}
-
-  /* Jauge */
-  .progress{position:relative;width:100%;height:48px;border-radius:8px;overflow:hidden;background:transparent;border:none}
-  .bar{
-    position:absolute;left:0;right:0;top:6px;bottom:6px;width:0%;
-    transition:width .2s ease-out;
-    background:url("img/gauge_fill.png") 0 0/auto 100% repeat-x; z-index:0;
-  }
-  .progress::after{
-    content:"";position:absolute;inset:0;background:url("img/gauge_track.png") center/cover no-repeat;pointer-events:none;z-index:1;
-  }
-
-  .muted{color:var(--muted);font-size:14px}
-  .line{height:1px;background:#232325;margin:12px 0}
-  label{font-size:14px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-
-  /* Overlays FX */
-  .overlay-flash,.overlay-black{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .15s;z-index:9999}
-  .overlay-flash{background:#fff} .overlay-black{background:#000;transition:opacity .4s}
-
-  /* Alerte 49/50 */
-  .alert{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.8);opacity:0;pointer-events:none;z-index:10000;transition:opacity 1s ease}
-  .alert.show{opacity:1;pointer-events:auto}
-  .alert .content{text-align:center;font-size:2.6rem;font-family:var(--font-ui);text-shadow:0 0 12px rgba(0,0,0,.9);max-width:80%;transition:transform .4s ease}
-  .alert.reflet .content{color:#c71f1f;text-shadow:0 0 25px rgba(200,30,30,.9);transform:scale(1.1)}
-  .alert.normal .content{color:#f8f8f8;text-shadow:0 0 25px rgba(255,255,255,.7)}
-
-  /* Tête de jauge */
-  .gauge-head{display:flex;justify-content:center;align-items:baseline;gap:12px;margin:4px 0 6px;text-align:center}
-  .gauge-title{color:var(--muted);font-size:20px;letter-spacing:.2px}
-  .percent{font-size:46px;font-weight:800;letter-spacing:.5px;margin:0}
-  .progress-wrap{margin:10px 0 14px}
-
-  /* Effets ambiance */
-  .fx-blur{filter:blur(1px)}
-  @keyframes subtle-shake{0%,100%{transform:translate(0,0)}20%{transform:translate(1px,-1px)}40%{transform:translate(-1px,1px)}60%{transform:translate(1px,0)}80%{transform:translate(-1px,0)}}
-  .fx-shake{animation:subtle-shake .35s ease}
-  .vignette{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .6s ease;z-index:9998;
-    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 60%,rgba(150,0,0,.22) 85%,rgba(0,0,0,.75) 100%)}
-
-  /* --- Porte d'accès (Gate) --- */
-  .gate {
-    position: fixed;
-    inset: 0;
-    background: rgba(10, 10, 12, 0.96);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 20000;
-  }
-  .gate-inner {
-    background: var(--card);
-    border: 1px solid #2a2a2e;
-    border-radius: 16px;
-    padding: 24px;
-    max-width: 360px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  }
-  .gate-inner input[type="password"] {
-    width: 100%;
-    padding: 10px 12px;
-    margin: 12px 0 6px;
-    border-radius: 8px;
-    border: 1px solid #333;
-    background: #0f0f10;
-    color: var(--fg);
-    font-family: var(--font-body);
-    font-size: 16px;
-    box-sizing: border-box;
-  }
-  .gate-inner .error {
-    color: var(--accent);
-    font-size: 13px;
-    min-height: 18px;
-    margin-bottom: 8px;
-  }
-  .gate-inner button {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #2a2a2e;
-    background: #222226;
-    color: var(--fg);
-    font-family: var(--font-ui);
-    cursor: pointer;
-  }
-
-  /* Responsive */
-  @media (orientation:portrait){
-    .grid{grid-template-columns:1fr}
-    .card[style*="grid-column:span"]{grid-column:auto}
-    header{position:static;padding-top:max(12px,env(safe-area-inset-top))}
-    main{padding:12px;gap:12px}
-    .card{padding:12px;border-radius:12px}
-    .progress{height:40px}.bar{top:5px;bottom:5px}
-    .gauge-title{font-size:18px}.percent{font-size:36px}
-    .row{grid-template-columns:repeat(3,1fr);gap:8px}
-    .btn{width:56px;height:56px}
-  }
-  @media (orientation:landscape) and (max-height:480px){
-    header{position:static;padding-top:max(8px,env(safe-area-inset-top))}
-    main{padding:10px;gap:12px}
-    .progress{height:36px}.bar{top:4px;bottom:4px}
-    .row{grid-template-columns:repeat(6,1fr);gap:6px}
-    .btn{width:52px;height:52px}
-    .percent{font-size:34px}
-  }
-  @media (max-width:380px) and (orientation:portrait){
-    .percent{font-size:32px}.btn{width:52px;height:52px}.row{gap:6px}
-  }
-
-  /* Bouton plein écran */
-  .fs-btn{margin-left:auto;padding:8px 10px;border-radius:10px;border:1px solid #2a2a2e;background:#1f1f23;color:var(--fg);font-size:14px;cursor:pointer;opacity:.85}
-  .fs-btn:hover{filter:brightness(1.08);opacity:1} .fs-btn:active{transform:translateY(1px)}
-
-  /* Bannière install PWA */
-  .install-banner{position:fixed;left:12px;right:12px;bottom:12px;display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:#141416;border:1px solid #2a2a2e;border-radius:12px;z-index:10050}
-  .install-banner.show{display:flex}
-  .install-actions{display:flex;gap:8px}
-  #installBtn,#installClose{padding:8px 12px;border-radius:10px;border:1px solid #2a2a2e;background:#1f1f23;color:#eaeaea;cursor:pointer}
-
-  /* --- Modales (Fin de partie & Résurrection) --- */
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);z-index:10060}
-  .modal.show{display:flex}
-  .modal-inner{max-width:560px;width:90%;background:#141416;border:1px solid #2a2a2e;border-radius:16px;padding:22px;text-align:center}
-  .modal-title{font-family:var(--font-ui);font-size:28px;letter-spacing:.5px;color:#c71f1f;margin-bottom:8px;text-shadow:0 0 18px rgba(200,30,30,.55)}
-  .modal-text{font-size:18px;color:#eaeaea;opacity:.9;line-height:1.35;margin-bottom:16px;font-family:var(--font-body)}
-  .modal-actions{display:flex;gap:10px;justify-content:center}
-  .modal-btn{padding:10px 14px;border-radius:12px;border:1px solid #2a2a2e;background:#1f1f23;color:#eaeaea;cursor:pointer;font-family:var(--font-ui)}
-  .modal-btn:hover{filter:brightness(1.08)} .modal-yes{border-color:#256d1b} .modal-no{border-color:#5b1b1b}
+    /* Grille des 8 boutons (2 colonnes) */
+    .btn-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 280px;
+    }
+    .btn-gauge {
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 8px;
+      border: 1px solid #3d3d3d;
+      background: #262626;
+      color: #e0e0e0;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-gauge:hover {
+      background: #333333;
+      transform: translateY(-1px);
+    }
+    .btn-gauge:active {
+      transform: translateY(1px);
+    }
   </style>
 </head>
 <body>
-  <!-- Overlays & Alerte -->
-  <div class="overlay-flash" id="fxFlash"></div>
-  <div class="overlay-black" id="fxBlack"></div>
-  <div class="vignette" id="vignette"></div>
-  <div class="alert" id="alert"><div class="content" id="alertText"></div></div>
-
-  <header><h1>Compagnon — Instabilité</h1></header>
-  <main>
-    <div class="grid">
-      <!-- Carte jauge -->
-      <div class="card" style="grid-column:span 7">
-        <div class="gauge-head">
-          <div class="gauge-title">Jauge d’Instabilité</div>
-          <div class="percent" id="percent">0 %</div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress"><div class="bar" id="bar"></div></div>
-        </div>
-
-        <div class="row" id="rowPlus"></div>
-        <div class="row" id="rowMinus" style="margin-top:8px"></div>
-
-        <div class="controls" style="margin-top:12px">
-          <button id="audioToggle">MUSIQUE ON/OFF</button>
-          <button id="fsToggle" class="fs-btn" aria-pressed="false">Plein écran</button>
-        </div>
-      </div>
-
-      <!-- Carte contexte + actions -->
-      <div class="card" style="grid-column:span 5">
-        <div class="section-title">Contexte de partie</div>
-        <div class="controls">
-          <label><input type="radio" name="world" value="normal" checked> Monde normal</label>
-          <label><input type="radio" name="world" value="reflet"> Reflet du vice</label>
-        </div>
-        <div class="controls" style="margin-top:8px;align-items:center">
-          <label for="players">Joueurs :</label>
-          <select id="players"><option>2</option><option selected>3</option><option>4</option></select>
-          <label for="quartier">Quartier :</label>
-          <select id="quartier">
-            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
-          </select>
-        </div>
-        <div class="line"></div>
-        <div class="section-title">Actions spéciales</div>
-        <div class="controls">
-          <button id="btnAnchor" title="Disponible uniquement en Reflet du vice (+10 % Instabilité)">Point d’ancrage (+10 %)</button>
-          <span class="muted" id="anchorInfo">Ancrage : Indisponible</span>
-        </div>
-        <div class="controls" style="margin-top:8px">
-          <button id="btnCamp" title="−10 % et +2 PV par joueur en Monde normal / −15 % en Reflet">Camp de fortune</button>
-          <span class="muted" id="campInfo">Restants : 2</span>
-        </div>
-        <div class="controls" style="margin-top:8px">
-          <button id="btnNew">Nouvelle partie</button>
-          <span class="muted">Réinitialise la jauge et les usages spéciaux.</span>
-        </div>
-      </div>
-
-      <!-- Carte aide -->
-      <div class="card" style="grid-column:span 6">
-        <div class="section-title">Aide</div>
-        <div class="muted">
-          • <strong>Point d’ancrage</strong> (+10 % Instabilité) : S’active uniquement en Reflet du vice (1x par quartier). Chaque personnage encore en vie perd 1 PV.<br>
-          • <strong>Camp de fortune</strong> (2x max) : −10 % & Soin de 2 PV par joueur (Monde Normal) ou −15 % (Reflet du vice).
-        </div>
-      </div>
-
-      <!-- Carte Journal -->
-      <div class="card" style="grid-column:span 6">
-        <div class="section-title">Journal</div>
-        <ul id="historyList" style="list-style:none;margin:0;padding-left:0;font-size:14px;line-height:1.35"></ul>
-      </div>
-    </div>
-
-    <!-- Version du build -->
-    <div class="muted" id="version" style="text-align:center;opacity:.6;margin-top:12px"></div>
-
-    <!-- Bannière install PWA -->
-    <div id="installBanner" class="install-banner" aria-hidden="true">
-      <div class="install-msg"><span id="installText">Installer l’application sur cet appareil ?</span></div>
-      <div class="install-actions">
-        <button id="installBtn">Installer</button>
-        <button id="installClose" aria-label="Fermer">✕</button>
-      </div>
-    </div>
-  </main>
 
   <!-- Porte d’accès playtest -->
   <div class="gate" id="gate" style="display:none">
     <div class="gate-inner">
-      <h2 style="margin:0 0 8px 0;font-size:18px">Accès playtest</h2>
-      <p class="muted" style="margin-top:0">Entrez le mot de passe commun (fourni par l’organisateur).</p>
+      <h2>Accès playtest</h2>
+      <p class="muted">Entrez le mot de passe commun (fourni par l’organisateur).</p>
       <input id="gateInput" type="password" placeholder="Mot de passe">
       <div class="error" id="gateError"></div>
       <button id="gateBtn">Entrer</button>
     </div>
   </div>
 
-  <!-- Audio -->
-  <audio id="ambient" src="audio/ambient_loop.mp3" loop preload="auto"></audio>
+  <!-- Application Principale -->
+  <main class="playtest-container">
+    <!-- COLONNE GAUCHE : Sujet & Masque -->
+    <section class="card col-left">
+      <h2>SUJET #01</h2>
+      <div class="mask-container">
+        <img id="maskImage" src="img/masque-placeholder.png" alt="Masque du sujet" class="mask-img" onerror="this.style.display='none'">
+      </div>
+    </section>
 
-  <!-- Écran de fin de partie -->
-  <div id="gameover" class="modal">
-    <div class="modal-inner">
-      <div class="modal-title">Fin de partie</div>
-      <div class="modal-text">
-        Vous êtes complètement happés par le Vice.<br>
-        Impossible d’en ressortir…
+    <!-- COLONNE DROITE : Instabilité Mentale -->
+    <section class="card col-right">
+      <h2>INSTABILITÉ MENTALE</h2>
+      <div class="gauge-display">
+        <span id="gaugeValue">50 %</span>
       </div>
-      <div class="modal-actions">
-        <button id="goYes" class="modal-btn modal-yes">Recommencer</button>
-        <button id="goNo"  class="modal-btn modal-no">Quitter</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Modale Point d'Ancrage / Résurrection -->
-  <div id="anchorModal" class="modal">
-    <div class="modal-inner">
-      <div class="modal-title" style="color:#f59e0b; text-shadow:0 0 18px rgba(245,158,11,.55)">
-        Point d’Ancrage Activé
+      <div class="btn-grid-2col">
+        <button class="btn-gauge" data-change="-5">-5 %</button>
+        <button class="btn-gauge" data-change="5">+5 %</button>
+        <button class="btn-gauge" data-change="-10">-10 %</button>
+        <button class="btn-gauge" data-change="10">+10 %</button>
+        <button class="btn-gauge" data-change="-15">-15 %</button>
+        <button class="btn-gauge" data-change="15">+15 %</button>
+        <button class="btn-gauge" data-change="-20">-20 %</button>
+        <button class="btn-gauge" data-change="20">+20 %</button>
       </div>
-      <div class="modal-text">
-        Jauge d'instabilité : <strong style="color:#e11d48">+10 %</strong><br><br>
-        ⚠️ <strong>Chaque personnage encore en vie perd 1 PV.</strong>
-      </div>
-      <div class="modal-actions">
-        <button id="anchorConfirm" class="modal-btn" style="border-color:#f59e0b">Valider (PV ajustés)</button>
-      </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
-  <!-- Script principal -->
   <script src="app.js"></script>
 </body>
 </html>
