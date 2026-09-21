@@ -98,7 +98,7 @@
   const gateBtn    = document.getElementById('gateBtn');
   const gateError  = document.getElementById('gateError');
   const GATE_KEY   = 'playtest_gate_hash';
-  const PASSPHRASE_HASH = 'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
+  const PASSPHRASE_HASH = 'sha256:779d99b88c773f38617d286974f7882cbbc7f91781ef98287c55a5e89ea09e9f';
   if (localStorage.getItem(GATE_KEY) === PASSPHRASE_HASH) {
     gate.style.display = 'none';
   }
