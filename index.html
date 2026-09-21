@@ -48,7 +48,7 @@
     font-size:16px;cursor:pointer;outline:none;box-shadow:none;
   }
   button:not(.btn):disabled{opacity:.5;cursor:not-allowed}
-  button:not(.btn):hover{filter:brightness(1.08)}
+  button:not(.btn):hover:not(:disabled){filter:brightness(1.08)}
   button:not(.btn):focus{outline:none;box-shadow:none}
 
   /* Boutons +/- visuels */
@@ -116,6 +116,56 @@
   .vignette{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .6s ease;z-index:9998;
     background:radial-gradient(ellipse at center,rgba(0,0,0,0) 60%,rgba(150,0,0,.22) 85%,rgba(0,0,0,.75) 100%)}
 
+  /* --- Porte d'accès (Gate) --- */
+  .gate {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 12, 0.96);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20000;
+  }
+  .gate-inner {
+    background: var(--card);
+    border: 1px solid #2a2a2e;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  }
+  .gate-inner input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    margin: 12px 0 6px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #0f0f10;
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  .gate-inner .error {
+    color: var(--accent);
+    font-size: 13px;
+    min-height: 18px;
+    margin-bottom: 8px;
+  }
+  .gate-inner button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #2a2a2e;
+    background: #222226;
+    color: var(--fg);
+    font-family: var(--font-ui);
+    cursor: pointer;
+  }
+
   /* Responsive */
   @media (orientation:portrait){
     .grid{grid-template-columns:1fr}
@@ -150,7 +200,7 @@
   .install-actions{display:flex;gap:8px}
   #installBtn,#installClose{padding:8px 12px;border-radius:10px;border:1px solid #2a2a2e;background:#1f1f23;color:#eaeaea;cursor:pointer}
 
-  /* --- Fin de partie --- */
+  /* --- Modales (Fin de partie & Résurrection) --- */
   .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);z-index:10060}
   .modal.show{display:flex}
   .modal-inner{max-width:560px;width:90%;background:#141416;border:1px solid #2a2a2e;border-radius:16px;padding:22px;text-align:center}
@@ -208,12 +258,12 @@
         <div class="line"></div>
         <div class="section-title">Actions spéciales</div>
         <div class="controls">
-          <button id="btnAnchor" title="Disponible uniquement en Reflet du vice, 1 fois par quartier">Point d’ancrage (−15 %)</button>
-          <span class="muted" id="anchorInfo">Restant : 4 (1 par quartier)</span>
+          <button id="btnAnchor" title="Disponible uniquement en Reflet du vice (+10 % Instabilité)">Point d’ancrage (+10 %)</button>
+          <span class="muted" id="anchorInfo">Ancrage : Indisponible</span>
         </div>
         <div class="controls" style="margin-top:8px">
-          <button id="btnCamp" title="Vote à la majorité. −30 % en Monde normal / −20 % en Reflet du vice.">Camp de fortune (−30 %/-20%)</button>
-          <span class="muted" id="campInfo">Utilisations restantes : 3</span>
+          <button id="btnCamp" title="−10 % et +2 PV par joueur en Monde normal / −15 % en Reflet">Camp de fortune</button>
+          <span class="muted" id="campInfo">Restants : 2</span>
         </div>
         <div class="controls" style="margin-top:8px">
           <button id="btnNew">Nouvelle partie</button>
@@ -222,16 +272,16 @@
       </div>
 
       <!-- Carte aide -->
-      <div class="card" style="grid-column:span 5">
+      <div class="card" style="grid-column:span 6">
         <div class="section-title">Aide</div>
         <div class="muted">
-          • Le Point d’ancrage n’est utilisable qu’en Reflet du vice et une seule fois par quartier.<br>
-          • Le Camp de fortune est utilisable 3x, uniquement en Monde normal, et nécessite une majorité simple.
+          • <strong>Point d’ancrage</strong> (+10 % Instabilité) : S’active uniquement en Reflet du vice (1x par quartier). Chaque personnage encore en vie perd 1 PV.<br>
+          • <strong>Camp de fortune</strong> (2x max) : −10 % & Soin de 2 PV par joueur (Monde Normal) ou −15 % (Reflet du vice).
         </div>
       </div>
 
       <!-- Carte Journal -->
-      <div class="card" style="grid-column:span 5">
+      <div class="card" style="grid-column:span 6">
         <div class="section-title">Journal</div>
         <ul id="historyList" style="list-style:none;margin:0;padding-left:0;font-size:14px;line-height:1.35"></ul>
       </div>
@@ -263,9 +313,8 @@
 
   <!-- Audio -->
   <audio id="ambient" src="audio/ambient_loop.mp3" loop preload="auto"></audio>
-  <audio id="groan"   src="audio/groan.wav" preload="auto"></audio>
 
-  <!-- Écran de fin de partie (PLACÉ AVANT app.js) -->
+  <!-- Écran de fin de partie -->
   <div id="gameover" class="modal">
     <div class="modal-inner">
       <div class="modal-title">Fin de partie</div>
@@ -276,6 +325,22 @@
       <div class="modal-actions">
         <button id="goYes" class="modal-btn modal-yes">Recommencer</button>
         <button id="goNo"  class="modal-btn modal-no">Quitter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale Point d'Ancrage / Résurrection -->
+  <div id="anchorModal" class="modal">
+    <div class="modal-inner">
+      <div class="modal-title" style="color:#f59e0b; text-shadow:0 0 18px rgba(245,158,11,.55)">
+        Point d’Ancrage Activé
+      </div>
+      <div class="modal-text">
+        Jauge d'instabilité : <strong style="color:#e11d48">+10 %</strong><br><br>
+        ⚠️ <strong>Chaque personnage encore en vie perd 1 PV.</strong>
+      </div>
+      <div class="modal-actions">
+        <button id="anchorConfirm" class="modal-btn" style="border-color:#f59e0b">Valider (PV ajustés)</button>
       </div>
     </div>
   </div>
