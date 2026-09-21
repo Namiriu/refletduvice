@@ -8,7 +8,7 @@ const ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './audio/ambient_loop.mp3',
-  './audio/groan.wav'
+  './audio/groan.wav',
   './img/bg.webp',
   './img/gauge_fill.png',
   './img/gauge_track.png',
