@@ -8,11 +8,13 @@
 
   const LSK = (k) => 'jds_' + k;
 
-  const VERSION = 'v0.7 Playtest';
+  const VERSION = 'v0.7.1 Playtest';
+
+  const FIXED_PLAYERS = 4;
 
 
   // =========================================================
-  // AMBIANCE LONGUE
+  // AUDIO D'AMBIANCE
   // =========================================================
 
   const AMBIENT_TRACKS = [
@@ -25,7 +27,6 @@
   // =========================================================
 
   const HAUNT = {
-
     perClickProb: 0.14,
 
     passiveEvery: [
@@ -34,61 +35,54 @@
     ],
 
     sfx: [
-
       'audio/sounds/creepy_crow_caw.mp3',
-
       'audio/sounds/creepy_ghost_whisper.mp3',
-
       'audio/sounds/creepy_laugh.mp3',
-
       'audio/sounds/creepy_wind.mp3',
-
       'audio/sounds/door_slam_angrily.mp3',
-
       'audio/sounds/footsteps_on_wooden_floor.mp3',
-
       'audio/sounds/forest_whisper.mp3',
-
       'audio/sounds/scratching_metal.mp3',
-
       'audio/sounds/whisper_voices.mp3',
-
       'audio/sounds/wood_creak_single.mp3',
-
     ]
   };
 
 
   // =========================================================
-  // MASQUES
+  // ÉTATS DU MASQUE
   // =========================================================
 
   /*
     Pour l'instant seul masque0.png existe.
 
-    Plus tard, lorsqu'on aura les autres états, il suffira
-    d'ajouter ici :
+    Quand les prochains visuels seront prêts,
+    il suffira de réactiver les lignes correspondantes.
 
-    { min: 25,  src: 'img/masque25.png'  },
-    { min: 50,  src: 'img/masque50.png'  },
-    { min: 75,  src: 'img/masque75.png'  },
+    Exemple :
+
+    { min: 25,  src: 'img/masque25.png' },
+    { min: 50,  src: 'img/masque50.png' },
+    { min: 75,  src: 'img/masque75.png' },
     { min: 100, src: 'img/masque100.png' }
-
-    Toute la structure est déjà prévue pour.
   */
 
   const MASK_STATES = [
-
     {
       min: 0,
       src: 'img/masque0.png'
     }
 
+    // Futurs masques :
+    // { min: 25,  src: 'img/masque25.png' },
+    // { min: 50,  src: 'img/masque50.png' },
+    // { min: 75,  src: 'img/masque75.png' },
+    // { min: 100, src: 'img/masque100.png' },
   ];
 
 
   // =========================================================
-  // SÉLECTEURS PRINCIPAUX
+  // ÉLÉMENTS PRINCIPAUX
   // =========================================================
 
   const percent =
@@ -119,22 +113,6 @@
 
 
   // =========================================================
-  // CONTEXTE
-  // =========================================================
-
-  const worldRadios =
-    document.querySelectorAll(
-      'input[name="world"]'
-    );
-
-  const playersSel =
-    document.getElementById('players');
-
-  const quartierSel =
-    document.getElementById('quartier');
-
-
-  // =========================================================
   // INTERFACE
   // =========================================================
 
@@ -144,11 +122,36 @@
   const vignetteEl =
     document.getElementById('vignette');
 
+  const versionEl =
+    document.getElementById('version');
+
+
+  // =========================================================
+  // JOURNAL
+  // =========================================================
+
   const historyEl =
     document.getElementById('historyList');
 
-  const versionEl =
-    document.getElementById('version');
+  const btnJournal =
+    document.getElementById('btnJournal');
+
+  const journalModal =
+    document.getElementById('journalModal');
+
+  const journalClose =
+    document.getElementById('journalClose');
+
+
+  // =========================================================
+  // ONGLETS
+  // =========================================================
+
+  const tabButtons =
+    document.querySelectorAll('.tab-btn');
+
+  const tabPanels =
+    document.querySelectorAll('.tab-panel');
 
 
   // =========================================================
@@ -158,8 +161,14 @@
   const btnAnchor =
     document.getElementById('btnAnchor');
 
+  const btnAnchorHelp =
+    document.getElementById('btnAnchorHelp');
+
   const btnCamp =
     document.getElementById('btnCamp');
+
+  const btnCampHelp =
+    document.getElementById('btnCampHelp');
 
   const anchorInfo =
     document.getElementById('anchorInfo');
@@ -172,7 +181,7 @@
 
 
   // =========================================================
-  // FX
+  // EFFETS VISUELS
   // =========================================================
 
   const fxFlash =
@@ -181,9 +190,15 @@
   const fxBlack =
     document.getElementById('fxBlack');
 
+  const alertBox =
+    document.getElementById('alert');
+
+  const alertText =
+    document.getElementById('alertText');
+
 
   // =========================================================
-  // FIN DE PARTIE
+  // GAME OVER
   // =========================================================
 
   const goModal =
@@ -198,69 +213,8 @@
   let gameOverShown = false;
 
 
-  function showGameOver(){
-
-    if (!goModal) return;
-
-    gameOverShown = true;
-
-    fxBlack.style.opacity = '1';
-
-    setTimeout(()=>{
-
-      fxBlack.style.opacity = '.9';
-
-    }, 200);
-
-    goModal.classList.add('show');
-  }
-
-
-  function hideGameOver(){
-
-    if (!goModal) return;
-
-    goModal.classList.remove('show');
-
-    fxBlack.style.opacity = '0';
-
-    gameOverShown = false;
-  }
-
-
-  async function tryQuitApp(){
-
-    try{
-
-      if (document.fullscreenElement){
-
-        await document.exitFullscreen();
-
-      }
-
-    }catch(_){}
-
-
-    ambientEl.pause();
-
-
-    if (window.history.length > 1){
-
-      window.history.back();
-
-    }
-
-
-    try{
-
-      window.open('', '_self').close();
-
-    }catch(_){}
-  }
-
-
   // =========================================================
-  // GATE PLAYTEST
+  // MOT DE PASSE PLAYTEST
   // =========================================================
 
   const gate =
@@ -285,40 +239,69 @@
 
 
   // =========================================================
-  // SEUILS D'INSTABILITÉ
+  // SEUILS
   // =========================================================
 
   const THRESHOLD_ENTER = 50;
-
   const THRESHOLD_EXIT = 49;
 
 
   const VOICES = {
-
-    enter:
-      'audio/voice_enter_reflet.wav',
-
-    exit:
-      'audio/voice_return_normal.mp3'
-
+    enter: 'audio/voice_enter_reflet.wav',
+    exit: 'audio/voice_return_normal.mp3'
   };
 
 
-  const alertBox =
-    document.getElementById('alert');
+  // =========================================================
+  // VALEURS PAR DÉFAUT
+  // =========================================================
 
-  const alertText =
-    document.getElementById('alertText');
+  const DEFAULT_ANCHORS = {
+    "1": false,
+    "2": false,
+    "3": false,
+    "4": false
+  };
+
+
+  function readAnchorUsed(){
+
+    try{
+
+      const stored =
+        JSON.parse(
+          localStorage.getItem(
+            LSK('anchorUsed')
+          )
+          ||
+          JSON.stringify(DEFAULT_ANCHORS)
+        );
+
+
+      return {
+        "1": !!stored["1"],
+        "2": !!stored["2"],
+        "3": !!stored["3"],
+        "4": !!stored["4"]
+      };
+
+    }catch(_){
+
+      return {
+        ...DEFAULT_ANCHORS
+      };
+
+    }
+  }
 
 
   // =========================================================
-  // ÉTAT DE LA PARTIE
+  // ÉTAT
   // =========================================================
 
   let state = {
 
     value:
-
       parseInt(
         localStorage.getItem(
           LSK('instability')
@@ -326,46 +309,30 @@
         10
       ),
 
+    /*
+      Le monde n'est plus sélectionné manuellement.
 
-    world:
+      Il sera recalculé automatiquement selon l'instabilité.
+    */
+    world: 'normal',
 
-      localStorage.getItem(
-        LSK('world')
-      ) || 'normal',
+    /*
+      Le jeu est désormais fixé à 4 joueurs.
+    */
+    players: FIXED_PLAYERS,
 
-
-    players:
-
-      parseInt(
-        localStorage.getItem(
-          LSK('players')
-        ) || '3',
-        10
-      ),
-
-
-    quartier:
-
-      parseInt(
-        localStorage.getItem(
-          LSK('quartier')
-        ) || '1',
-        10
-      ),
-
-
+    /*
+      Ancienne mécanique temporaire :
+      1 Point d'ancrage maximum par quartier.
+    */
     anchorUsed:
+      readAnchorUsed(),
 
-      JSON.parse(
-        localStorage.getItem(
-          LSK('anchorUsed')
-        ) ||
-        '{"1":false,"2":false,"3":false,"4":false}'
-      ),
-
-
+    /*
+      Décision la plus récente :
+      3 Camps de fortune.
+    */
     campLeft:
-
       parseInt(
         localStorage.getItem(
           LSK('campLeft')
@@ -373,18 +340,13 @@
         10
       ),
 
-
     musicOn:
-
       localStorage.getItem(
         LSK('musicOn')
       ) === '1',
 
-
     subjectNumber:
-
       Math.max(
-
         1,
 
         parseInt(
@@ -393,9 +355,7 @@
           ) || '1',
           10
         ) || 1
-
       )
-
   };
 
 
@@ -403,27 +363,115 @@
   // OUTILS
   // =========================================================
 
-  const clamp = (v) =>
+  const clamp = (value) =>
     Math.max(
       0,
       Math.min(
         100,
-        v
+        value
       )
     );
 
 
-  const fmt = (v) =>
-    v + ' %';
+  const fmt = (value) =>
+    value + ' %';
 
 
   function formatSubjectNumber(number){
 
     return (
-      'SUJET #' +
+      'SUJET #'
+      +
       String(number).padStart(2, '0')
     );
   }
+
+
+  function worldFromValue(value){
+
+    return (
+      value >= THRESHOLD_ENTER
+        ? 'reflet'
+        : 'normal'
+    );
+  }
+
+
+  // =========================================================
+  // MONDE AUTOMATIQUE
+  // =========================================================
+
+  function updateWorld(){
+
+    state.world =
+      worldFromValue(
+        state.value
+      );
+
+
+    document.body.classList.toggle(
+      'world-normal',
+      state.world === 'normal'
+    );
+
+
+    document.body.classList.toggle(
+      'world-reflet',
+      state.world === 'reflet'
+    );
+  }
+
+
+  // =========================================================
+  // ONGLETS
+  // =========================================================
+
+  function switchTab(tabName){
+
+    tabButtons.forEach(button => {
+
+      const isActive =
+        button.dataset.tab === tabName;
+
+
+      button.classList.toggle(
+        'active',
+        isActive
+      );
+
+    });
+
+
+    tabPanels.forEach(panel => {
+
+      const isActive =
+        panel.id === 'tab-' + tabName;
+
+
+      panel.classList.toggle(
+        'active',
+        isActive
+      );
+
+    });
+
+  }
+
+
+  tabButtons.forEach(button => {
+
+    button.addEventListener(
+      'click',
+      () => {
+
+        switchTab(
+          button.dataset.tab
+        );
+
+      }
+    );
+
+  });
 
 
   // =========================================================
@@ -435,13 +483,11 @@
 
   function addHistory(delta){
 
-    /*
-      Si aucun changement réel n'a eu lieu
-      (par exemple -20 lorsque la jauge est déjà à 0),
-      on n'ajoute rien au journal.
-    */
+    if (delta === 0){
 
-    if (delta === 0) return;
+      return;
+
+    }
 
 
     const text =
@@ -471,29 +517,306 @@
 
   function renderHistory(){
 
-    if (!historyEl) return;
-
-
-    if (history.length === 0){
-
-      historyEl.innerHTML =
-        '<li class="muted">Aucun changement récent</li>';
+    if (!historyEl){
 
       return;
+
+    }
+
+
+    if (
+      history.length === 0
+    ){
+
+      historyEl.innerHTML =
+        '<li class="muted">Aucun changement récent.</li>';
+
+      return;
+
     }
 
 
     historyEl.innerHTML =
 
       history
-
         .map(
           item =>
             `<li>• Ajustement : <strong>${item}</strong></li>`
         )
-
         .join('');
+
   }
+
+
+  function openJournal(){
+
+    if (!journalModal){
+
+      return;
+
+    }
+
+
+    renderHistory();
+
+
+    journalModal.classList.add(
+      'show'
+    );
+  }
+
+
+  function closeJournal(){
+
+    if (!journalModal){
+
+      return;
+
+    }
+
+
+    journalModal.classList.remove(
+      'show'
+    );
+  }
+
+
+  btnJournal?.addEventListener(
+    'click',
+    openJournal
+  );
+
+
+  journalClose?.addEventListener(
+    'click',
+    closeJournal
+  );
+
+
+  journalModal?.addEventListener(
+    'click',
+    event => {
+
+      if (
+        event.target === journalModal
+      ){
+
+        closeJournal();
+
+      }
+
+    }
+  );
+
+
+  // =========================================================
+  // MODALE D'INFORMATION GÉNÉRIQUE
+  // =========================================================
+
+  const infoModal =
+    document.createElement('div');
+
+
+  infoModal.className =
+    'modal journal-modal';
+
+
+  infoModal.innerHTML = `
+    <div class="modal-inner">
+
+      <div
+        class="modal-title"
+        id="infoModalTitle"
+      >
+      </div>
+
+      <div
+        class="modal-text"
+        id="infoModalText"
+      >
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          id="infoModalClose"
+          class="modal-btn"
+          type="button"
+        >
+          Fermer
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+
+  document.body.appendChild(
+    infoModal
+  );
+
+
+  const infoModalTitle =
+    document.getElementById(
+      'infoModalTitle'
+    );
+
+
+  const infoModalText =
+    document.getElementById(
+      'infoModalText'
+    );
+
+
+  const infoModalClose =
+    document.getElementById(
+      'infoModalClose'
+    );
+
+
+  function showInfoModal(
+    title,
+    html
+  ){
+
+    infoModalTitle.textContent =
+      title;
+
+
+    infoModalText.innerHTML =
+      html;
+
+
+    infoModal.classList.add(
+      'show'
+    );
+  }
+
+
+  function hideInfoModal(){
+
+    infoModal.classList.remove(
+      'show'
+    );
+  }
+
+
+  infoModalClose.addEventListener(
+    'click',
+    hideInfoModal
+  );
+
+
+  infoModal.addEventListener(
+    'click',
+    event => {
+
+      if (
+        event.target === infoModal
+      ){
+
+        hideInfoModal();
+
+      }
+
+    }
+  );
+
+
+  // =========================================================
+  // AIDE DES ACTIONS SPÉCIALES
+  // =========================================================
+
+  btnAnchorHelp?.addEventListener(
+    'click',
+    () => {
+
+      showInfoModal(
+
+        'Point d’ancrage',
+
+        `
+          <strong>Règle temporaire actuelle</strong>
+          <br><br>
+
+          Disponible uniquement dans le
+          <strong>Reflet du Vice</strong>.
+          <br><br>
+
+          Utilisable une seule fois par quartier.
+          <br><br>
+
+          Réduit l’Instabilité mentale de
+          <strong>15 %</strong>.
+          <br><br>
+
+          Cette mécanique sera prochainement remplacée
+          par les Totems de résurrection.
+        `
+      );
+
+    }
+  );
+
+
+  btnCampHelp?.addEventListener(
+    'click',
+    () => {
+
+      showInfoModal(
+
+        'Camp de fortune',
+
+        `
+          Nécessite l’accord de la
+          <strong>majorité du groupe</strong>.
+          <br><br>
+
+          Nombre d’utilisations :
+          <strong>3 par partie</strong>.
+          <br><br>
+
+          Monde normal :
+          <strong>−30 % d’Instabilité</strong>.
+          <br><br>
+
+          Reflet du Vice :
+          <strong>−20 % d’Instabilité</strong>.
+          <br><br>
+
+          L’application détermine automatiquement
+          le monde actif selon le seuil des 50 %.
+        `
+      );
+
+    }
+  );
+
+
+  // =========================================================
+  // FERMETURE MODALES AVEC ÉCHAP
+  // =========================================================
+
+  document.addEventListener(
+    'keydown',
+    event => {
+
+      if (
+        event.key !== 'Escape'
+      ){
+
+        return;
+
+      }
+
+
+      closeJournal();
+
+      hideInfoModal();
+
+    }
+  );
 
 
   // =========================================================
@@ -502,15 +825,20 @@
 
   function getMaskState(value){
 
-    let currentMask =
+    let current =
       MASK_STATES[0];
 
 
-    for (const maskState of MASK_STATES){
+    for (
+      const maskState
+      of MASK_STATES
+    ){
 
-      if (value >= maskState.min){
+      if (
+        value >= maskState.min
+      ){
 
-        currentMask =
+        current =
           maskState;
 
       }
@@ -518,43 +846,51 @@
     }
 
 
-    return currentMask;
+    return current;
   }
 
 
   function updateMask(){
 
-    if (!maskImage) return;
+    if (!maskImage){
+
+      return;
+
+    }
 
 
-    const maskState =
+    const current =
       getMaskState(
         state.value
       );
 
 
     if (
-      maskImage.getAttribute('src')
+      maskImage.getAttribute(
+        'src'
+      )
       !==
-      maskState.src
+      current.src
     ){
 
       maskImage.src =
-        maskState.src;
+        current.src;
 
     }
   }
 
 
   // =========================================================
-  // EFFETS D'AMBIANCE SELON INSTABILITÉ
+  // EFFETS D'INSTABILITÉ
   // =========================================================
 
   function applyMoodEffects(value){
 
-    if (value >= 90){
+    if (
+      value >= 90
+    ){
 
-      const t =
+      const intensity =
         Math.min(
           1,
           (value - 90) / 10
@@ -566,7 +902,7 @@
         (
           0.55
           +
-          0.35 * t
+          0.35 * intensity
         )
 
         .toFixed(2);
@@ -599,13 +935,16 @@
         );
 
 
-        setTimeout(()=>{
+        setTimeout(
+          () => {
 
-          mainEl.classList.remove(
-            'fx-blur'
-          );
+            mainEl.classList.remove(
+              'fx-blur'
+            );
 
-        }, 240);
+          },
+          240
+        );
 
       }else{
 
@@ -614,13 +953,16 @@
         );
 
 
-        setTimeout(()=>{
+        setTimeout(
+          () => {
 
-          mainEl.classList.remove(
-            'fx-shake'
-          );
+            mainEl.classList.remove(
+              'fx-shake'
+            );
 
-        }, 360);
+          },
+          360
+        );
 
       }
     }
@@ -634,88 +976,67 @@
   function save(){
 
     localStorage.setItem(
-
       LSK('instability'),
-
       String(
         state.value
       )
-
     );
 
 
-    localStorage.setItem(
+    /*
+      Conservé pour compatibilité avec
+      les anciennes versions.
 
+      Mais la valeur est maintenant automatique.
+    */
+
+    localStorage.setItem(
       LSK('world'),
-
       state.world
-
     );
 
 
-    localStorage.setItem(
+    /*
+      Le jeu est maintenant fixé à quatre joueurs.
+    */
 
+    localStorage.setItem(
       LSK('players'),
-
       String(
-        state.players
+        FIXED_PLAYERS
       )
-
     );
 
 
     localStorage.setItem(
-
-      LSK('quartier'),
-
-      String(
-        state.quartier
-      )
-
-    );
-
-
-    localStorage.setItem(
-
       LSK('anchorUsed'),
-
       JSON.stringify(
         state.anchorUsed
       )
-
     );
 
 
     localStorage.setItem(
-
       LSK('campLeft'),
-
       String(
         state.campLeft
       )
-
     );
 
 
     localStorage.setItem(
-
       LSK('musicOn'),
-
       state.musicOn
         ? '1'
         : '0'
-
     );
 
 
     localStorage.setItem(
-
       LSK('subjectNumber'),
-
       String(
         state.subjectNumber
       )
-
     );
   }
 
@@ -759,13 +1080,16 @@
   }
 
 
-  const isFullscreen =
-    () =>
-      !!document.fullscreenElement;
+  function isFullscreen(){
+
+    return (
+      !!document.fullscreenElement
+    );
+  }
 
 
   // =========================================================
-  // RENDU PRINCIPAL
+  // RENDER
   // =========================================================
 
   function render(){
@@ -774,6 +1098,15 @@
       clamp(
         state.value
       );
+
+
+    /*
+      Détermine automatiquement :
+      0–49  = Monde normal
+      50–100 = Reflet
+    */
+
+    updateWorld();
 
 
     // Pourcentage
@@ -794,7 +1127,9 @@
 
     // Sujet
 
-    if (subjectId){
+    if (
+      subjectId
+    ){
 
       subjectId.textContent =
         formatSubjectNumber(
@@ -809,12 +1144,12 @@
     updateMask();
 
 
-    // Alertes seuil 50 %
+    // Transition Normal / Reflet
 
     checkThresholdTransition();
 
 
-    // Ambiance
+    // Effets visuels
 
     applyMoodEffects(
       state.value
@@ -823,7 +1158,9 @@
 
     // Version
 
-    if (versionEl){
+    if (
+      versionEl
+    ){
 
       versionEl.textContent =
         VERSION;
@@ -831,89 +1168,65 @@
     }
 
 
-    // Contexte
-
-    worldRadios.forEach(
-
-      radio =>{
-
-        radio.checked =
-          (
-            radio.value
-            ===
-            state.world
-          );
-
-      }
-
-    );
-
-
-    playersSel.value =
-      String(
-        state.players
-      );
-
-
-    quartierSel.value =
-      String(
-        state.quartier
-      );
-
-
     // =======================================================
-    // ACTIONS SPÉCIALES
-    //
-    // RÈGLES ACTUELLES CONSERVÉES POUR CETTE ÉTAPE.
+    // POINT D'ANCRAGE — MÉCANIQUE TEMPORAIRE
     // =======================================================
 
-    const quartier =
-      String(
-        state.quartier
-      );
+    const anchorsUsed =
+      Object
+        .values(
+          state.anchorUsed
+        )
+        .filter(Boolean)
+        .length;
 
 
-    const anchorAlreadyUsed =
-      !!state.anchorUsed[
-        quartier
-      ];
+    const anchorsLeft =
+      4
+      -
+      anchorsUsed;
 
-
-    // Point d'ancrage actuel
 
     btnAnchor.disabled =
 
-      (
-        state.world
-        !==
-        'reflet'
-      )
+      state.world
+      !==
+      'reflet'
 
       ||
 
-      anchorAlreadyUsed;
+      anchorsLeft
+      <=
+      0;
 
 
-    anchorInfo.textContent =
-
+    if (
       state.world
-      ===
+      !==
       'reflet'
+    ){
 
-        ?
+      anchorInfo.textContent =
+        'Disponible dans le Reflet';
 
-        `Restant : ${
-          anchorAlreadyUsed
-            ? 0
-            : 1
-        } (1 par quartier)`
+    }else if (
+      anchorsLeft <= 0
+    ){
 
-        :
+      anchorInfo.textContent =
+        'Tous les Points utilisés';
 
-        'Restant : 0 (1 par quartier)';
+    }else{
+
+      anchorInfo.textContent =
+        `${anchorsUsed}/4 utilisés`;
+
+    }
 
 
-    // Camp de fortune actuel
+    // =======================================================
+    // CAMP DE FORTUNE
+    // =======================================================
 
     btnCamp.disabled =
       state.campLeft
@@ -922,56 +1235,44 @@
 
 
     campInfo.textContent =
-
-      `Utilisations restantes : ${
-        state.campLeft
-      } — ${
-        state.world === 'reflet'
-          ? '−20 % en Reflet'
-          : '−30 % en Monde normal'
-      }`;
+      `Restants : ${state.campLeft}/3`;
 
 
     // Musique
 
     audioBtn.textContent =
-
       state.musicOn
         ? 'MUSIQUE ON'
         : 'MUSIQUE OFF';
 
 
     audioBtn.setAttribute(
-
       'aria-pressed',
-
       state.musicOn
         ? 'true'
         : 'false'
-
     );
 
 
     // Plein écran
 
-    if (fsBtn){
+    if (
+      fsBtn
+    ){
 
       fsBtn.textContent =
-
         isFullscreen()
           ? 'Quitter plein écran'
           : 'Plein écran';
 
 
       fsBtn.setAttribute(
-
         'aria-pressed',
-
         isFullscreen()
           ? 'true'
           : 'false'
-
       );
+
     }
 
 
@@ -980,27 +1281,29 @@
 
 
   // =========================================================
-  // MODIFICATION DE L'INSTABILITÉ
+  // MODIFICATION DE LA JAUGE
   // =========================================================
 
   function applyInstabilityDelta(
     requestedDelta
   ){
 
-    if (gameOverShown){
+    if (
+      gameOverShown
+    ){
 
       return;
 
     }
 
 
-    const oldValue =
+    const previousValue =
       state.value;
 
 
     const newValue =
       clamp(
-        oldValue
+        previousValue
         +
         requestedDelta
       );
@@ -1009,21 +1312,12 @@
     const actualDelta =
       newValue
       -
-      oldValue;
+      previousValue;
 
 
-    /*
-      Exemple :
-
-      95 % + 20 %
-
-      La jauge monte réellement de 5 %.
-
-      Le journal affichera donc +5 %
-      et non +20 %.
-    */
-
-    if (actualDelta === 0){
+    if (
+      actualDelta === 0
+    ){
 
       return;
 
@@ -1070,9 +1364,9 @@
 
 
     const delta =
-      sign
+      value
       *
-      value;
+      sign;
 
 
     button.type =
@@ -1084,58 +1378,46 @@
     );
 
 
-    if (sign > 0){
+    if (
+      sign > 0
+    ){
 
       button.classList.add(
-
         'btn-plus',
-
         'btn-p' + value
-
       );
 
 
       button.setAttribute(
-
         'aria-label',
-
         `Augmenter l’instabilité de ${value} %`
-
       );
 
     }else{
 
       button.classList.add(
-
         'btn-minus',
-
         'btn-m' + value
-
       );
 
 
       button.setAttribute(
-
         'aria-label',
-
         `Réduire l’instabilité de ${value} %`
-
       );
+
     }
 
 
     button.addEventListener(
-
       'click',
-
-      ()=>{
+      () => {
 
         applyInstabilityDelta(
           delta
         );
 
       }
-
     );
 
 
@@ -1159,17 +1441,16 @@
 
 
     /*
-      Génère automatiquement :
+      Produit :
 
-      -5     +5
-      -10   +10
-      -15   +15
-      -20   +20
+      -5      +5
+      -10    +10
+      -15    +15
+      -20    +20
     */
 
     STEPS.forEach(
-
-      value =>{
+      value => {
 
         const row =
           document.createElement(
@@ -1182,22 +1463,18 @@
 
 
         row.appendChild(
-
           createInstabilityButton(
             value,
             -1
           )
-
         );
 
 
         row.appendChild(
-
           createInstabilityButton(
             value,
             +1
           )
-
         );
 
 
@@ -1206,12 +1483,8 @@
         );
 
       }
-
     );
   }
-
-
-  buildInstabilityButtons();
 
 
   // =========================================================
@@ -1219,30 +1492,24 @@
   // =========================================================
 
   function randInt(
-    a,
-    b
+    min,
+    max
   ){
 
     return (
-
-      a
-
+      min
       +
-
       Math.floor(
-
         Math.random()
         *
         (
-          b
+          max
           -
-          a
+          min
           +
           1
         )
-
       )
-
     );
   }
 
@@ -1250,13 +1517,11 @@
   function pick(array){
 
     return array[
-
       Math.floor(
         Math.random()
         *
         array.length
       )
-
     ];
   }
 
@@ -1269,12 +1534,15 @@
       '1';
 
 
-    setTimeout(()=>{
+    setTimeout(
+      () => {
 
-      fxFlash.style.opacity =
-        '0';
+        fxFlash.style.opacity =
+          '0';
 
-    }, ms);
+      },
+      ms
+    );
   }
 
 
@@ -1286,12 +1554,15 @@
       '1';
 
 
-    setTimeout(()=>{
+    setTimeout(
+      () => {
 
-      fxBlack.style.opacity =
-        '0';
+        fxBlack.style.opacity =
+          '0';
 
-    }, ms);
+      },
+      ms
+    );
   }
 
 
@@ -1307,16 +1578,19 @@
       '1';
 
 
-    setTimeout(()=>{
+    setTimeout(
+      () => {
 
-      fxBlack.style.opacity =
-        '0';
+        fxBlack.style.opacity =
+          '0';
 
 
-      fxBlack.style.transition =
-        'opacity .4s';
+        fxBlack.style.transition =
+          'opacity .4s';
 
-    }, ms);
+      },
+      ms
+    );
   }
 
 
@@ -1341,7 +1615,7 @@
       audio
         .play()
         .catch(
-          ()=>{}
+          () => {}
         );
 
     }catch(_){}
@@ -1357,46 +1631,39 @@
       );
 
 
-    if (effect === 1){
+    if (
+      effect === 1
+    ){
 
       flashWhite(
-
         randInt(
           90,
           160
         )
-
       );
 
     }else if (
-      effect
-      ===
-      2
+      effect === 2
     ){
 
       flashBlack(
-
         randInt(
           200,
           480
         )
-
       );
 
     }else if (
-      effect
-      ===
-      3
+      effect === 3
     ){
 
       blackout(
-
         randInt(
           700,
           1100
         )
-
       );
+
     }
 
 
@@ -1419,15 +1686,11 @@
   ){
 
     if (
-
       force
-
       ||
-
       Math.random()
       <
       HAUNT.perClickProb
-
     ){
 
       triggerHaunt();
@@ -1437,7 +1700,7 @@
 
 
   // =========================================================
-  // ALERTES 49 / 50
+  // ALERTES NORMAL / REFLET
   // =========================================================
 
   function showAlert(
@@ -1456,7 +1719,9 @@
     );
 
 
-    if (voiceSrc){
+    if (
+      voiceSrc
+    ){
 
       const audio =
         new Audio(
@@ -1471,54 +1736,45 @@
       audio
         .play()
         .catch(
-          ()=>{}
+          () => {}
         );
 
     }
 
 
-    setTimeout(()=>{
+    setTimeout(
+      () => {
 
-      alertBox.classList.remove(
-        'show'
-      );
+        alertBox.classList.remove(
+          'show'
+        );
 
-    }, 5000);
+      },
+      5000
+    );
 
 
-    setTimeout(()=>{
+    setTimeout(
+      () => {
 
-      alertBox.classList.remove(
-        type
-      );
+        alertBox.classList.remove(
+          type
+        );
 
-    }, 6000);
+      },
+      6000
+    );
   }
 
 
-  const zoneFromValue =
-    value =>
-
-      value >= THRESHOLD_ENTER
-
-        ? 'reflet'
-
-        : 'normal';
-
-
   let lastZone =
-    zoneFromValue(
-
+    worldFromValue(
       parseInt(
-
         localStorage.getItem(
           LSK('instability')
         ) || '0',
-
         10
-
       )
-
     );
 
 
@@ -1529,101 +1785,162 @@
 
 
     if (
-      lastZone
-      ===
-      undefined
-    ){
-
-      lastZone =
-
-        current >= 50
-          ? 'reflet'
-          : 'normal';
-
-    }
-
-
-    if (
-
-      current >= 50
-
+      current >= THRESHOLD_ENTER
       &&
-
-      lastZone
-      !==
-      'reflet'
-
+      lastZone !== 'reflet'
     ){
 
       showAlert(
-
         'Vous basculez dans le Reflet du vice',
-
         'reflet',
-
         VOICES.enter
-
       );
 
 
       lastZone =
         'reflet';
 
+
     }else if (
 
-      current < 50
+      current <= THRESHOLD_EXIT
 
       &&
 
-      lastZone
-      !==
-      'normal'
+      lastZone !== 'normal'
 
     ){
 
       showAlert(
-
         'Vous reprenez pied dans le monde normal',
-
         'normal',
-
         VOICES.exit
-
       );
 
 
       lastZone =
         'normal';
+
     }
   }
 
 
   // =========================================================
-  // GAME OVER 100 %
+  // GAME OVER
   // =========================================================
+
+  function showGameOver(){
+
+    if (
+      !goModal
+    ){
+
+      return;
+
+    }
+
+
+    gameOverShown =
+      true;
+
+
+    fxBlack.style.opacity =
+      '1';
+
+
+    setTimeout(
+      () => {
+
+        fxBlack.style.opacity =
+          '.9';
+
+      },
+      200
+    );
+
+
+    goModal.classList.add(
+      'show'
+    );
+  }
+
+
+  function hideGameOver(){
+
+    if (
+      !goModal
+    ){
+
+      return;
+
+    }
+
+
+    goModal.classList.remove(
+      'show'
+    );
+
+
+    fxBlack.style.opacity =
+      '0';
+
+
+    gameOverShown =
+      false;
+  }
+
 
   function checkGameOver(){
 
     if (
-
       state.value >= 100
-
       &&
-
       !gameOverShown
-
     ){
-
-      state.value =
-        100;
-
-
-      render();
-
 
       showGameOver();
 
     }
+  }
+
+
+  async function tryQuitApp(){
+
+    try{
+
+      if (
+        document.fullscreenElement
+      ){
+
+        await document.exitFullscreen();
+
+      }
+
+    }catch(_){}
+
+
+    ambientEl.pause();
+
+
+    if (
+      window.history.length > 1
+    ){
+
+      window.history.back();
+
+    }
+
+
+    try{
+
+      window
+        .open(
+          '',
+          '_self'
+        )
+        .close();
+
+    }catch(_){}
   }
 
 
@@ -1651,8 +1968,7 @@
 
     passiveTimer =
       setTimeout(
-
-        ()=>{
+        () => {
 
           if (
             Math.random()
@@ -1681,34 +1997,47 @@
           min,
           max
         )
-
       );
   }
 
 
   // =========================================================
-  // ACTION SPÉCIALE :
   // POINT D'ANCRAGE
   //
-  // ANCIENNE RÈGLE CONSERVÉE POUR LE MOMENT.
+  // MÉCANIQUE TEMPORAIRE
   // =========================================================
 
   btnAnchor.addEventListener(
-
     'click',
-
-    ()=>{
+    () => {
 
       if (
-
-        state.world
-        !==
-        'reflet'
-
+        state.world !== 'reflet'
         ||
-
         gameOverShown
+      ){
 
+        return;
+
+      }
+
+
+      /*
+        Comme le sélecteur Quartier a disparu de l'interface,
+        on demande temporairement le quartier lors de l'utilisation.
+
+        Cette étape disparaîtra complètement lorsque nous
+        remplacerons le Point d'ancrage par les Totems.
+      */
+
+      const answer =
+        prompt(
+          'Dans quel quartier êtes-vous ?\n\nEntrez un nombre de 1 à 4.'
+        );
+
+
+      if (
+        answer === null
       ){
 
         return;
@@ -1717,16 +2046,46 @@
 
 
       const quartier =
+        parseInt(
+          answer,
+          10
+        );
+
+
+      if (
+        quartier < 1
+        ||
+        quartier > 4
+        ||
+        Number.isNaN(
+          quartier
+        )
+      ){
+
+        alert(
+          'Quartier invalide. Entrez un nombre compris entre 1 et 4.'
+        );
+
+        return;
+
+      }
+
+
+      const key =
         String(
-          state.quartier
+          quartier
         );
 
 
       if (
         state.anchorUsed[
-          quartier
+          key
         ]
       ){
+
+        alert(
+          `Le Point d’ancrage du quartier ${quartier} a déjà été utilisé.`
+        );
 
         return;
 
@@ -1734,11 +2093,12 @@
 
 
       state.anchorUsed[
-        quartier
-      ] = true;
+        key
+      ] =
+        true;
 
 
-      const oldValue =
+      const previousValue =
         state.value;
 
 
@@ -1753,7 +2113,7 @@
       const actualDelta =
         state.value
         -
-        oldValue;
+        previousValue;
 
 
       addHistory(
@@ -1777,33 +2137,26 @@
       );
 
     }
-
   );
 
 
   // =========================================================
-  // ACTION SPÉCIALE :
   // CAMP DE FORTUNE
   //
-  // ANCIENNE RÈGLE CONSERVÉE POUR LE MOMENT.
+  // RÈGLE ACTUELLE TEMPORAIRE :
+  // -30 % NORMAL
+  // -20 % REFLET
+  // 3 FOIS
   // =========================================================
 
   btnCamp.addEventListener(
-
     'click',
-
-    ()=>{
+    () => {
 
       if (
-
-        state.campLeft
-        <=
-        0
-
+        state.campLeft <= 0
         ||
-
         gameOverShown
-
       ){
 
         return;
@@ -1813,12 +2166,8 @@
 
       const requestedDelta =
 
-        state.world
-        ===
-        'reflet'
-
+        state.world === 'reflet'
           ? -20
-
           : -30;
 
 
@@ -1826,24 +2175,22 @@
         1;
 
 
-      const oldValue =
+      const previousValue =
         state.value;
 
 
       state.value =
         clamp(
-
           state.value
           +
           requestedDelta
-
         );
 
 
       const actualDelta =
         state.value
         -
-        oldValue;
+        previousValue;
 
 
       addHistory(
@@ -1867,7 +2214,6 @@
       );
 
     }
-
   );
 
 
@@ -1877,50 +2223,38 @@
 
   function newGame(){
 
-    // Jauge
-
     state.value =
       0;
 
 
-    // Anciennes règles actuelles
+    state.world =
+      'normal';
+
+
+    state.players =
+      FIXED_PLAYERS;
+
 
     state.campLeft =
       3;
 
 
     state.anchorUsed = {
-
       "1": false,
-
       "2": false,
-
       "3": false,
-
       "4": false
-
     };
 
 
     /*
-      Nouveau matricule.
-
-      SUJET #01
-          ↓
-      Nouvelle partie
-          ↓
-      SUJET #02
-          ↓
-      Nouvelle partie
-          ↓
-      SUJET #03
+      Chaque nouvelle partie crée
+      un nouveau sujet.
     */
 
     state.subjectNumber +=
       1;
 
-
-    // Journal
 
     history.length =
       0;
@@ -1929,76 +2263,62 @@
     renderHistory();
 
 
-    // Monde psychologique
-
     lastZone =
       'normal';
 
 
-    // Ferme éventuellement la modale
-
     hideGameOver();
 
 
-    // Mise à jour
+    /*
+      On revient automatiquement
+      sur l'onglet Partie.
+    */
+
+    switchTab(
+      'partie'
+    );
+
 
     render();
   }
 
 
-  if (btnNew){
+  btnNew?.addEventListener(
+    'click',
+    () => {
 
-    btnNew.addEventListener(
-
-      'click',
-
-      ()=>{
-
-        const confirmNewGame =
-          confirm(
-
-            'Nouvelle partie ? La jauge et les usages spéciaux seront remis à zéro.'
-
-          );
+      const accepted =
+        confirm(
+          'Nouvelle partie ? La jauge et les usages spéciaux seront remis à zéro.'
+        );
 
 
-        if (
-          confirmNewGame
-        ){
+      if (
+        accepted
+      ){
 
-          newGame();
-
-        }
+        newGame();
 
       }
 
-    );
-  }
+    }
+  );
 
-
-  // =========================================================
-  // GAME OVER :
-  // RECOMMENCER / QUITTER
-  // =========================================================
 
   goYes?.addEventListener(
-
     'click',
-
-    ()=>{
+    () => {
 
       newGame();
 
     }
-
   );
 
 
   goNo?.addEventListener(
-
     'click',
-
-    ()=>{
+    () => {
 
       try{
 
@@ -2012,93 +2332,6 @@
       tryQuitApp();
 
     }
-
-  );
-
-
-  // =========================================================
-  // CONTEXTE DE PARTIE
-  // =========================================================
-
-  worldRadios.forEach(
-
-    radio =>
-
-      radio.addEventListener(
-
-        'change',
-
-        ()=>{
-
-          if (
-            radio.checked
-          ){
-
-            state.world =
-              radio.value;
-
-
-            render();
-
-
-            maybeHaunt();
-
-          }
-
-        }
-
-      )
-
-  );
-
-
-  playersSel.addEventListener(
-
-    'change',
-
-    ()=>{
-
-      state.players =
-
-        parseInt(
-          playersSel.value,
-          10
-        )
-
-        ||
-
-        3;
-
-
-      render();
-
-    }
-
-  );
-
-
-  quartierSel.addEventListener(
-
-    'change',
-
-    ()=>{
-
-      state.quartier =
-
-        parseInt(
-          quartierSel.value,
-          10
-        )
-
-        ||
-
-        1;
-
-
-      render();
-
-    }
-
   );
 
 
@@ -2128,11 +2361,9 @@
     ambientEl.src =
 
       AMBIENT_TRACKS[
-
         ambientIdx
         %
         AMBIENT_TRACKS.length
-
       ];
 
 
@@ -2143,16 +2374,14 @@
     ambientEl
       .play()
       .catch(
-        ()=>{}
+        () => {}
       );
   }
 
 
   ambientEl.addEventListener(
-
     'ended',
-
-    ()=>{
+    () => {
 
       ambientIdx =
 
@@ -2170,15 +2399,12 @@
       playAmbientCurrent();
 
     }
-
   );
 
 
   audioBtn.addEventListener(
-
     'click',
-
-    ()=>{
+    () => {
 
       state.musicOn =
         !state.musicOn;
@@ -2200,21 +2426,20 @@
       render();
 
     }
-
   );
 
 
   // =========================================================
-  // PLEIN ÉCRAN
+  // FULLSCREEN
   // =========================================================
 
-  if (fsBtn){
+  if (
+    fsBtn
+  ){
 
     fsBtn.addEventListener(
-
       'click',
-
-      async ()=>{
+      async () => {
 
         if (
           isFullscreen()
@@ -2232,22 +2457,19 @@
         render();
 
       }
-
     );
+
   }
 
 
   document.addEventListener(
-
     'fullscreenchange',
-
     render
-
   );
 
 
   // =========================================================
-  // MOT DE PASSE PLAYTEST
+  // GATE
   // =========================================================
 
   async function sha256Hex(
@@ -2263,31 +2485,26 @@
 
     const buffer =
       await crypto.subtle.digest(
-
         'SHA-256',
-
         encoded
-
       );
 
 
     return Array
-
       .from(
         new Uint8Array(
           buffer
         )
       )
-
       .map(
-
         byte =>
           byte
             .toString(16)
-            .padStart(2, '0')
-
+            .padStart(
+              2,
+              '0'
+            )
       )
-
       .join('');
   }
 
@@ -2304,11 +2521,11 @@
       navigator
     ){
 
-      navigator.serviceWorker.register(
-
-        './service-worker.js'
-
-      );
+      navigator
+        .serviceWorker
+        .register(
+          './service-worker.js'
+        );
 
     }
   }
@@ -2323,9 +2540,7 @@
 
 
     if (
-      stored
-      ===
-      PASSPHRASE_HASH
+      stored === PASSPHRASE_HASH
     ){
 
       okGate();
@@ -2341,47 +2556,34 @@
 
 
   gateBtn.addEventListener(
-
     'click',
-
-    async ()=>{
+    async () => {
 
       const hash =
         await sha256Hex(
-
           (
             gateInput.value
             ||
             ''
           )
-
           .trim()
-
         );
 
 
       const target =
         PASSPHRASE_HASH.replace(
-
           'sha256:',
-
           ''
-
         );
 
 
       if (
-        hash
-        ===
-        target
+        hash === target
       ){
 
         localStorage.setItem(
-
           GATE_KEY,
-
           PASSPHRASE_HASH
-
         );
 
 
@@ -2395,20 +2597,15 @@
       }
 
     }
-
   );
 
 
   gateInput.addEventListener(
-
     'keydown',
-
-    event =>{
+    event => {
 
       if (
-        event.key
-        ===
-        'Enter'
+        event.key === 'Enter'
       ){
 
         gateBtn.click();
@@ -2416,7 +2613,6 @@
       }
 
     }
-
   );
 
 
@@ -2452,10 +2648,8 @@
 
 
   document.addEventListener(
-
     'visibilitychange',
-
-    ()=>{
+    () => {
 
       if (
         document.visibilityState
@@ -2468,7 +2662,6 @@
       }
 
     }
-
   );
 
 
@@ -2541,11 +2734,8 @@
 
 
     banner.setAttribute(
-
       'aria-hidden',
-
       'false'
-
     );
 
 
@@ -2554,7 +2744,6 @@
     ){
 
       installText.textContent =
-
         'Sur iPhone : touchez “Partager” puis “Ajouter à l’écran d’accueil”.';
 
 
@@ -2575,11 +2764,8 @@
 
 
     banner.setAttribute(
-
       'aria-hidden',
-
       'true'
-
     );
 
 
@@ -2588,11 +2774,8 @@
     ){
 
       localStorage.setItem(
-
         'hideInstall',
-
         '1'
-
       );
 
     }
@@ -2600,10 +2783,8 @@
 
 
   window.addEventListener(
-
     'beforeinstallprompt',
-
-    event =>{
+    event => {
 
       event.preventDefault();
 
@@ -2615,15 +2796,12 @@
       maybeShowInstallBanner();
 
     }
-
   );
 
 
   btnInstall?.addEventListener(
-
     'click',
-
-    async ()=>{
+    async () => {
 
       if (
         isIOS
@@ -2659,9 +2837,7 @@
 
 
       if (
-        choice.outcome
-        ===
-        'accepted'
+        choice.outcome === 'accepted'
       ){
 
         hideBanner(
@@ -2671,22 +2847,18 @@
       }
 
     }
-
   );
 
 
   btnInstallClose?.addEventListener(
-
     'click',
-
-    ()=>{
+    () => {
 
       hideBanner(
         true
       );
 
     }
-
   );
 
 
@@ -2708,24 +2880,18 @@
 
 
     const askedFromQR =
-
       params.get(
         'install'
       )
-
       ===
-
       '1';
 
 
     const userRefused =
-
       localStorage.getItem(
         'hideInstall'
       )
-
       ===
-
       '1';
 
 
@@ -2743,26 +2909,27 @@
 
       }
 
-    }else{
+      return;
 
-      if (
-        !deferredPrompt
-      ){
-
-        return;
-
-      }
+    }
 
 
-      if (
-        askedFromQR
-        ||
-        !userRefused
-      ){
+    if (
+      !deferredPrompt
+    ){
 
-        showBanner();
+      return;
 
-      }
+    }
+
+
+    if (
+      askedFromQR
+      ||
+      !userRefused
+    ){
+
+      showBanner();
 
     }
   }
@@ -2774,17 +2941,62 @@
 
   function init(){
 
+    /*
+      On construit immédiatement
+      les 8 boutons.
+    */
+
+    buildInstabilityButtons();
+
+
+    /*
+      4 joueurs fixes.
+    */
+
+    state.players =
+      FIXED_PLAYERS;
+
+
+    /*
+      Monde automatiquement dérivé
+      de l'Instabilité.
+    */
+
+    updateWorld();
+
+
+    /*
+      Mot de passe playtest.
+    */
+
     checkGate();
 
+
+    /*
+      Journal.
+    */
 
     renderHistory();
 
 
+    /*
+      Interface.
+    */
+
     render();
 
 
+    /*
+      Effets passifs.
+    */
+
     schedulePassive();
 
+
+    /*
+      Musique éventuellement
+      déjà activée.
+    */
 
     if (
       state.musicOn
@@ -2795,8 +3007,16 @@
     }
 
 
+    /*
+      Anti-veille.
+    */
+
     requestWakeLock();
 
+
+    /*
+      Installation PWA.
+    */
 
     maybeShowInstallBanner();
 
@@ -2804,11 +3024,8 @@
 
 
   document.addEventListener(
-
     'DOMContentLoaded',
-
     init
-
   );
 
 })();
