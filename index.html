@@ -1,30 +1,55 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
 
   <title>Compagnon — Instabilité</title>
 
-  <meta name="theme-color" content="#111111">
+  <meta
+    name="theme-color"
+    content="#111111"
+  >
 
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon-192.png">
+  <link
+    rel="manifest"
+    href="manifest.webmanifest"
+  >
+
+  <link
+    rel="icon"
+    href="icons/icon-192.png"
+  >
 
   <link
     href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap"
     rel="stylesheet"
   >
 
-  <!-- PWA plein écran -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- PWA -->
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+
   <meta
     name="apple-mobile-web-app-status-bar-style"
     content="black-translucent"
   >
-  <meta name="mobile-web-app-capable" content="yes">
+
+  <meta
+    name="mobile-web-app-capable"
+    content="yes"
+  >
+
 
   <style>
+
     :root{
       --bg:#0f0f10;
       --fg:#eaeaea;
@@ -38,19 +63,23 @@
       --font-body:"EB Garamond",Georgia,serif;
     }
 
+
     *{
       box-sizing:border-box;
     }
+
 
     html,
     body{
       min-height:100%;
     }
 
+
     body{
       margin:0;
 
       font-family:var(--font-body);
+
       color:var(--fg);
 
       background:
@@ -66,39 +95,17 @@
       padding-bottom:env(safe-area-inset-bottom);
     }
 
-    h1,
+
+    button,
     .section-title,
-    .percent,
     .subject-id,
     .instability-title,
-    .btn,
-    button,
-    label,
+    .percent,
+    .tab-btn,
     .alert .content{
       font-family:var(--font-ui);
     }
 
-    /* =========================================================
-       HEADER
-       ========================================================= */
-
-    header{
-      padding:14px 18px;
-
-      border-bottom:1px solid #232325;
-
-      background:rgba(15,15,16,.90);
-
-      backdrop-filter:blur(6px);
-
-      z-index:10;
-    }
-
-    h1{
-      margin:0;
-
-      font-size:18px;
-    }
 
     /* =========================================================
        LAYOUT GÉNÉRAL
@@ -109,14 +116,15 @@
 
       margin:0 auto;
 
-      padding:18px;
+      padding:8px 16px 18px;
 
       display:flex;
 
       flex-direction:column;
 
-      gap:16px;
+      gap:10px;
     }
+
 
     .card{
       background:rgba(24,24,27,.96);
@@ -128,13 +136,13 @@
       padding:16px;
     }
 
-    .section-title{
-      font-size:16px;
 
-      margin-bottom:8px;
+    .section-title{
+      font-size:17px;
 
       color:#fff;
     }
+
 
     .muted{
       color:var(--muted);
@@ -142,52 +150,101 @@
       font-size:14px;
     }
 
+
     .line{
       height:1px;
 
-      background:#232325;
+      background:#29292c;
 
       margin:12px 0;
     }
 
-    label{
+
+    /* =========================================================
+       ONGLETS DU DOSSIER
+       ========================================================= */
+
+    .tabs-bar{
+      width:100%;
+
+      display:grid;
+
+      grid-template-columns:repeat(3,1fr);
+
+      gap:5px;
+
+      align-items:end;
+
+      position:relative;
+
+      z-index:20;
+    }
+
+
+    .tab-btn{
+      border:1px solid #2d2d31;
+
+      border-bottom-color:#232325;
+
+      border-radius:11px 11px 4px 4px;
+
+      padding:10px 6px 9px;
+
+      background:rgba(22,22,24,.92);
+
+      color:#999;
+
       font-size:14px;
 
       cursor:pointer;
+
+      box-shadow:none;
+
+      transition:
+        transform .15s ease,
+        filter .15s ease,
+        color .15s ease;
     }
 
-    .controls{
-      display:flex;
 
-      gap:8px;
-
-      flex-wrap:wrap;
-
-      align-items:center;
+    .tab-btn:hover{
+      filter:brightness(1.12);
     }
 
-    select{
-      background:#1f1f23;
 
-      color:var(--fg);
+    .tab-btn.active{
+      color:#f0f0f0;
 
-      border:1px solid #2a2a2e;
+      background:#1b1b1e;
 
-      border-radius:7px;
+      border-color:#39393d;
 
-      padding:3px 6px;
+      transform:translateY(2px);
 
-      font-family:var(--font-body);
+      text-shadow:
+        0 0 12px
+        rgba(255,255,255,.15);
     }
+
+
+    .tab-panel{
+      display:none;
+    }
+
+
+    .tab-panel.active{
+      display:block;
+    }
+
 
     /* =========================================================
-       ÉCRAN PRINCIPAL :
-       MASQUE À GAUCHE / INSTABILITÉ À DROITE
+       BLOC PRINCIPAL
        ========================================================= */
 
     .instability-card{
       overflow:hidden;
     }
+
 
     .instability-layout{
       display:grid;
@@ -201,9 +258,10 @@
       align-items:stretch;
     }
 
-    /* -------------------------
-       Colonne gauche : masque
-       ------------------------- */
+
+    /* =========================================================
+       COLONNE GAUCHE — SUJET / MASQUE
+       ========================================================= */
 
     .mask-column{
       min-width:0;
@@ -212,27 +270,49 @@
 
       flex-direction:column;
 
-      justify-content:flex-start;
-
       align-items:center;
     }
+
 
     .subject-id{
       width:100%;
 
-      text-align:center;
+      min-height:26px;
+
+      display:flex;
+
+      align-items:center;
+
+      justify-content:center;
+
+      color:#e9e9e9;
 
       font-size:18px;
 
+      line-height:1.15;
+
       letter-spacing:1px;
 
-      color:#e7e7e7;
+      text-align:center;
 
-      margin:2px 0 10px;
+      margin-bottom:5px;
 
       text-shadow:
-        0 0 12px rgba(255,255,255,.12);
+        0 0 12px
+        rgba(255,255,255,.12);
     }
+
+
+    /*
+      Le conteneur existe toujours techniquement
+      pour conserver les dimensions du masque.
+
+      Mais visuellement :
+      - pas de cadre
+      - pas de fond
+      - pas de bordure
+      - pas d'ombre intérieure
+    */
 
     .mask-stage{
       width:min(100%,240px);
@@ -245,21 +325,15 @@
 
       justify-content:center;
 
-      overflow:hidden;
+      background:transparent;
 
-      border-radius:14px;
+      border:none;
 
-      background:
-        rgba(0,0,0,.14);
+      box-shadow:none;
 
-      border:
-        1px solid
-        rgba(255,255,255,.055);
-
-      box-shadow:
-        inset 0 0 28px
-        rgba(0,0,0,.28);
+      overflow:visible;
     }
+
 
     .mask-img{
       display:block;
@@ -276,14 +350,40 @@
 
       filter:
         drop-shadow(
-          0 8px 18px
-          rgba(0,0,0,.35)
+          0 9px 18px
+          rgba(0,0,0,.40)
         );
     }
 
-    /* -------------------------
-       Colonne droite
-       ------------------------- */
+
+    /*
+      Journal placé sous le masque,
+      dans l'espace auparavant inutilisé.
+    */
+
+    .mask-tools{
+      width:100%;
+
+      display:flex;
+
+      justify-content:center;
+
+      margin-top:6px;
+    }
+
+
+    .journal-btn{
+      width:min(150px,100%);
+
+      padding:8px 7px !important;
+
+      font-size:12px !important;
+    }
+
+
+    /* =========================================================
+       COLONNE DROITE — INSTABILITÉ
+       ========================================================= */
 
     .instability-column{
       min-width:0;
@@ -293,20 +393,51 @@
       flex-direction:column;
 
       align-items:center;
-
-      justify-content:center;
     }
+
+
+    /*
+      INSTABILITÉ MENTALE est désormais au-dessus du %.
+
+      Il se retrouve donc horizontalement en face de SUJET #XX.
+    */
 
     .instability-head{
       width:100%;
 
       text-align:center;
-
-      margin-bottom:12px;
     }
 
+
+    .instability-title{
+      min-height:26px;
+
+      display:flex;
+
+      align-items:center;
+
+      justify-content:center;
+
+      color:#d0d0d0;
+
+      font-size:18px;
+
+      line-height:1.15;
+
+      letter-spacing:.25px;
+
+      white-space:nowrap;
+
+      text-align:center;
+
+      text-shadow:
+        0 0 10px
+        rgba(255,255,255,.08);
+    }
+
+
     .percent{
-      margin:0 0 5px;
+      margin:3px 0 7px;
 
       font-size:48px;
 
@@ -315,23 +446,13 @@
       line-height:1;
 
       letter-spacing:.5px;
+
+      text-align:center;
     }
 
-    .instability-title{
-      color:var(--muted);
-
-      font-size:17px;
-
-      letter-spacing:.45px;
-    }
 
     /* =========================================================
-       BOUTONS D'INSTABILITÉ
-       4 lignes :
-       -5   +5
-       -10 +10
-       -15 +15
-       -20 +20
+       8 BOUTONS D'INSTABILITÉ
        ========================================================= */
 
     .instability-buttons{
@@ -343,15 +464,14 @@
 
       gap:8px;
 
-      margin-top:6px;
+      margin-top:3px;
     }
+
 
     .instability-row{
       display:grid;
 
-      grid-template-columns:
-        1fr
-        1fr;
+      grid-template-columns:1fr 1fr;
 
       gap:14px;
 
@@ -359,6 +479,7 @@
 
       justify-items:center;
     }
+
 
     .btn{
       width:64px;
@@ -392,9 +513,11 @@
       appearance:none;
     }
 
+
     .btn:hover{
       filter:brightness(1.08);
     }
+
 
     .btn:active{
       transform:translateY(1px);
@@ -402,11 +525,13 @@
       filter:brightness(.92);
     }
 
+
     .btn:disabled{
       opacity:.4;
 
       cursor:not-allowed;
     }
+
 
     .btn:focus{
       outline:none;
@@ -414,49 +539,44 @@
       box-shadow:none;
     }
 
-    /* POSITIFS */
+
+    /* Positifs */
 
     .btn-plus.btn-p5{
-      background-image:
-        url("img/btn_plus5.png");
+      background-image:url("img/btn_plus5.png");
     }
 
     .btn-plus.btn-p10{
-      background-image:
-        url("img/btn_plus10.png");
+      background-image:url("img/btn_plus10.png");
     }
 
     .btn-plus.btn-p15{
-      background-image:
-        url("img/btn_plus15.png");
+      background-image:url("img/btn_plus15.png");
     }
 
     .btn-plus.btn-p20{
-      background-image:
-        url("img/btn_plus20.png");
+      background-image:url("img/btn_plus20.png");
     }
 
-    /* NÉGATIFS */
+
+    /* Négatifs */
 
     .btn-minus.btn-m5{
-      background-image:
-        url("img/btn_moins5.png");
+      background-image:url("img/btn_moins5.png");
     }
 
     .btn-minus.btn-m10{
-      background-image:
-        url("img/btn_moins10.png");
+      background-image:url("img/btn_moins10.png");
     }
 
     .btn-minus.btn-m15{
-      background-image:
-        url("img/btn_moins15.png");
+      background-image:url("img/btn_moins15.png");
     }
 
     .btn-minus.btn-m20{
-      background-image:
-        url("img/btn_moins20.png");
+      background-image:url("img/btn_moins20.png");
     }
+
 
     /* =========================================================
        MUSIQUE / PLEIN ÉCRAN
@@ -465,61 +585,37 @@
     .primary-controls{
       width:100%;
 
-      margin-top:14px;
-
       display:flex;
 
-      gap:8px;
+      gap:6px;
 
       justify-content:center;
 
-      flex-wrap:wrap;
+      align-items:center;
+
+      margin-top:9px;
     }
 
-    /* =========================================================
-       CARTES SECONDAIRES
-       ========================================================= */
 
-    .secondary-grid{
-      display:grid;
+    .primary-controls button{
+      font-size:12px !important;
 
-      grid-template-columns:
-        1fr
-        1fr;
-
-      gap:16px;
-
-      align-items:start;
+      padding:8px 8px !important;
     }
 
-    .column{
-      display:flex;
-
-      flex-direction:column;
-
-      gap:16px;
-    }
-
-    .journal-card{
-      grid-column:1 / -1;
-    }
 
     /* =========================================================
        BOUTONS CLASSIQUES
        ========================================================= */
 
     button:not(.btn){
-      padding:10px 12px;
+      border-radius:11px;
 
-      border-radius:12px;
-
-      border:1px solid #2a2a2e;
+      border:1px solid #2d2d31;
 
       background:#1f1f23;
 
       color:var(--fg);
-
-      font-size:14px;
 
       cursor:pointer;
 
@@ -528,24 +624,239 @@
       box-shadow:none;
     }
 
+
     button:not(.btn):disabled{
       opacity:.4;
 
       cursor:not-allowed;
     }
 
+
     button:not(.btn):not(:disabled):hover{
-      filter:brightness(1.15);
+      filter:brightness(1.12);
     }
 
-    button:not(.btn):focus{
-      outline:none;
-
-      box-shadow:none;
-    }
 
     /* =========================================================
-       OVERLAYS / EFFETS
+       ACTIONS SPÉCIALES
+       ========================================================= */
+
+    .actions-card{
+      display:flex;
+
+      flex-direction:column;
+
+      gap:0;
+    }
+
+
+    .actions-title{
+      margin-bottom:4px;
+    }
+
+
+    .special-action{
+      padding:10px 0;
+    }
+
+
+    .special-action + .special-action{
+      border-top:1px solid #29292c;
+    }
+
+
+    .action-header{
+      display:flex;
+
+      align-items:center;
+
+      justify-content:space-between;
+
+      gap:8px;
+
+      margin-bottom:7px;
+    }
+
+
+    .action-name{
+      font-family:var(--font-ui);
+
+      font-size:15px;
+
+      color:#efefef;
+    }
+
+
+    /*
+      Petit bouton d'aide.
+
+      Le comportement sera ajouté dans app.js
+      au prochain passage.
+    */
+
+    .info-btn{
+      width:28px;
+
+      height:28px;
+
+      min-width:28px;
+
+      padding:0 !important;
+
+      border-radius:50% !important;
+
+      font-size:15px !important;
+
+      line-height:1;
+
+      display:flex;
+
+      align-items:center;
+
+      justify-content:center;
+
+      color:#bbb !important;
+    }
+
+
+    .action-controls{
+      display:flex;
+
+      align-items:center;
+
+      justify-content:space-between;
+
+      gap:10px;
+
+      flex-wrap:wrap;
+    }
+
+
+    .action-use{
+      min-width:115px;
+
+      padding:9px 12px !important;
+
+      font-size:13px !important;
+    }
+
+
+    .action-info{
+      flex:1;
+
+      min-width:150px;
+
+      text-align:right;
+    }
+
+
+    .new-game-row{
+      border-top:1px solid #29292c;
+
+      margin-top:3px;
+
+      padding-top:12px;
+
+      display:flex;
+
+      justify-content:center;
+    }
+
+
+    #btnNew{
+      min-width:160px;
+
+      padding:9px 14px !important;
+    }
+
+
+    /* =========================================================
+       ANCIEN CONTEXTE — CACHÉ PROVISOIREMENT
+       =========================================================
+
+       Ces éléments restent uniquement pour éviter que
+       app.js v0.7 ne plante pendant notre transition.
+
+       Ils seront supprimés lorsque je te donnerai
+       le nouveau app.js v0.7.1.
+    */
+
+    .legacy-context{
+      display:none !important;
+    }
+
+
+    /* =========================================================
+       JOURNAL — MODALE
+       ========================================================= */
+
+    #historyList{
+      list-style:none;
+
+      margin:0;
+
+      padding:0;
+
+      font-size:16px;
+
+      line-height:1.55;
+
+      text-align:left;
+    }
+
+
+    .journal-modal .modal-title{
+      color:#ececec;
+
+      text-shadow:
+        0 0 16px
+        rgba(255,255,255,.10);
+    }
+
+
+    .journal-box{
+      max-height:55vh;
+
+      overflow:auto;
+
+      background:#101012;
+
+      border:1px solid #28282c;
+
+      border-radius:10px;
+
+      padding:12px;
+
+      margin-bottom:14px;
+    }
+
+
+    /* =========================================================
+       PLACEHOLDERS DES FUTURS ONGLETS
+       ========================================================= */
+
+    .future-card{
+      text-align:center;
+
+      padding:32px 20px;
+
+      color:#999;
+    }
+
+
+    .future-title{
+      font-family:var(--font-ui);
+
+      color:#ddd;
+
+      font-size:22px;
+
+      margin-bottom:8px;
+    }
+
+
+    /* =========================================================
+       OVERLAYS FX
        ========================================================= */
 
     .overlay-flash,
@@ -563,9 +874,11 @@
       z-index:9999;
     }
 
+
     .overlay-flash{
       background:#fff;
     }
+
 
     .overlay-black{
       background:#000;
@@ -573,8 +886,9 @@
       transition:opacity .4s;
     }
 
+
     /* =========================================================
-       ALERTES 49 / 50
+       ALERTES 50 %
        ========================================================= */
 
     .alert{
@@ -588,8 +902,7 @@
 
       justify-content:center;
 
-      background:
-        rgba(0,0,0,.8);
+      background:rgba(0,0,0,.8);
 
       opacity:0;
 
@@ -597,15 +910,16 @@
 
       z-index:10000;
 
-      transition:
-        opacity 1s ease;
+      transition:opacity 1s ease;
     }
+
 
     .alert.show{
       opacity:1;
 
       pointer-events:auto;
     }
+
 
     .alert .content{
       text-align:center;
@@ -618,9 +932,9 @@
         0 0 12px
         rgba(0,0,0,.9);
 
-      transition:
-        transform .4s ease;
+      transition:transform .4s ease;
     }
+
 
     .alert.reflet .content{
       color:#c71f1f;
@@ -629,9 +943,9 @@
         0 0 25px
         rgba(200,30,30,.9);
 
-      transform:
-        scale(1.1);
+      transform:scale(1.1);
     }
+
 
     .alert.normal .content{
       color:#f8f8f8;
@@ -641,15 +955,18 @@
         rgba(255,255,255,.7);
     }
 
+
     /* =========================================================
-       EFFETS D'AMBIANCE
+       AMBIANCE
        ========================================================= */
 
     .fx-blur{
       filter:blur(1px);
     }
 
+
     @keyframes subtle-shake{
+
       0%,
       100%{
         transform:translate(0,0);
@@ -670,14 +987,14 @@
       80%{
         transform:translate(-1px,0);
       }
+
     }
 
+
     .fx-shake{
-      animation:
-        subtle-shake
-        .35s
-        ease;
+      animation:subtle-shake .35s ease;
     }
+
 
     .vignette{
       position:fixed;
@@ -688,8 +1005,7 @@
 
       opacity:0;
 
-      transition:
-        opacity .6s ease;
+      transition:opacity .6s ease;
 
       z-index:9998;
 
@@ -701,6 +1017,7 @@
           rgba(0,0,0,.75) 100%
         );
     }
+
 
     /* =========================================================
        GATE
@@ -722,6 +1039,7 @@
       justify-content:center;
     }
 
+
     .gate-inner{
       background:#141416;
 
@@ -737,6 +1055,7 @@
 
       text-align:center;
     }
+
 
     .gate-inner input{
       width:80%;
@@ -756,6 +1075,7 @@
       text-align:center;
     }
 
+
     .gate-inner .error{
       color:#e11d48;
 
@@ -764,30 +1084,9 @@
       margin-bottom:8px;
     }
 
-    /* =========================================================
-       PLEIN ÉCRAN
-       ========================================================= */
-
-    .fs-btn{
-      padding:8px 10px !important;
-
-      border-radius:10px !important;
-
-      font-size:13px !important;
-
-      opacity:.85;
-    }
-
-    .fs-btn:hover{
-      opacity:1;
-    }
-
-    .fs-btn:active{
-      transform:translateY(1px);
-    }
 
     /* =========================================================
-       INSTALLATION PWA
+       BANNIÈRE INSTALLATION
        ========================================================= */
 
     .install-banner{
@@ -818,9 +1117,11 @@
       z-index:10050;
     }
 
+
     .install-banner.show{
       display:flex;
     }
+
 
     .install-actions{
       display:flex;
@@ -828,23 +1129,15 @@
       gap:8px;
     }
 
+
     #installBtn,
     #installClose{
       padding:8px 12px;
-
-      border-radius:10px;
-
-      border:1px solid #2a2a2e;
-
-      background:#1f1f23;
-
-      color:#eaeaea;
-
-      cursor:pointer;
     }
 
+
     /* =========================================================
-       FIN DE PARTIE
+       MODALES
        ========================================================= */
 
     .modal{
@@ -858,15 +1151,18 @@
 
       justify-content:center;
 
-      background:
-        rgba(0,0,0,.88);
+      background:rgba(0,0,0,.88);
 
       z-index:10060;
+
+      padding:16px;
     }
+
 
     .modal.show{
       display:flex;
     }
+
 
     .modal-inner{
       max-width:560px;
@@ -884,6 +1180,7 @@
       text-align:center;
     }
 
+
     .modal-title{
       font-family:var(--font-ui);
 
@@ -893,12 +1190,13 @@
 
       color:#c71f1f;
 
-      margin-bottom:8px;
+      margin-bottom:10px;
 
       text-shadow:
         0 0 18px
         rgba(200,30,30,.55);
     }
+
 
     .modal-text{
       font-size:18px;
@@ -910,9 +1208,8 @@
       line-height:1.35;
 
       margin-bottom:16px;
-
-      font-family:var(--font-body);
     }
+
 
     .modal-actions{
       display:flex;
@@ -922,46 +1219,54 @@
       justify-content:center;
     }
 
+
     .modal-btn{
       padding:10px 14px !important;
 
       border-radius:12px !important;
-
-      font-family:var(--font-ui);
     }
+
 
     .modal-yes{
       border-color:#256d1b !important;
     }
 
+
     .modal-no{
       border-color:#5b1b1b !important;
     }
 
+
     /* =========================================================
-       SMARTPHONE PORTRAIT
-       Le bloc masque/boutons RESTE en deux colonnes.
+       SMARTPHONE
        ========================================================= */
 
     @media (max-width:768px){
 
-      header{
-        position:static;
-
+      main{
         padding:
           max(
-            10px,
+            7px,
             env(safe-area-inset-top)
           )
-          12px
-          10px;
+          10px
+          12px;
+
+        gap:8px;
       }
 
-      main{
-        padding:10px;
 
-        gap:10px;
+      .tabs-bar{
+        gap:4px;
       }
+
+
+      .tab-btn{
+        padding:9px 4px 8px;
+
+        font-size:13px;
+      }
+
 
       .card{
         padding:11px;
@@ -969,47 +1274,51 @@
         border-radius:13px;
       }
 
+
       .instability-layout{
         grid-template-columns:
-          minmax(0,.9fr)
-          minmax(0,1.1fr);
+          minmax(0,.90fr)
+          minmax(0,1.10fr);
 
-        gap:10px;
+        gap:9px;
       }
 
-      .subject-id{
+
+      .subject-id,
+      .instability-title{
+        min-height:23px;
+
         font-size:15px;
-
-        margin-bottom:7px;
       }
+
 
       .mask-stage{
         width:min(100%,175px);
       }
 
+
       .percent{
-        font-size:40px;
+        font-size:42px;
+
+        margin-top:2px;
+
+        margin-bottom:6px;
       }
 
-      .instability-title{
-        font-size:13px;
-      }
-
-      .instability-head{
-        margin-bottom:7px;
-      }
 
       .instability-buttons{
         max-width:220px;
 
-        gap:6px;
+        gap:5px;
 
-        margin-top:4px;
+        margin-top:2px;
       }
+
 
       .instability-row{
         gap:8px;
       }
+
 
       .btn{
         width:54px;
@@ -1017,35 +1326,59 @@
         height:54px;
       }
 
-      .primary-controls{
-        margin-top:10px;
 
-        gap:6px;
+      .mask-tools{
+        margin-top:5px;
       }
+
+
+      .journal-btn{
+        font-size:11px !important;
+
+        padding:7px 6px !important;
+      }
+
+
+      .primary-controls{
+        gap:5px;
+
+        margin-top:7px;
+      }
+
 
       .primary-controls button{
-        padding:8px !important;
+        font-size:11px !important;
 
-        font-size:12px !important;
+        padding:7px 6px !important;
       }
 
-      .secondary-grid{
-        grid-template-columns:1fr;
 
-        gap:10px;
+      .actions-card{
+        padding:13px;
       }
 
-      .journal-card{
-        grid-column:auto;
+
+      .action-name{
+        font-size:15px;
       }
+
+
+      .action-info{
+        text-align:left;
+
+        min-width:100%;
+      }
+
 
       .alert .content{
         font-size:2rem;
       }
+
     }
 
+
     /* =========================================================
-       TRÈS PETITS TÉLÉPHONES
+       PETITS SMARTPHONES
        ========================================================= */
 
     @media (max-width:380px){
@@ -1055,31 +1388,49 @@
           minmax(0,.88fr)
           minmax(0,1.12fr);
 
-        gap:7px;
+        gap:6px;
       }
+
+
+      .subject-id,
+      .instability-title{
+        font-size:13px;
+      }
+
 
       .mask-stage{
         width:min(100%,150px);
       }
 
-      .subject-id{
-        font-size:14px;
-      }
 
       .percent{
-        font-size:35px;
+        font-size:37px;
       }
 
-      .instability-title{
-        font-size:11px;
-      }
 
       .btn{
         width:48px;
 
         height:48px;
       }
+
+
+      .journal-btn{
+        width:100%;
+      }
+
+
+      .primary-controls{
+        flex-direction:column;
+      }
+
+
+      .primary-controls button{
+        width:100%;
+      }
+
     }
+
 
     /* =========================================================
        PAYSAGE BAS
@@ -1090,61 +1441,71 @@
       and
       (max-height:520px){
 
-      header{
-        position:static;
-
-        padding:
-          max(
-            7px,
-            env(safe-area-inset-top)
-          )
-          12px
-          7px;
-      }
-
       main{
-        padding:8px;
-
-        gap:8px;
+        padding:6px 10px;
       }
+
+
+      .tab-btn{
+        padding:6px 4px;
+
+        font-size:12px;
+      }
+
 
       .instability-card{
-        padding:10px 14px;
+        padding:9px 14px;
       }
+
 
       .mask-stage{
         width:min(100%,180px);
       }
 
-      .subject-id{
-        margin-bottom:4px;
+
+      .subject-id,
+      .instability-title{
+        min-height:20px;
+
+        font-size:14px;
       }
+
 
       .percent{
-        font-size:36px;
+        font-size:35px;
+
+        margin:1px 0 3px;
       }
+
 
       .instability-buttons{
-        gap:4px;
+        gap:3px;
       }
+
 
       .btn{
-        width:48px;
+        width:47px;
 
-        height:48px;
+        height:47px;
       }
+
 
       .primary-controls{
-        margin-top:6px;
+        margin-top:4px;
       }
+
     }
+
   </style>
+
 </head>
+
 
 <body>
 
+
   <!-- =======================================================
-       OVERLAYS & ALERTES
+       FX
        ======================================================= -->
 
   <div
@@ -1152,35 +1513,31 @@
     id="fxFlash"
   ></div>
 
+
   <div
     class="overlay-black"
     id="fxBlack"
   ></div>
+
 
   <div
     class="vignette"
     id="vignette"
   ></div>
 
+
   <div
     class="alert"
     id="alert"
   >
+
     <div
       class="content"
       id="alertText"
     ></div>
+
   </div>
 
-  <!-- =======================================================
-       HEADER
-       ======================================================= -->
-
-  <header>
-    <h1>
-      Compagnon — Instabilité
-    </h1>
-  </header>
 
   <!-- =======================================================
        APPLICATION
@@ -1188,311 +1545,472 @@
 
   <main>
 
+
     <!-- =====================================================
-         BLOC PRINCIPAL
+         ONGLETS
          ===================================================== -->
 
-    <section class="card instability-card">
+    <nav
+      class="tabs-bar"
+      aria-label="Navigation"
+    >
 
-      <div class="instability-layout">
+      <button
+        class="tab-btn active"
+        data-tab="partie"
+        type="button"
+      >
+        PARTIE
+      </button>
 
-        <!-- =========================
-             COLONNE GAUCHE
-             SUJET + MASQUE
-             ========================= -->
 
-        <div class="mask-column">
+      <button
+        class="tab-btn"
+        data-tab="bestiaire"
+        type="button"
+      >
+        BESTIAIRE
+      </button>
 
-          <div
-            class="subject-id"
-            id="subjectId"
-          >
-            SUJET #01
-          </div>
 
-          <div
-            class="mask-stage"
-            id="maskContainer"
-          >
+      <button
+        class="tab-btn"
+        data-tab="aide"
+        type="button"
+      >
+        AIDE
+      </button>
 
-            <img
-              id="maskImage"
-              class="mask-img"
-              src="img/masque0.png"
-              alt="Masque représentant l’état d’instabilité mentale"
-            >
+    </nav>
 
-          </div>
 
-        </div>
+    <!-- =====================================================
+         ONGLET PARTIE
+         ===================================================== -->
 
-        <!-- =========================
-             COLONNE DROITE
-             POURCENTAGE + BOUTONS
-             ========================= -->
+    <section
+      id="tab-partie"
+      class="tab-panel active"
+    >
 
-        <div class="instability-column">
 
-          <div class="instability-head">
+      <!-- ===================================================
+           MASQUE / INSTABILITÉ
+           =================================================== -->
+
+      <section class="card instability-card">
+
+
+        <div class="instability-layout">
+
+
+          <!-- ===============================================
+               GAUCHE
+               =============================================== -->
+
+          <div class="mask-column">
+
 
             <div
-              class="percent"
-              id="percent"
+              class="subject-id"
+              id="subjectId"
             >
-              0 %
+              SUJET #01
             </div>
 
-            <div class="instability-title">
-              INSTABILITÉ MENTALE
+
+            <div
+              class="mask-stage"
+              id="maskContainer"
+            >
+
+              <img
+                id="maskImage"
+                class="mask-img"
+                src="img/masque0.png"
+                alt="Masque représentant l’état d’instabilité mentale"
+              >
+
             </div>
+
+
+            <!--
+              Le Journal quitte désormais le bas de page.
+
+              Il utilisera une modale au prochain passage app.js.
+            -->
+
+            <div class="mask-tools">
+
+              <button
+                id="btnJournal"
+                class="journal-btn"
+                type="button"
+              >
+                Journal
+              </button>
+
+            </div>
+
 
           </div>
 
-          <!--
-            Les 8 boutons seront injectés ici par le nouveau app.js :
 
-            -5     +5
-            -10   +10
-            -15   +15
-            -20   +20
-          -->
+          <!-- ===============================================
+               DROITE
+               =============================================== -->
 
-          <div
-            id="instabilityButtons"
-            class="instability-buttons"
-          ></div>
+          <div class="instability-column">
 
-          <div class="primary-controls">
 
-            <button id="audioToggle">
-              MUSIQUE OFF
-            </button>
+            <div class="instability-head">
 
-            <button
-              id="fsToggle"
-              class="fs-btn"
-              aria-pressed="false"
-            >
-              Plein écran
-            </button>
+
+              <div class="instability-title">
+                INSTABILITÉ MENTALE
+              </div>
+
+
+              <div
+                class="percent"
+                id="percent"
+              >
+                0 %
+              </div>
+
+
+            </div>
+
+
+            <!--
+              app.js génère ici :
+
+              -5      +5
+              -10    +10
+              -15    +15
+              -20    +20
+            -->
+
+            <div
+              id="instabilityButtons"
+              class="instability-buttons"
+            ></div>
+
+
+            <div class="primary-controls">
+
+
+              <button
+                id="audioToggle"
+                type="button"
+              >
+                MUSIQUE OFF
+              </button>
+
+
+              <button
+                id="fsToggle"
+                type="button"
+                aria-pressed="false"
+              >
+                Plein écran
+              </button>
+
+
+            </div>
+
 
           </div>
+
 
         </div>
 
-      </div>
 
-    </section>
+      </section>
 
-    <!-- =====================================================
-         CARTES SECONDAIRES
-         ===================================================== -->
 
-    <div class="secondary-grid">
+      <!-- ===================================================
+           ACTIONS SPÉCIALES
+           =================================================== -->
 
-      <!-- =========================
-           COLONNE GAUCHE
-           CONTEXTE + ACTIONS
-           ========================= -->
+      <section class="card actions-card">
 
-      <div class="column">
 
-        <section class="card">
+        <div class="section-title actions-title">
+          Actions spéciales
+        </div>
 
-          <div class="section-title">
-            Contexte de partie
-          </div>
 
-          <div class="controls">
+        <!-- ===============================================
+             POINT D'ANCRAGE
+             ===============================================
 
-            <label>
-              <input
-                type="radio"
-                name="world"
-                value="normal"
-                checked
-              >
-              Monde normal
-            </label>
+             Le nom et la mécanique seront remplacés
+             plus tard par le système définitif
+             de Totem de résurrection.
+        -->
 
-            <label>
-              <input
-                type="radio"
-                name="world"
-                value="reflet"
-              >
-              Reflet du vice
-            </label>
+        <div class="special-action">
 
-          </div>
 
-          <div
-            class="controls"
-            style="margin-top:10px"
-          >
+          <div class="action-header">
 
-            <label for="players">
-              Joueurs :
-            </label>
 
-            <select id="players">
+            <div class="action-name">
+              Point d’ancrage
+            </div>
 
-              <option>
-                2
-              </option>
 
-              <option selected>
-                3
-              </option>
-
-              <option>
-                4
-              </option>
-
-            </select>
-
-            <label
-              for="quartier"
-              style="margin-left:8px"
+            <button
+              id="btnAnchorHelp"
+              class="info-btn"
+              type="button"
+              aria-label="Informations sur le Point d’ancrage"
             >
-              Quartier :
-            </label>
+              ?
+            </button>
 
-            <select id="quartier">
-
-              <option value="1">
-                1
-              </option>
-
-              <option value="2">
-                2
-              </option>
-
-              <option value="3">
-                3
-              </option>
-
-              <option value="4">
-                4
-              </option>
-
-            </select>
 
           </div>
 
-          <div class="line"></div>
 
-          <div class="section-title">
-            Actions spéciales
-          </div>
+          <div class="action-controls">
 
-          <div class="controls">
 
             <button
               id="btnAnchor"
-              title="Disponible uniquement en Reflet du vice, 1 fois par quartier"
+              class="action-use"
+              type="button"
             >
-              Point d’ancrage (−15 %)
+              UTILISER
             </button>
 
+
             <span
-              class="muted"
+              class="muted action-info"
               id="anchorInfo"
             >
-              Restant : 4
+              Disponible
             </span>
+
 
           </div>
 
-          <div
-            class="controls"
-            style="margin-top:8px"
-          >
+
+        </div>
+
+
+        <!-- ===============================================
+             CAMP DE FORTUNE
+             =============================================== -->
+
+        <div class="special-action">
+
+
+          <div class="action-header">
+
+
+            <div class="action-name">
+              Camp de fortune
+            </div>
+
+
+            <button
+              id="btnCampHelp"
+              class="info-btn"
+              type="button"
+              aria-label="Informations sur le Camp de fortune"
+            >
+              ?
+            </button>
+
+
+          </div>
+
+
+          <div class="action-controls">
+
 
             <button
               id="btnCamp"
-              title="Vote à la majorité. −30 % en Monde normal / −20 % en Reflet du vice."
+              class="action-use"
+              type="button"
             >
-              Camp de fortune (−30 %/−20 %)
+              UTILISER
             </button>
 
+
             <span
-              class="muted"
+              class="muted action-info"
               id="campInfo"
             >
               Utilisations restantes : 3
             </span>
 
-          </div>
-
-          <div class="line"></div>
-
-          <div class="controls">
-
-            <button id="btnNew">
-              Nouvelle partie
-            </button>
-
-            <span class="muted">
-              Réinitialise la jauge et les usages.
-            </span>
 
           </div>
 
-        </section>
 
-      </div>
-
-      <!-- =========================
-           COLONNE DROITE
-           AIDE
-           ========================= -->
-
-      <div class="column">
-
-        <section class="card">
-
-          <div class="section-title">
-            Règles & Aide
-          </div>
-
-          <div class="muted">
-
-            • Le Point d’ancrage n’est utilisable qu’en Reflet du vice et une seule fois par quartier.
-            <br>
-
-            • Le Camp de fortune est utilisable 3x au total, uniquement avec accord de la majorité simple.
-
-          </div>
-
-        </section>
-
-      </div>
-
-      <!-- =========================
-           JOURNAL
-           ========================= -->
-
-      <section class="card journal-card">
-
-        <div class="section-title">
-          Journal d'instabilité
         </div>
 
-        <ul
-          id="historyList"
-          style="
-            list-style:none;
-            margin:0;
-            padding-left:0;
-            font-size:14px;
-            line-height:1.4;
-          "
-        ></ul>
+
+        <!-- ===============================================
+             NOUVELLE PARTIE
+             =============================================== -->
+
+        <div class="new-game-row">
+
+
+          <button
+            id="btnNew"
+            type="button"
+          >
+            Nouvelle partie
+          </button>
+
+
+        </div>
+
 
       </section>
 
-    </div>
+
+      <!-- ===================================================
+           ANCIEN CONTEXTE
+           CACHÉ TEMPORAIREMENT
+           ===================================================
+
+           Ces champs empêchent app.js v0.7 de planter
+           avant notre prochaine modification.
+
+           Ils seront retirés dès le nouveau app.js.
+      -->
+
+      <div
+        class="legacy-context"
+        aria-hidden="true"
+      >
+
+
+        <input
+          type="radio"
+          name="world"
+          value="normal"
+          checked
+        >
+
+
+        <input
+          type="radio"
+          name="world"
+          value="reflet"
+        >
+
+
+        <select id="players">
+
+          <option value="2">
+            2
+          </option>
+
+          <option value="3">
+            3
+          </option>
+
+          <option
+            value="4"
+            selected
+          >
+            4
+          </option>
+
+        </select>
+
+
+        <select id="quartier">
+
+          <option value="1">
+            1
+          </option>
+
+          <option value="2">
+            2
+          </option>
+
+          <option value="3">
+            3
+          </option>
+
+          <option value="4">
+            4
+          </option>
+
+        </select>
+
+
+      </div>
+
+
+    </section>
+
+
+    <!-- =====================================================
+         ONGLET BESTIAIRE
+         ===================================================== -->
+
+    <section
+      id="tab-bestiaire"
+      class="tab-panel"
+    >
+
+
+      <section class="card future-card">
+
+
+        <div class="future-title">
+          Bestiaire
+        </div>
+
+
+        <div class="muted">
+          Le registre des créatures sera intégré ici.
+        </div>
+
+
+      </section>
+
+
+    </section>
+
+
+    <!-- =====================================================
+         ONGLET AIDE
+         ===================================================== -->
+
+    <section
+      id="tab-aide"
+      class="tab-panel"
+    >
+
+
+      <section class="card future-card">
+
+
+        <div class="future-title">
+          Aide
+        </div>
+
+
+        <div class="muted">
+          Cette section sera définie ultérieurement.
+        </div>
+
+
+      </section>
+
+
+    </section>
+
 
     <!-- =====================================================
          VERSION
@@ -1503,10 +2021,11 @@
       id="version"
       style="
         text-align:center;
-        opacity:.6;
-        margin-top:4px;
+        opacity:.55;
+        margin-top:2px;
       "
     ></div>
+
 
     <!-- =====================================================
          BANNIÈRE INSTALLATION
@@ -1518,6 +2037,7 @@
       aria-hidden="true"
     >
 
+
       <div class="install-msg">
 
         <span id="installText">
@@ -1526,27 +2046,84 @@
 
       </div>
 
+
       <div class="install-actions">
 
-        <button id="installBtn">
+
+        <button
+          id="installBtn"
+          type="button"
+        >
           Installer
         </button>
 
+
         <button
           id="installClose"
+          type="button"
           aria-label="Fermer"
         >
           ✕
         </button>
 
+
       </div>
+
 
     </div>
 
+
   </main>
 
+
   <!-- =======================================================
-       PORTE D'ACCÈS PLAYTEST
+       JOURNAL D'INSTABILITÉ
+       ======================================================= -->
+
+  <div
+    id="journalModal"
+    class="modal journal-modal"
+  >
+
+
+    <div class="modal-inner">
+
+
+      <div class="modal-title">
+        Journal d’instabilité
+      </div>
+
+
+      <div class="journal-box">
+
+        <ul id="historyList"></ul>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+
+        <button
+          id="journalClose"
+          class="modal-btn"
+          type="button"
+        >
+          Fermer
+        </button>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <!-- =======================================================
+       GATE PLAYTEST
        ======================================================= -->
 
   <div
@@ -1555,16 +2132,19 @@
     style="display:none"
   >
 
+
     <div class="gate-inner">
+
 
       <h2
         style="
-          margin:0 0 8px 0;
+          margin:0 0 8px;
           font-size:18px;
         "
       >
         Accès playtest
       </h2>
+
 
       <p
         class="muted"
@@ -1574,24 +2154,33 @@
         (fourni par l’organisateur).
       </p>
 
+
       <input
         id="gateInput"
         type="password"
         placeholder="Mot de passe"
       >
 
+
       <div
         class="error"
         id="gateError"
       ></div>
 
-      <button id="gateBtn">
+
+      <button
+        id="gateBtn"
+        type="button"
+      >
         Entrer
       </button>
 
+
     </div>
 
+
   </div>
+
 
   <!-- =======================================================
        AUDIO
@@ -1604,11 +2193,13 @@
     preload="auto"
   ></audio>
 
+
   <audio
     id="groan"
     src="audio/groan.wav"
     preload="auto"
   ></audio>
+
 
   <!-- =======================================================
        FIN DE PARTIE
@@ -1619,42 +2210,55 @@
     class="modal"
   >
 
+
     <div class="modal-inner">
+
 
       <div class="modal-title">
         Fin de partie
       </div>
 
+
       <div class="modal-text">
 
         Vous êtes complètement happés par le Vice.
+
         <br>
 
         Impossible d’en ressortir…
 
       </div>
 
+
       <div class="modal-actions">
+
 
         <button
           id="goYes"
           class="modal-btn modal-yes"
+          type="button"
         >
           Recommencer
         </button>
 
+
         <button
           id="goNo"
           class="modal-btn modal-no"
+          type="button"
         >
           Quitter
         </button>
 
+
       </div>
+
 
     </div>
 
+
   </div>
+
 
   <!-- =======================================================
        SCRIPT
@@ -1662,5 +2266,7 @@
 
   <script src="app.js"></script>
 
+
 </body>
+
 </html>
