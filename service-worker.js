@@ -1,9 +1,7 @@
-// =========================================================
 // RdV Companion — Service Worker
-// v0.7 Playtest
-// =========================================================
+// v0.7.1 Playtest
 
-const CACHE = 'instability-v35';
+const CACHE = 'instability-v36';
 
 
 const ASSETS = [
