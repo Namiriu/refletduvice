@@ -1,54 +1,39 @@
-// RdV Companion — Service Worker
-// v0.7.1 Playtest
-
-const CACHE = 'instability-v36';
-
+const CACHE = 'instability-v37';
 
 const ASSETS = [
-
-  // Application
   './',
   './index.html',
   './app.js',
   './manifest.webmanifest',
 
-
-  // Icônes PWA
+  // Icône / interface
   './icons/icon-192.png',
-  './icons/icon-512.png',
-
-
-  // Fond
   './img/bg.webp',
-
-
-  // Masque d'instabilité
   './img/masque0.png',
 
-
-  // Boutons positifs
+  // Boutons Instabilité
+  './img/btn_moins5.png',
   './img/btn_plus5.png',
+  './img/btn_moins10.png',
   './img/btn_plus10.png',
+  './img/btn_moins15.png',
   './img/btn_plus15.png',
+  './img/btn_moins20.png',
   './img/btn_plus20.png',
 
-
-  // Boutons négatifs
-  './img/btn_moins5.png',
-  './img/btn_moins10.png',
-  './img/btn_moins15.png',
-  './img/btn_moins20.png',
-
-
-  // Musique
+  // Ambiance principale
   './audio/ambient_loop.mp3',
-
-
-  // Audio existant
   './audio/groan.wav',
 
+  // Actions spéciales
+  './audio/ritual_resurrection.wav',
+  './audio/camp_rest.wav',
 
-  // Effets sonores hantés
+  // Passage Monde normal / Reflet
+  './audio/voice_enter_reflet.wav',
+  './audio/voice_return_normal.mp3',
+
+  // Sons hantés
   './audio/sounds/creepy_crow_caw.mp3',
   './audio/sounds/creepy_ghost_whisper.mp3',
   './audio/sounds/creepy_laugh.mp3',
@@ -58,158 +43,44 @@ const ASSETS = [
   './audio/sounds/forest_whisper.mp3',
   './audio/sounds/scratching_metal.mp3',
   './audio/sounds/whisper_voices.mp3',
-  './audio/sounds/wood_creak_single.mp3',
-
-
-  // Voix passage Normal ↔ Reflet
-  './audio/voice_enter_reflet.wav',
-  './audio/voice_return_normal.mp3'
-
+  './audio/sounds/wood_creak_single.mp3'
 ];
 
-
-// =========================================================
-// INSTALLATION
-// =========================================================
-
+// ---------- Installation ----------
 self.addEventListener('install', event => {
-
   event.waitUntil(
-
     caches
       .open(CACHE)
-
-      .then(cache => {
-
-        return cache.addAll(
-          ASSETS
-        );
-
-      })
-
-      .then(() => {
-
-        /*
-          Active immédiatement la nouvelle version
-          du Service Worker sans attendre la fermeture
-          complète de l'ancienne PWA.
-        */
-
-        return self.skipWaiting();
-
-      })
-
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
-
 });
 
-
-// =========================================================
-// ACTIVATION
-// =========================================================
-
+// ---------- Activation ----------
 self.addEventListener('activate', event => {
-
   event.waitUntil(
-
     caches
       .keys()
-
-      .then(keys => {
-
-        return Promise.all(
-
-          keys.map(key => {
-
-            /*
-              Supprime tous les anciens caches.
-
-              Exemple :
-              instability-v34
-                    ↓
-                supprimé
-            */
-
-            if (key !== CACHE) {
-
-              return caches.delete(
-                key
-              );
-
-            }
-
-            return null;
-
-          })
-
-        );
-
-      })
-
-      .then(() => {
-
-        /*
-          Le nouveau Service Worker prend immédiatement
-          le contrôle des pages déjà ouvertes.
-        */
-
-        return self.clients.claim();
-
-      })
-
+      .then(keys =>
+        Promise.all(
+          keys
+            .filter(key => key !== CACHE)
+            .map(key => caches.delete(key))
+        )
+      )
+      .then(() => self.clients.claim())
   );
-
 });
 
-
-// =========================================================
-// FETCH / MODE HORS-LIGNE
-// =========================================================
-
+// ---------- Requêtes ----------
 self.addEventListener('fetch', event => {
-
-  /*
-    On ne gère que les requêtes GET.
-  */
-
-  if (event.request.method !== 'GET') {
-
-    return;
-
-  }
-
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
 
-    caches
-      .match(
-        event.request
-      )
-
-      .then(cachedResponse => {
-
-        /*
-          Si le fichier existe dans le cache,
-          on l'utilise.
-        */
-
-        if (cachedResponse) {
-
-          return cachedResponse;
-
-        }
-
-
-        /*
-          Sinon, récupération normale depuis Internet.
-        */
-
-        return fetch(
-          event.request
-        );
-
-      })
-
+      return fetch(event.request);
+    })
   );
-
 });
