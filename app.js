@@ -1,39 +1,22 @@
-(function(){
+(() => {
+  'use strict';
 
-  // =========================================================
-  // CONFIG
-  // =========================================================
-
+  // ---------- Configuration ----------
   const STEPS = [5, 10, 15, 20];
+  const LSK = key => `jds_${key}`;
+  const VERSION = 'v0.7.2 Playtest';
+  const THRESHOLD = 50;
+  const AMBIENT_VOLUME = 0.55;
 
-  const LSK = (k) => 'jds_' + k;
+  const PASSPHRASE_HASH =
+    'sha256:779d99b88c773f38617d286974f7882cbbc7f91781ef98287c55a5e89ea09e9f';
 
-  const VERSION = 'v0.7.1 Playtest';
-
-  const FIXED_PLAYERS = 4;
-
-
-  // =========================================================
-  // AUDIO D'AMBIANCE
-  // =========================================================
-
-  const AMBIENT_TRACKS = [
-    'audio/ambient_loop.mp3',
-  ];
-
-
-  // =========================================================
-  // EFFETS HANTÉS
-  // =========================================================
+  const GATE_KEY = 'playtest_gate_hash';
 
   const HAUNT = {
     perClickProb: 0.14,
-
-    passiveEvery: [
-      38000,
-      68000
-    ],
-
+    passiveEvery: [38000, 68000],
+    volume: 0.9,
     sfx: [
       'audio/sounds/creepy_crow_caw.mp3',
       'audio/sounds/creepy_ghost_whisper.mp3',
@@ -44,2988 +27,1932 @@
       'audio/sounds/forest_whisper.mp3',
       'audio/sounds/scratching_metal.mp3',
       'audio/sounds/whisper_voices.mp3',
-      'audio/sounds/wood_creak_single.mp3',
+      'audio/sounds/wood_creak_single.mp3'
     ]
   };
-
-
-  // =========================================================
-  // ÉTATS DU MASQUE
-  // =========================================================
-
-  /*
-    Pour l'instant seul masque0.png existe.
-
-    Quand les prochains visuels seront prêts,
-    il suffira de réactiver les lignes correspondantes.
-
-    Exemple :
-
-    { min: 25,  src: 'img/masque25.png' },
-    { min: 50,  src: 'img/masque50.png' },
-    { min: 75,  src: 'img/masque75.png' },
-    { min: 100, src: 'img/masque100.png' }
-  */
-
-  const MASK_STATES = [
-    {
-      min: 0,
-      src: 'img/masque0.png'
-    }
-
-    // Futurs masques :
-    // { min: 25,  src: 'img/masque25.png' },
-    // { min: 50,  src: 'img/masque50.png' },
-    // { min: 75,  src: 'img/masque75.png' },
-    // { min: 100, src: 'img/masque100.png' },
-  ];
-
-
-  // =========================================================
-  // ÉLÉMENTS PRINCIPAUX
-  // =========================================================
-
-  const percent =
-    document.getElementById('percent');
-
-  const instabilityButtons =
-    document.getElementById('instabilityButtons');
-
-  const subjectId =
-    document.getElementById('subjectId');
-
-  const maskImage =
-    document.getElementById('maskImage');
-
-
-  // =========================================================
-  // AUDIO / FULLSCREEN
-  // =========================================================
-
-  const audioBtn =
-    document.getElementById('audioToggle');
-
-  const ambientEl =
-    document.getElementById('ambient');
-
-  const fsBtn =
-    document.getElementById('fsToggle');
-
-
-  // =========================================================
-  // INTERFACE
-  // =========================================================
-
-  const mainEl =
-    document.querySelector('main');
-
-  const vignetteEl =
-    document.getElementById('vignette');
-
-  const versionEl =
-    document.getElementById('version');
-
-
-  // =========================================================
-  // JOURNAL
-  // =========================================================
-
-  const historyEl =
-    document.getElementById('historyList');
-
-  const btnJournal =
-    document.getElementById('btnJournal');
-
-  const journalModal =
-    document.getElementById('journalModal');
-
-  const journalClose =
-    document.getElementById('journalClose');
-
-
-  // =========================================================
-  // ONGLETS
-  // =========================================================
-
-  const tabButtons =
-    document.querySelectorAll('.tab-btn');
-
-  const tabPanels =
-    document.querySelectorAll('.tab-panel');
-
-
-  // =========================================================
-  // ACTIONS SPÉCIALES
-  // =========================================================
-
-  const btnAnchor =
-    document.getElementById('btnAnchor');
-
-  const btnAnchorHelp =
-    document.getElementById('btnAnchorHelp');
-
-  const btnCamp =
-    document.getElementById('btnCamp');
-
-  const btnCampHelp =
-    document.getElementById('btnCampHelp');
-
-  const anchorInfo =
-    document.getElementById('anchorInfo');
-
-  const campInfo =
-    document.getElementById('campInfo');
-
-  const btnNew =
-    document.getElementById('btnNew');
-
-
-  // =========================================================
-  // EFFETS VISUELS
-  // =========================================================
-
-  const fxFlash =
-    document.getElementById('fxFlash');
-
-  const fxBlack =
-    document.getElementById('fxBlack');
-
-  const alertBox =
-    document.getElementById('alert');
-
-  const alertText =
-    document.getElementById('alertText');
-
-
-  // =========================================================
-  // GAME OVER
-  // =========================================================
-
-  const goModal =
-    document.getElementById('gameover');
-
-  const goYes =
-    document.getElementById('goYes');
-
-  const goNo =
-    document.getElementById('goNo');
-
-  let gameOverShown = false;
-
-
-  // =========================================================
-  // MOT DE PASSE PLAYTEST
-  // =========================================================
-
-  const gate =
-    document.getElementById('gate');
-
-  const gateInput =
-    document.getElementById('gateInput');
-
-  const gateBtn =
-    document.getElementById('gateBtn');
-
-  const gateError =
-    document.getElementById('gateError');
-
-
-  const GATE_KEY =
-    'playtest_gate_hash';
-
-
-  const PASSPHRASE_HASH =
-    'sha256:2bbeda386f095c9cfe421ce02841bd948cd1405fb3cafa726947a8431a3d15ce';
-
-
-  // =========================================================
-  // SEUILS
-  // =========================================================
-
-  const THRESHOLD_ENTER = 50;
-  const THRESHOLD_EXIT = 49;
-
 
   const VOICES = {
     enter: 'audio/voice_enter_reflet.wav',
     exit: 'audio/voice_return_normal.mp3'
   };
 
+  const MASK_STATES = [
+    { min: 0, src: 'img/masque0.png' }
 
-  // =========================================================
-  // VALEURS PAR DÉFAUT
-  // =========================================================
+    // Plus tard :
+    // { min: 25, src: 'img/masque25.png' },
+    // { min: 50, src: 'img/masque50.png' },
+    // { min: 75, src: 'img/masque75.png' },
+    // { min: 100, src: 'img/masque100.png' }
+  ];
 
-  const DEFAULT_ANCHORS = {
-    "1": false,
-    "2": false,
-    "3": false,
-    "4": false
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+
+  const els = {
+    appMain: $('appMain'),
+
+    percent: $('percent'),
+    subjectId: $('subjectId'),
+    maskImage: $('maskImage'),
+    instabilityButtons: $('instabilityButtons'),
+
+    vignette: $('vignette'),
+    fxFlash: $('fxFlash'),
+    fxBlack: $('fxBlack'),
+    alert: $('alert'),
+    alertText: $('alertText'),
+
+    btnJournal: $('btnJournal'),
+    journalModal: $('journalModal'),
+    historyList: $('historyList'),
+    journalClose: $('journalClose'),
+
+    audioToggle: $('audioToggle'),
+    fsToggle: $('fsToggle'),
+    ambient: $('ambient'),
+
+    ritualAudio: $('ritualAudio'),
+    campAudio: $('campAudio'),
+
+    btnRitual: $('btnRitual'),
+    btnRitualHelp: $('btnRitualHelp'),
+    ritualInfo: $('ritualInfo'),
+
+    btnCamp: $('btnCamp'),
+    btnCampHelp: $('btnCampHelp'),
+    campInfo: $('campInfo'),
+
+    btnNew: $('btnNew'),
+
+    actionModal: $('actionModal'),
+    actionModalTitle: $('actionModalTitle'),
+    actionModalText: $('actionModalText'),
+    actionModalYes: $('actionModalYes'),
+    actionModalNo: $('actionModalNo'),
+    actionModalClose: $('actionModalClose'),
+
+    gameover: $('gameover'),
+    goYes: $('goYes'),
+    goNo: $('goNo'),
+
+    gate: $('gate'),
+    gateInput: $('gateInput'),
+    gateBtn: $('gateBtn'),
+    gateError: $('gateError'),
+
+    installBanner: $('installBanner'),
+    installText: $('installText'),
+    installBtn: $('installBtn'),
+    installClose: $('installClose'),
+
+    version: $('version')
   };
 
+  // ---------- État ----------
+  const clamp = (n, min, max) =>
+    Math.min(max, Math.max(min, n));
 
-  function readAnchorUsed(){
+  const readInt = (key, fallback) => {
+    const value = Number.parseInt(
+      localStorage.getItem(LSK(key)),
+      10
+    );
 
-    try{
+    return Number.isFinite(value)
+      ? value
+      : fallback;
+  };
 
-      const stored =
-        JSON.parse(
-          localStorage.getItem(
-            LSK('anchorUsed')
-          )
-          ||
-          JSON.stringify(DEFAULT_ANCHORS)
-        );
+  const readBool = (key, fallback) => {
+    const value =
+      localStorage.getItem(LSK(key));
 
+    return value === null
+      ? fallback
+      : value === 'true';
+  };
 
-      return {
-        "1": !!stored["1"],
-        "2": !!stored["2"],
-        "3": !!stored["3"],
-        "4": !!stored["4"]
-      };
+  const state = {
+    value: clamp(
+      readInt('instability', 0),
+      0,
+      100
+    ),
 
-    }catch(_){
-
-      return {
-        ...DEFAULT_ANCHORS
-      };
-
-    }
-  }
-
-
-  // =========================================================
-  // ÉTAT
-  // =========================================================
-
-  let state = {
-
-    value:
-      parseInt(
-        localStorage.getItem(
-          LSK('instability')
-        ) || '0',
-        10
-      ),
-
-    /*
-      Le monde n'est plus sélectionné manuellement.
-
-      Il sera recalculé automatiquement selon l'instabilité.
-    */
-    world: 'normal',
-
-    /*
-      Le jeu est désormais fixé à 4 joueurs.
-    */
-    players: FIXED_PLAYERS,
-
-    /*
-      Ancienne mécanique temporaire :
-      1 Point d'ancrage maximum par quartier.
-    */
-    anchorUsed:
-      readAnchorUsed(),
-
-    /*
-      Décision la plus récente :
-      3 Camps de fortune.
-    */
-    campLeft:
-      parseInt(
-        localStorage.getItem(
-          LSK('campLeft')
-        ) || '3',
-        10
-      ),
+    subjectNumber: Math.max(
+      1,
+      readInt('subjectNumber', 1)
+    ),
 
     musicOn:
-      localStorage.getItem(
-        LSK('musicOn')
-      ) === '1',
+      readBool('musicOn', false),
 
-    subjectNumber:
-      Math.max(
-        1,
-
-        parseInt(
-          localStorage.getItem(
-            LSK('subjectNumber')
-          ) || '1',
-          10
-        ) || 1
-      )
-  };
-
-
-  // =========================================================
-  // OUTILS
-  // =========================================================
-
-  const clamp = (value) =>
-    Math.max(
+    ritualUsed: clamp(
+      readInt('ritualUsed', 0),
       0,
-      Math.min(
-        100,
-        value
-      )
-    );
-
-
-  const fmt = (value) =>
-    value + ' %';
-
-
-  function formatSubjectNumber(number){
-
-    return (
-      'SUJET #'
-      +
-      String(number).padStart(2, '0')
-    );
-  }
-
-
-  function worldFromValue(value){
-
-    return (
-      value >= THRESHOLD_ENTER
-        ? 'reflet'
-        : 'normal'
-    );
-  }
-
-
-  // =========================================================
-  // MONDE AUTOMATIQUE
-  // =========================================================
-
-  function updateWorld(){
-
-    state.world =
-      worldFromValue(
-        state.value
-      );
-
-
-    document.body.classList.toggle(
-      'world-normal',
-      state.world === 'normal'
-    );
-
-
-    document.body.classList.toggle(
-      'world-reflet',
-      state.world === 'reflet'
-    );
-  }
-
-
-  // =========================================================
-  // ONGLETS
-  // =========================================================
-
-  function switchTab(tabName){
-
-    tabButtons.forEach(button => {
-
-      const isActive =
-        button.dataset.tab === tabName;
-
-
-      button.classList.toggle(
-        'active',
-        isActive
-      );
-
-    });
-
-
-    tabPanels.forEach(panel => {
-
-      const isActive =
-        panel.id === 'tab-' + tabName;
-
-
-      panel.classList.toggle(
-        'active',
-        isActive
-      );
-
-    });
-
-  }
-
-
-  tabButtons.forEach(button => {
-
-    button.addEventListener(
-      'click',
-      () => {
-
-        switchTab(
-          button.dataset.tab
-        );
-
-      }
-    );
-
-  });
-
-
-  // =========================================================
-  // JOURNAL
-  // =========================================================
-
-  const history = [];
-
-
-  function addHistory(delta){
-
-    if (delta === 0){
-
-      return;
-
-    }
-
-
-    const text =
-
-      (
-        delta > 0
-          ? `+${delta}`
-          : `${delta}`
-      )
-
-      + ' %';
-
-
-    history.unshift(text);
-
-
-    if (history.length > 8){
-
-      history.pop();
-
-    }
-
-
-    renderHistory();
-  }
-
-
-  function renderHistory(){
-
-    if (!historyEl){
-
-      return;
-
-    }
-
-
-    if (
-      history.length === 0
-    ){
-
-      historyEl.innerHTML =
-        '<li class="muted">Aucun changement récent.</li>';
-
-      return;
-
-    }
-
-
-    historyEl.innerHTML =
-
-      history
-        .map(
-          item =>
-            `<li>• Ajustement : <strong>${item}</strong></li>`
-        )
-        .join('');
-
-  }
-
-
-  function openJournal(){
-
-    if (!journalModal){
-
-      return;
-
-    }
-
-
-    renderHistory();
-
-
-    journalModal.classList.add(
-      'show'
-    );
-  }
-
-
-  function closeJournal(){
-
-    if (!journalModal){
-
-      return;
-
-    }
-
-
-    journalModal.classList.remove(
-      'show'
-    );
-  }
-
-
-  btnJournal?.addEventListener(
-    'click',
-    openJournal
-  );
-
-
-  journalClose?.addEventListener(
-    'click',
-    closeJournal
-  );
-
-
-  journalModal?.addEventListener(
-    'click',
-    event => {
-
-      if (
-        event.target === journalModal
-      ){
-
-        closeJournal();
-
-      }
-
-    }
-  );
-
-
-  // =========================================================
-  // MODALE D'INFORMATION GÉNÉRIQUE
-  // =========================================================
-
-  const infoModal =
-    document.createElement('div');
-
-
-  infoModal.className =
-    'modal journal-modal';
-
-
-  infoModal.innerHTML = `
-    <div class="modal-inner">
-
-      <div
-        class="modal-title"
-        id="infoModalTitle"
-      >
-      </div>
-
-      <div
-        class="modal-text"
-        id="infoModalText"
-      >
-      </div>
-
-      <div class="modal-actions">
-
-        <button
-          id="infoModalClose"
-          class="modal-btn"
-          type="button"
-        >
-          Fermer
-        </button>
-
-      </div>
-
-    </div>
-  `;
-
-
-  document.body.appendChild(
-    infoModal
-  );
-
-
-  const infoModalTitle =
-    document.getElementById(
-      'infoModalTitle'
-    );
-
-
-  const infoModalText =
-    document.getElementById(
-      'infoModalText'
-    );
-
-
-  const infoModalClose =
-    document.getElementById(
-      'infoModalClose'
-    );
-
-
-  function showInfoModal(
-    title,
-    html
-  ){
-
-    infoModalTitle.textContent =
-      title;
-
-
-    infoModalText.innerHTML =
-      html;
-
-
-    infoModal.classList.add(
-      'show'
-    );
-  }
-
-
-  function hideInfoModal(){
-
-    infoModal.classList.remove(
-      'show'
-    );
-  }
-
-
-  infoModalClose.addEventListener(
-    'click',
-    hideInfoModal
-  );
-
-
-  infoModal.addEventListener(
-    'click',
-    event => {
-
-      if (
-        event.target === infoModal
-      ){
-
-        hideInfoModal();
-
-      }
-
-    }
-  );
-
-
-  // =========================================================
-  // AIDE DES ACTIONS SPÉCIALES
-  // =========================================================
-
-  btnAnchorHelp?.addEventListener(
-    'click',
-    () => {
-
-      showInfoModal(
-
-        'Point d’ancrage',
-
-        `
-          <strong>Règle temporaire actuelle</strong>
-          <br><br>
-
-          Disponible uniquement dans le
-          <strong>Reflet du Vice</strong>.
-          <br><br>
-
-          Utilisable une seule fois par quartier.
-          <br><br>
-
-          Réduit l’Instabilité mentale de
-          <strong>15 %</strong>.
-          <br><br>
-
-          Cette mécanique sera prochainement remplacée
-          par les Totems de résurrection.
-        `
-      );
-
-    }
-  );
-
-
-  btnCampHelp?.addEventListener(
-    'click',
-    () => {
-
-      showInfoModal(
-
-        'Camp de fortune',
-
-        `
-          Nécessite l’accord de la
-          <strong>majorité du groupe</strong>.
-          <br><br>
-
-          Nombre d’utilisations :
-          <strong>3 par partie</strong>.
-          <br><br>
-
-          Monde normal :
-          <strong>−30 % d’Instabilité</strong>.
-          <br><br>
-
-          Reflet du Vice :
-          <strong>−20 % d’Instabilité</strong>.
-          <br><br>
-
-          L’application détermine automatiquement
-          le monde actif selon le seuil des 50 %.
-        `
-      );
-
-    }
-  );
-
-
-  // =========================================================
-  // FERMETURE MODALES AVEC ÉCHAP
-  // =========================================================
-
-  document.addEventListener(
-    'keydown',
-    event => {
-
-      if (
-        event.key !== 'Escape'
-      ){
-
-        return;
-
-      }
-
-
-      closeJournal();
-
-      hideInfoModal();
-
-    }
-  );
-
-
-  // =========================================================
-  // MASQUE
-  // =========================================================
-
-  function getMaskState(value){
-
-    let current =
-      MASK_STATES[0];
-
-
-    for (
-      const maskState
-      of MASK_STATES
-    ){
-
-      if (
-        value >= maskState.min
-      ){
-
-        current =
-          maskState;
-
-      }
-
-    }
-
-
-    return current;
-  }
-
-
-  function updateMask(){
-
-    if (!maskImage){
-
-      return;
-
-    }
-
-
-    const current =
-      getMaskState(
-        state.value
-      );
-
-
-    if (
-      maskImage.getAttribute(
-        'src'
-      )
-      !==
-      current.src
-    ){
-
-      maskImage.src =
-        current.src;
-
-    }
-  }
-
-
-  // =========================================================
-  // EFFETS D'INSTABILITÉ
-  // =========================================================
-
-  function applyMoodEffects(value){
-
-    if (
-      value >= 90
-    ){
-
-      const intensity =
-        Math.min(
-          1,
-          (value - 90) / 10
-        );
-
-
-      vignetteEl.style.opacity =
-
-        (
-          0.55
-          +
-          0.35 * intensity
-        )
-
-        .toFixed(2);
-
-    }else{
-
-      vignetteEl.style.opacity =
-        '0';
-
-    }
-  }
-
-
-  function microEffect(value){
-
-    if (
-      value >= 60
-      &&
-      value < 90
-    ){
-
-      if (
-        Math.random()
-        <
-        0.5
-      ){
-
-        mainEl.classList.add(
-          'fx-blur'
-        );
-
-
-        setTimeout(
-          () => {
-
-            mainEl.classList.remove(
-              'fx-blur'
-            );
-
-          },
-          240
-        );
-
-      }else{
-
-        mainEl.classList.add(
-          'fx-shake'
-        );
-
-
-        setTimeout(
-          () => {
-
-            mainEl.classList.remove(
-              'fx-shake'
-            );
-
-          },
-          360
-        );
-
-      }
-    }
-  }
-
-
-  // =========================================================
-  // SAUVEGARDE
-  // =========================================================
-
-  function save(){
-
-    localStorage.setItem(
-      LSK('instability'),
-      String(
-        state.value
-      )
-    );
-
+      2
+    ),
 
     /*
-      Conservé pour compatibilité avec
-      les anciennes versions.
-
-      Mais la valeur est maintenant automatique.
+      Migration automatique :
+      l'ancienne version pouvait encore avoir
+      campLeft = 3 en localStorage.
+      On le limite maintenant à 2.
     */
+    campLeft: clamp(
+      readInt('campLeft', 2),
+      0,
+      2
+    )
+  };
+
+  let history = [];
+  let pendingAction = null;
+
+  let gameOverShown = false;
+  let alertTimer = null;
+  let passiveTimer = null;
+  let wakeLock = null;
+  let appStarted = false;
+  let specialAudioActive = false;
+  let deferredInstallPrompt = null;
+
+  const worldFromValue = value =>
+    value >= THRESHOLD
+      ? 'reflet'
+      : 'normal';
+
+  const isReflet = () =>
+    worldFromValue(state.value) === 'reflet';
+
+  function save() {
+    localStorage.setItem(
+      LSK('instability'),
+      String(state.value)
+    );
 
     localStorage.setItem(
       LSK('world'),
-      state.world
+      worldFromValue(state.value)
     );
-
-
-    /*
-      Le jeu est maintenant fixé à quatre joueurs.
-    */
-
-    localStorage.setItem(
-      LSK('players'),
-      String(
-        FIXED_PLAYERS
-      )
-    );
-
-
-    localStorage.setItem(
-      LSK('anchorUsed'),
-      JSON.stringify(
-        state.anchorUsed
-      )
-    );
-
-
-    localStorage.setItem(
-      LSK('campLeft'),
-      String(
-        state.campLeft
-      )
-    );
-
 
     localStorage.setItem(
       LSK('musicOn'),
-      state.musicOn
-        ? '1'
-        : '0'
+      String(state.musicOn)
     );
-
 
     localStorage.setItem(
       LSK('subjectNumber'),
-      String(
-        state.subjectNumber
-      )
+      String(state.subjectNumber)
+    );
+
+    localStorage.setItem(
+      LSK('ritualUsed'),
+      String(state.ritualUsed)
+    );
+
+    localStorage.setItem(
+      LSK('campLeft'),
+      String(state.campLeft)
     );
   }
 
+  // ---------- Boutons d'Instabilité ----------
+  function buildInstabilityButtons() {
+    els.instabilityButtons.innerHTML = '';
 
-  // =========================================================
-  // FULLSCREEN
-  // =========================================================
+    for (const step of STEPS) {
+      for (const delta of [-step, step]) {
+        const minus = delta < 0;
 
-  async function enterFullscreen(){
+        const btn =
+          document.createElement('button');
 
-    try{
+        btn.type = 'button';
+        btn.className = 'instability-btn';
+        btn.dataset.delta = String(delta);
 
-      if (
-        !document.fullscreenElement
-      ){
-
-        await document
-          .documentElement
-          .requestFullscreen();
-
-      }
-
-    }catch(_){}
-  }
-
-
-  async function exitFullscreen(){
-
-    try{
-
-      if (
-        document.fullscreenElement
-      ){
-
-        await document
-          .exitFullscreen();
-
-      }
-
-    }catch(_){}
-  }
-
-
-  function isFullscreen(){
-
-    return (
-      !!document.fullscreenElement
-    );
-  }
-
-
-  // =========================================================
-  // RENDER
-  // =========================================================
-
-  function render(){
-
-    state.value =
-      clamp(
-        state.value
-      );
-
-
-    /*
-      Détermine automatiquement :
-      0–49  = Monde normal
-      50–100 = Reflet
-    */
-
-    updateWorld();
-
-
-    // Pourcentage
-
-    percent.textContent =
-      fmt(
-        state.value
-      );
-
-
-    document.title =
-      'Instabilité '
-      +
-      fmt(
-        state.value
-      );
-
-
-    // Sujet
-
-    if (
-      subjectId
-    ){
-
-      subjectId.textContent =
-        formatSubjectNumber(
-          state.subjectNumber
+        btn.setAttribute(
+          'aria-label',
+          `${minus ? 'Réduire' : 'Augmenter'} l'instabilité de ${step} %`
         );
 
+        const img =
+          document.createElement('img');
+
+        img.src =
+          `img/btn_${minus ? 'moins' : 'plus'}${step}.png`;
+
+        img.alt =
+          `${minus ? '−' : '+'}${step} %`;
+
+        btn.appendChild(img);
+
+        btn.addEventListener(
+          'click',
+          () => {
+            applyInstabilityDelta(
+              delta,
+              {
+                source:
+                  'Ajustement manuel',
+
+                haunt:
+                  true
+              }
+            );
+          }
+        );
+
+        els.instabilityButtons
+          .appendChild(btn);
+      }
     }
+  }
 
+  // ---------- Masque ----------
+  function updateMask() {
+    const mask =
+      [...MASK_STATES]
+        .reverse()
+        .find(
+          item =>
+            state.value >= item.min
+        ) || MASK_STATES[0];
 
-    // Masque
+    if (
+      els.maskImage.getAttribute('src')
+      !== mask.src
+    ) {
+      els.maskImage.src = mask.src;
+    }
+  }
+
+  // ---------- Rendu principal ----------
+  function render() {
+    els.percent.textContent =
+      `${state.value}%`;
+
+    els.subjectId.textContent =
+      `SUJET #${String(
+        state.subjectNumber
+      ).padStart(2, '0')}`;
+
+    els.ritualInfo.textContent =
+      `Restants : ${2 - state.ritualUsed}/2`;
+
+    els.campInfo.textContent =
+      `Restants : ${state.campLeft}/2`;
+
+    const gameOver =
+      state.value >= 100;
+
+    /*
+      Profanation :
+      uniquement dans le Reflet,
+      2 utilisations maximum.
+    */
+    els.btnRitual.disabled =
+      !isReflet()
+      || state.ritualUsed >= 2
+      || gameOver;
+
+    /*
+      Camp :
+      disponible dans les deux mondes,
+      tant qu'il reste des utilisations.
+    */
+    els.btnCamp.disabled =
+      state.campLeft <= 0
+      || gameOver;
+
+    els.instabilityButtons
+      .querySelectorAll(
+        '.instability-btn'
+      )
+      .forEach(btn => {
+        const delta =
+          Number(btn.dataset.delta);
+
+        btn.disabled =
+          gameOver
+          || (
+            delta < 0
+            && state.value <= 0
+          )
+          || (
+            delta > 0
+            && state.value >= 100
+          );
+      });
+
+    els.audioToggle.textContent =
+      `MUSIQUE ${
+        state.musicOn
+          ? 'ON'
+          : 'OFF'
+      }`;
+
+    els.audioToggle.setAttribute(
+      'aria-pressed',
+      String(state.musicOn)
+    );
+
+    els.vignette.style.opacity =
+      state.value >= 90
+        ? '1'
+        : '0';
 
     updateMask();
-
-
-    // Transition Normal / Reflet
-
-    checkThresholdTransition();
-
-
-    // Effets visuels
-
-    applyMoodEffects(
-      state.value
-    );
-
-
-    // Version
-
-    if (
-      versionEl
-    ){
-
-      versionEl.textContent =
-        VERSION;
-
-    }
-
-
-    // =======================================================
-    // POINT D'ANCRAGE — MÉCANIQUE TEMPORAIRE
-    // =======================================================
-
-    const anchorsUsed =
-      Object
-        .values(
-          state.anchorUsed
-        )
-        .filter(Boolean)
-        .length;
-
-
-    const anchorsLeft =
-      4
-      -
-      anchorsUsed;
-
-
-    btnAnchor.disabled =
-
-      state.world
-      !==
-      'reflet'
-
-      ||
-
-      anchorsLeft
-      <=
-      0;
-
-
-    if (
-      state.world
-      !==
-      'reflet'
-    ){
-
-      anchorInfo.textContent =
-        'Disponible dans le Reflet';
-
-    }else if (
-      anchorsLeft <= 0
-    ){
-
-      anchorInfo.textContent =
-        'Tous les Points utilisés';
-
-    }else{
-
-      anchorInfo.textContent =
-        `${anchorsUsed}/4 utilisés`;
-
-    }
-
-
-    // =======================================================
-    // CAMP DE FORTUNE
-    // =======================================================
-
-    btnCamp.disabled =
-      state.campLeft
-      <=
-      0;
-
-
-    campInfo.textContent =
-      `Restants : ${state.campLeft}/3`;
-
-
-    // Musique
-
-    audioBtn.textContent =
-      state.musicOn
-        ? 'MUSIQUE ON'
-        : 'MUSIQUE OFF';
-
-
-    audioBtn.setAttribute(
-      'aria-pressed',
-      state.musicOn
-        ? 'true'
-        : 'false'
-    );
-
-
-    // Plein écran
-
-    if (
-      fsBtn
-    ){
-
-      fsBtn.textContent =
-        isFullscreen()
-          ? 'Quitter plein écran'
-          : 'Plein écran';
-
-
-      fsBtn.setAttribute(
-        'aria-pressed',
-        isFullscreen()
-          ? 'true'
-          : 'false'
-      );
-
-    }
-
-
+    updateFullscreenButton();
     save();
   }
 
+  // ---------- Journal ----------
+  function addHistory(
+    delta,
+    source
+  ) {
+    if (!delta) return;
 
-  // =========================================================
-  // MODIFICATION DE LA JAUGE
-  // =========================================================
+    const sign =
+      delta > 0
+        ? '+'
+        : '−';
 
-  function applyInstabilityDelta(
-    requestedDelta
-  ){
+    const time =
+      new Date()
+        .toLocaleTimeString(
+          'fr-FR',
+          {
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
 
-    if (
-      gameOverShown
-    ){
+    history.unshift({
+      time,
+      source,
+      delta:
+        `${sign}${Math.abs(delta)} %`,
+      value:
+        state.value
+    });
 
+    if (history.length > 50) {
+      history.length = 50;
+    }
+  }
+
+  function renderHistory() {
+    els.historyList.innerHTML = '';
+
+    if (!history.length) {
+      const li =
+        document.createElement('li');
+
+      li.className =
+        'journal-empty';
+
+      li.textContent =
+        'Aucune modification pour le moment.';
+
+      els.historyList.appendChild(li);
       return;
-
     }
 
+    for (const item of history) {
+      const li =
+        document.createElement('li');
 
-    const previousValue =
+      li.textContent =
+        `${item.time} — ${item.source} : ${item.delta} → ${item.value} %`;
+
+      els.historyList.appendChild(li);
+    }
+  }
+
+  function openJournal() {
+    renderHistory();
+
+    els.journalModal
+      .classList
+      .add('show');
+
+    els.journalClose.focus();
+  }
+
+  function closeJournal() {
+    els.journalModal
+      .classList
+      .remove('show');
+  }
+
+  // ---------- Modale générique ----------
+  function showInfo(
+    title,
+    text
+  ) {
+    pendingAction = null;
+
+    els.actionModalTitle.textContent =
+      title;
+
+    els.actionModalText.textContent =
+      text;
+
+    els.actionModalYes
+      .classList
+      .add('hidden');
+
+    els.actionModalNo
+      .classList
+      .add('hidden');
+
+    els.actionModalClose
+      .classList
+      .remove('hidden');
+
+    els.actionModal
+      .classList
+      .add('show');
+
+    els.actionModalClose.focus();
+  }
+
+  function showConfirm(
+    title,
+    text,
+    onYes
+  ) {
+    pendingAction = onYes;
+
+    els.actionModalTitle.textContent =
+      title;
+
+    els.actionModalText.textContent =
+      text;
+
+    els.actionModalYes
+      .classList
+      .remove('hidden');
+
+    els.actionModalNo
+      .classList
+      .remove('hidden');
+
+    els.actionModalClose
+      .classList
+      .add('hidden');
+
+    els.actionModal
+      .classList
+      .add('show');
+
+    els.actionModalYes.focus();
+  }
+
+  function closeActionModal() {
+    pendingAction = null;
+
+    els.actionModal
+      .classList
+      .remove('show');
+  }
+
+  // ---------- Modification Instabilité ----------
+  function applyInstabilityDelta(
+    delta,
+    {
+      source = 'Ajustement',
+      haunt = false
+    } = {}
+  ) {
+    if (
+      state.value >= 100
+      && delta > 0
+    ) {
+      return {
+        actual: 0,
+        gameOver: true
+      };
+    }
+
+    const before =
       state.value;
 
-
-    const newValue =
+    state.value =
       clamp(
-        previousValue
-        +
-        requestedDelta
+        before + delta,
+        0,
+        100
       );
 
+    const actual =
+      state.value - before;
 
-    const actualDelta =
-      newValue
-      -
-      previousValue;
+    if (actual) {
+      addHistory(
+        actual,
+        source
+      );
 
+      handleThresholdTransition(
+        before,
+        state.value
+      );
 
-    if (
-      actualDelta === 0
-    ){
-
-      return;
-
+      microEffect();
     }
-
-
-    state.value =
-      newValue;
-
-
-    addHistory(
-      actualDelta
-    );
-
-
-    microEffect(
-      state.value
-    );
-
 
     render();
 
-
-    checkGameOver();
-
-
-    maybeHaunt();
-  }
-
-
-  // =========================================================
-  // CRÉATION DES 8 BOUTONS
-  // =========================================================
-
-  function createInstabilityButton(
-    value,
-    sign
-  ){
-
-    const button =
-      document.createElement(
-        'button'
-      );
-
-
-    const delta =
-      value
-      *
-      sign;
-
-
-    button.type =
-      'button';
-
-
-    button.classList.add(
-      'btn'
-    );
-
+    const gameOver =
+      checkGameOver();
 
     if (
-      sign > 0
-    ){
-
-      button.classList.add(
-        'btn-plus',
-        'btn-p' + value
-      );
-
-
-      button.setAttribute(
-        'aria-label',
-        `Augmenter l’instabilité de ${value} %`
-      );
-
-    }else{
-
-      button.classList.add(
-        'btn-minus',
-        'btn-m' + value
-      );
-
-
-      button.setAttribute(
-        'aria-label',
-        `Réduire l’instabilité de ${value} %`
-      );
-
+      haunt
+      && !gameOver
+    ) {
+      maybeHaunt();
     }
 
-
-    button.addEventListener(
-      'click',
-      () => {
-
-        applyInstabilityDelta(
-          delta
-        );
-
-      }
-    );
-
-
-    return button;
+    return {
+      actual,
+      gameOver
+    };
   }
 
-
-  function buildInstabilityButtons(){
-
+  // ---------- Passage Monde normal / Reflet ----------
+  function handleThresholdTransition(
+    before,
+    after
+  ) {
     if (
-      !instabilityButtons
-    ){
-
-      return;
-
+      before < THRESHOLD
+      && after >= THRESHOLD
+    ) {
+      showThresholdAlert(
+        'reflet',
+        'Vous basculez dans le Reflet du vice',
+        VOICES.enter
+      );
     }
 
+    else if (
+      before >= THRESHOLD
+      && after < THRESHOLD
+    ) {
+      showThresholdAlert(
+        'normal',
+        'Vous reprenez pied dans le monde normal',
+        VOICES.exit
+      );
+    }
+  }
 
-    instabilityButtons.innerHTML =
-      '';
+  function showThresholdAlert(
+    kind,
+    text,
+    voicePath
+  ) {
+    clearTimeout(alertTimer);
 
+    els.alert.className =
+      `threshold-alert ${kind}`;
+
+    els.alertText.textContent =
+      text;
 
     /*
-      Produit :
-
-      -5      +5
-      -10    +10
-      -15    +15
-      -20    +20
+      Temporairement au-dessus des modales.
+      Important si le Camp fait repasser
+      de 50% à 35%, par exemple.
     */
+    els.alert.style.zIndex =
+      '10080';
 
-    STEPS.forEach(
-      value => {
+    els.alert
+      .classList
+      .add('show');
 
-        const row =
-          document.createElement(
-            'div'
+    els.alert.setAttribute(
+      'aria-hidden',
+      'false'
+    );
+
+    playOneShot(
+      voicePath,
+      1
+    );
+
+    alertTimer =
+      setTimeout(() => {
+        els.alert
+          .classList
+          .remove('show');
+
+        els.alert.setAttribute(
+          'aria-hidden',
+          'true'
+        );
+
+        setTimeout(
+          () => {
+            els.alert.style.zIndex = '';
+          },
+          850
+        );
+      }, 5000);
+  }
+
+  // ---------- Effets visuels ----------
+  function microEffect() {
+    if (
+      state.value < 60
+      || state.value >= 90
+    ) {
+      return;
+    }
+
+    els.appMain
+      .classList
+      .remove(
+        'fx-shake',
+        'fx-blur'
+      );
+
+    void els.appMain.offsetWidth;
+
+    els.appMain
+      .classList
+      .add('fx-shake');
+
+    if (
+      Math.random() < 0.45
+    ) {
+      els.appMain
+        .classList
+        .add('fx-blur');
+    }
+
+    setTimeout(
+      () => {
+        els.appMain
+          .classList
+          .remove(
+            'fx-shake',
+            'fx-blur'
           );
-
-
-        row.className =
-          'instability-row';
-
-
-        row.appendChild(
-          createInstabilityButton(
-            value,
-            -1
-          )
-        );
-
-
-        row.appendChild(
-          createInstabilityButton(
-            value,
-            +1
-          )
-        );
-
-
-        instabilityButtons.appendChild(
-          row
-        );
-
-      }
+      },
+      420
     );
   }
 
+  // =========================================================
+  // PROFANATION DE LA CHAIR
+  // =========================================================
+
+  const RITUAL_HELP =
+`Dans le Reflet du Vice, rejoignez une Horloge pour ramener l’un de vos compagnons.
+
+2 utilisations maximum par partie.
+
+Chaque survivant perd 1 PV et l’Instabilité Mentale augmente de 10 %.
+
+Le personnage ressuscité revient avec 3 PV, ainsi qu’avec l’équipement qu’il possédait encore lors de sa mort. Les objets déjà récupérés par ses compagnons ne lui sont pas rendus.`;
+
+  function requestRitual() {
+    if (
+      !isReflet()
+      || state.ritualUsed >= 2
+      || state.value >= 100
+    ) {
+      return;
+    }
+
+    showConfirm(
+      'Profanation de la chair',
+
+`L’Horloge pulse à contretemps. Pour rappeler un mort parmi les vivants, ceux qui restent devront offrir une part de leur propre chair.
+
+Accomplir le rituel ?`,
+
+      performRitual
+    );
+  }
+
+  function performRitual() {
+    /*
+      On revérifie la condition
+      au moment de valider.
+    */
+    if (
+      !isReflet()
+      || state.ritualUsed >= 2
+      || state.value >= 100
+    ) {
+      return;
+    }
+
+    /*
+      L'utilisation est consommée
+      dès que le rituel est accepté.
+    */
+    state.ritualUsed += 1;
+
+    save();
+    render();
+
+    /*
+      Son dédié :
+      ritual_resurrection.wav
+    */
+    playSpecialAudio(
+      els.ritualAudio,
+      1
+    );
+
+    /*
+      Le rituel ajoute automatiquement
+      +10% d'Instabilité.
+    */
+    const result =
+      applyInstabilityDelta(
+        10,
+        {
+          source:
+            'Profanation de la chair',
+
+          haunt:
+            false
+        }
+      );
+
+    /*
+      Si +10% fait atteindre 100%,
+      la Fin de partie prend la priorité.
+    */
+    if (result.gameOver) {
+      return;
+    }
+
+    showInfo(
+      'Profanation de la chair',
+
+`Le rituel est accompli.
+
+L’Horloge s’immobilise dans un craquement sec.
+
+Chaque survivant perd 1 PV.
+
+Ramenez un allié de votre choix à 3 PV.`
+    );
+  }
+
+  // =========================================================
+  // CAMP DE FORTUNE
+  // =========================================================
+
+  const CAMP_HELP =
+`2 utilisations maximum par partie.
+
+Son déploiement doit être approuvé à la majorité du groupe.
+
+Monde normal : chaque personnage encore en vie soigne 2 blessures et l’Instabilité Mentale diminue de 10 %.
+
+Reflet du Vice : aucun soin ; l’Instabilité Mentale diminue de 15 %.`;
+
+  function requestCamp() {
+    if (
+      state.campLeft <= 0
+      || state.value >= 100
+    ) {
+      return;
+    }
+
+    showConfirm(
+      'Camp de fortune',
+
+`Le groupe marque une halte. Quelques instants de répit pourraient suffire à reprendre ses esprits… à condition que le groupe accepte de ralentir.
+
+Le déploiement du camp a-t-il été approuvé à la majorité ?
+
+Souhaitez-vous déployer le camp maintenant ?`,
+
+      performCamp
+    );
+  }
+
+  function performCamp() {
+    if (
+      state.campLeft <= 0
+      || state.value >= 100
+    ) {
+      return;
+    }
+
+    /*
+      IMPORTANT :
+      on mémorise le monde AVANT
+      d'appliquer la réduction.
+
+      Exemple :
+      50% dans le Reflet
+      → Camp
+      → effet Reflet = -15%
+      → jauge finale 35%.
+
+      Le joueur n'obtient PAS les soins,
+      même s'il revient ensuite
+      dans le Monde normal.
+    */
+    const wasReflet =
+      isReflet();
+
+    state.campLeft -= 1;
+
+    save();
+    render();
+
+    /*
+      Son dédié :
+      camp_rest.wav
+    */
+    playSpecialAudio(
+      els.campAudio,
+      0.95
+    );
+
+    /*
+      Effet automatique :
+      Normal = -10%
+      Reflet = -15%
+    */
+    applyInstabilityDelta(
+      wasReflet
+        ? -15
+        : -10,
+      {
+        source:
+          'Camp de fortune',
+
+        haunt:
+          false
+      }
+    );
+
+    if (wasReflet) {
+      showInfo(
+        'Camp de fortune',
+
+`Le camp est établi… mais quelque chose cloche.
+
+Le feu peine à prendre. Les ombres semblent plus proches qu’avant. Aucun de vous ne parvient réellement à se reposer.
+
+Instabilité Mentale réduite de 15 %.
+
+Aucun soin n’est accordé dans le Reflet du Vice.`
+      );
+    }
+
+    else {
+      showInfo(
+        'Camp de fortune',
+
+`Le camp est établi.
+
+Pour quelques instants, le silence semble presque rassurant. Les corps récupèrent, les esprits se relâchent.
+
+Instabilité Mentale réduite de 10 %.
+
+Chaque personnage encore en vie soigne 2 blessures.`
+      );
+    }
+  }
+
+  // ---------- Nouvelle partie ----------
+  function requestNewGame() {
+    showConfirm(
+      'Nouvelle partie',
+
+`Démarrer une nouvelle partie ?
+
+L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal seront réinitialisés.`,
+
+      newGame
+    );
+  }
+
+  function newGame() {
+    stopSpecialAudio(
+      els.ritualAudio
+    );
+
+    stopSpecialAudio(
+      els.campAudio
+    );
+
+    specialAudioActive =
+      false;
+
+    state.value =
+      0;
+
+    state.ritualUsed =
+      0;
+
+    state.campLeft =
+      2;
+
+    /*
+      Nouveau numéro de sujet
+      à chaque nouvelle partie.
+    */
+    state.subjectNumber += 1;
+
+    history = [];
+    gameOverShown = false;
+
+    closeActionModal();
+
+    els.gameover
+      .classList
+      .remove('show');
+
+    save();
+    render();
+  }
+
+  // =========================================================
+  // AUDIO
+  // =========================================================
+
+  function playOneShot(
+    src,
+    volume = 1
+  ) {
+    const audio =
+      new Audio(src);
+
+    audio.volume =
+      volume;
+
+    audio
+      .play()
+      .catch(() => {});
+
+    return audio;
+  }
+
+  function stopSpecialAudio(
+    audio
+  ) {
+    if (!audio) return;
+
+    audio.pause();
+
+    try {
+      audio.currentTime = 0;
+    }
+
+    catch (_) {}
+  }
+
+  /*
+    Lors d'un rituel ou d'un camp,
+    la musique ambiante principale
+    est presque entièrement abaissée
+    pour laisser respirer le son spécial.
+  */
+  function playSpecialAudio(
+    audio,
+    volume = 1
+  ) {
+    if (!audio) return;
+
+    stopSpecialAudio(
+      els.ritualAudio
+    );
+
+    stopSpecialAudio(
+      els.campAudio
+    );
+
+    specialAudioActive =
+      true;
+
+    const shouldDuck =
+      state.musicOn
+      && !els.ambient.paused;
+
+    if (shouldDuck) {
+      els.ambient.volume =
+        0.06;
+    }
+
+    audio.volume =
+      volume;
+
+    const restore = () => {
+      specialAudioActive =
+        false;
+
+      if (state.musicOn) {
+        els.ambient.volume =
+          AMBIENT_VOLUME;
+      }
+    };
+
+    audio.onended =
+      restore;
+
+    audio.onerror =
+      restore;
+
+    audio
+      .play()
+      .catch(restore);
+  }
+
+  async function setMusic(on) {
+    state.musicOn = on;
+    save();
+
+    if (on) {
+      els.ambient.volume =
+        AMBIENT_VOLUME;
+
+      try {
+        await els.ambient.play();
+      }
+
+      catch (_) {}
+    }
+
+    else {
+      els.ambient.pause();
+    }
+
+    render();
+  }
+
+  function unlockAmbientOnce() {
+    if (
+      state.musicOn
+      && els.ambient.paused
+    ) {
+      els.ambient.volume =
+        AMBIENT_VOLUME;
+
+      els.ambient
+        .play()
+        .catch(() => {});
+    }
+  }
 
   // =========================================================
   // EFFETS HANTÉS
   // =========================================================
 
-  function randInt(
+  function randomBetween(
     min,
     max
-  ){
-
-    return (
-      min
-      +
-      Math.floor(
-        Math.random()
-        *
-        (
-          max
-          -
-          min
-          +
-          1
-        )
-      )
-    );
+  ) {
+    return Math.floor(
+      Math.random()
+      * (max - min + 1)
+    ) + min;
   }
 
-
-  function pick(array){
-
-    return array[
-      Math.floor(
-        Math.random()
-        *
-        array.length
-      )
-    ];
-  }
-
-
-  function flashWhite(
-    ms = 120
-  ){
-
-    fxFlash.style.opacity =
-      '1';
-
+  function flash(
+    element,
+    opacity,
+    duration
+  ) {
+    element.style.opacity =
+      String(opacity);
 
     setTimeout(
       () => {
-
-        fxFlash.style.opacity =
+        element.style.opacity =
           '0';
-
       },
-      ms
+      duration
     );
   }
 
+  function hauntVisual() {
+    const roll =
+      Math.random();
 
-  function flashBlack(
-    ms = 420
-  ){
-
-    fxBlack.style.opacity =
-      '1';
-
-
-    setTimeout(
-      () => {
-
-        fxBlack.style.opacity =
-          '0';
-
-      },
-      ms
-    );
-  }
-
-
-  function blackout(
-    ms = 900
-  ){
-
-    fxBlack.style.transition =
-      'opacity .12s';
-
-
-    fxBlack.style.opacity =
-      '1';
-
-
-    setTimeout(
-      () => {
-
-        fxBlack.style.opacity =
-          '0';
-
-
-        fxBlack.style.transition =
-          'opacity .4s';
-
-      },
-      ms
-    );
-  }
-
-
-  function playSFX(
-    volume = 0.9
-  ){
-
-    try{
-
-      const audio =
-        new Audio(
-          pick(
-            HAUNT.sfx
-          )
-        );
-
-
-      audio.volume =
-        volume;
-
-
-      audio
-        .play()
-        .catch(
-          () => {}
-        );
-
-    }catch(_){}
-  }
-
-
-  function triggerHaunt(){
-
-    const effect =
-      randInt(
-        1,
-        4
-      );
-
-
-    if (
-      effect === 1
-    ){
-
-      flashWhite(
-        randInt(
+    if (roll < 0.42) {
+      flash(
+        els.fxFlash,
+        0.82,
+        randomBetween(
           90,
           160
         )
       );
+    }
 
-    }else if (
-      effect === 2
-    ){
-
-      flashBlack(
-        randInt(
+    else if (roll < 0.82) {
+      flash(
+        els.fxBlack,
+        0.75,
+        randomBetween(
           200,
           480
         )
       );
+    }
 
-    }else if (
-      effect === 3
-    ){
-
-      blackout(
-        randInt(
+    else {
+      flash(
+        els.fxBlack,
+        1,
+        randomBetween(
           700,
           1100
         )
       );
-
-    }
-
-
-    if (
-      Math.random()
-      <
-      0.85
-    ){
-
-      playSFX(
-        0.9
-      );
-
     }
   }
 
-
-  function maybeHaunt(
-    force = false
-  ){
-
-    if (
-      force
-      ||
-      Math.random()
-      <
-      HAUNT.perClickProb
-    ){
-
-      triggerHaunt();
-
-    }
-  }
-
-
-  // =========================================================
-  // ALERTES NORMAL / REFLET
-  // =========================================================
-
-  function showAlert(
-    message,
-    type = 'reflet',
-    voiceSrc = null
-  ){
-
-    alertText.textContent =
-      message;
-
-
-    alertBox.classList.add(
-      'show',
-      type
-    );
-
-
-    if (
-      voiceSrc
-    ){
-
-      const audio =
-        new Audio(
-          voiceSrc
-        );
-
-
-      audio.volume =
-        0.9;
-
-
-      audio
-        .play()
-        .catch(
-          () => {}
-        );
-
-    }
-
-
-    setTimeout(
-      () => {
-
-        alertBox.classList.remove(
-          'show'
-        );
-
-      },
-      5000
-    );
-
-
-    setTimeout(
-      () => {
-
-        alertBox.classList.remove(
-          type
-        );
-
-      },
-      6000
-    );
-  }
-
-
-  let lastZone =
-    worldFromValue(
-      parseInt(
-        localStorage.getItem(
-          LSK('instability')
-        ) || '0',
-        10
-      )
-    );
-
-
-  function checkThresholdTransition(){
-
-    const current =
-      state.value;
-
-
-    if (
-      current >= THRESHOLD_ENTER
-      &&
-      lastZone !== 'reflet'
-    ){
-
-      showAlert(
-        'Vous basculez dans le Reflet du vice',
-        'reflet',
-        VOICES.enter
-      );
-
-
-      lastZone =
-        'reflet';
-
-
-    }else if (
-
-      current <= THRESHOLD_EXIT
-
-      &&
-
-      lastZone !== 'normal'
-
-    ){
-
-      showAlert(
-        'Vous reprenez pied dans le monde normal',
-        'normal',
-        VOICES.exit
-      );
-
-
-      lastZone =
-        'normal';
-
-    }
-  }
-
-
-  // =========================================================
-  // GAME OVER
-  // =========================================================
-
-  function showGameOver(){
-
-    if (
-      !goModal
-    ){
-
-      return;
-
-    }
-
-
-    gameOverShown =
-      true;
-
-
-    fxBlack.style.opacity =
-      '1';
-
-
-    setTimeout(
-      () => {
-
-        fxBlack.style.opacity =
-          '.9';
-
-      },
-      200
-    );
-
-
-    goModal.classList.add(
-      'show'
-    );
-  }
-
-
-  function hideGameOver(){
-
-    if (
-      !goModal
-    ){
-
-      return;
-
-    }
-
-
-    goModal.classList.remove(
-      'show'
-    );
-
-
-    fxBlack.style.opacity =
-      '0';
-
-
-    gameOverShown =
-      false;
-  }
-
-
-  function checkGameOver(){
-
-    if (
-      state.value >= 100
-      &&
-      !gameOverShown
-    ){
-
-      showGameOver();
-
-    }
-  }
-
-
-  async function tryQuitApp(){
-
-    try{
-
-      if (
-        document.fullscreenElement
-      ){
-
-        await document.exitFullscreen();
-
-      }
-
-    }catch(_){}
-
-
-    ambientEl.pause();
-
-
-    if (
-      window.history.length > 1
-    ){
-
-      window.history.back();
-
-    }
-
-
-    try{
-
-      window
-        .open(
-          '',
-          '_self'
+  function playRandomHauntSfx() {
+    const src =
+      HAUNT.sfx[
+        Math.floor(
+          Math.random()
+          * HAUNT.sfx.length
         )
-        .close();
+      ];
 
-    }catch(_){}
+    playOneShot(
+      src,
+      HAUNT.volume
+    );
   }
 
+  function maybeHaunt() {
+    if (
+      specialAudioActive
+      || Math.random()
+        >= HAUNT.perClickProb
+    ) {
+      return;
+    }
 
-  // =========================================================
-  // EFFETS PASSIFS
-  // =========================================================
+    hauntVisual();
 
-  let passiveTimer =
-    null;
+    if (
+      Math.random() < 0.85
+    ) {
+      playRandomHauntSfx();
+    }
+  }
 
-
-  function schedulePassive(){
-
+  function schedulePassiveHaunt() {
     clearTimeout(
       passiveTimer
     );
 
-
-    const [
-      min,
-      max
-    ] =
-      HAUNT.passiveEvery;
-
-
     passiveTimer =
       setTimeout(
         () => {
-
+          /*
+            Pas d'événement aléatoire
+            pendant le rituel / camp,
+            devant le mot de passe,
+            ou après la défaite.
+          */
           if (
-            Math.random()
-            <
-            0.6
-          ){
+            !specialAudioActive
+            && !els.gate
+              .classList
+              .contains('show')
+            && state.value < 100
+          ) {
+            if (
+              Math.random() < 0.60
+            ) {
+              playRandomHauntSfx();
+            }
 
-            playSFX(
-              0.9
-            );
-
-          }else{
-
-            flashBlack(
-              160
-            );
-
+            else {
+              flash(
+                els.fxBlack,
+                0.58,
+                160
+              );
+            }
           }
 
-
-          schedulePassive();
-
+          schedulePassiveHaunt();
         },
 
-        randInt(
-          min,
-          max
+        randomBetween(
+          ...HAUNT.passiveEvery
         )
       );
   }
 
-
   // =========================================================
-  // POINT D'ANCRAGE
-  //
-  // MÉCANIQUE TEMPORAIRE
+  // FIN DE PARTIE
   // =========================================================
 
-  btnAnchor.addEventListener(
-    'click',
-    () => {
+  function checkGameOver() {
+    if (state.value < 100) {
+      return false;
+    }
 
-      if (
-        state.world !== 'reflet'
-        ||
-        gameOverShown
-      ){
-
-        return;
-
-      }
-
-
-      /*
-        Comme le sélecteur Quartier a disparu de l'interface,
-        on demande temporairement le quartier lors de l'utilisation.
-
-        Cette étape disparaîtra complètement lorsque nous
-        remplacerons le Point d'ancrage par les Totems.
-      */
-
-      const answer =
-        prompt(
-          'Dans quel quartier êtes-vous ?\n\nEntrez un nombre de 1 à 4.'
-        );
-
-
-      if (
-        answer === null
-      ){
-
-        return;
-
-      }
-
-
-      const quartier =
-        parseInt(
-          answer,
-          10
-        );
-
-
-      if (
-        quartier < 1
-        ||
-        quartier > 4
-        ||
-        Number.isNaN(
-          quartier
-        )
-      ){
-
-        alert(
-          'Quartier invalide. Entrez un nombre compris entre 1 et 4.'
-        );
-
-        return;
-
-      }
-
-
-      const key =
-        String(
-          quartier
-        );
-
-
-      if (
-        state.anchorUsed[
-          key
-        ]
-      ){
-
-        alert(
-          `Le Point d’ancrage du quartier ${quartier} a déjà été utilisé.`
-        );
-
-        return;
-
-      }
-
-
-      state.anchorUsed[
-        key
-      ] =
+    if (!gameOverShown) {
+      gameOverShown =
         true;
 
+      closeActionModal();
+      closeJournal();
 
-      const previousValue =
-        state.value;
+      els.gameover
+        .classList
+        .add('show');
 
-
-      state.value =
-        clamp(
-          state.value
-          -
-          15
-        );
-
-
-      const actualDelta =
-        state.value
-        -
-        previousValue;
-
-
-      addHistory(
-        actualDelta
-      );
-
-
-      microEffect(
-        state.value
-      );
-
-
-      render();
-
-
-      checkGameOver();
-
-
-      maybeHaunt(
-        true
-      );
-
+      els.goYes.focus();
     }
-  );
 
+    return true;
+  }
 
-  // =========================================================
-  // CAMP DE FORTUNE
-  //
-  // RÈGLE ACTUELLE TEMPORAIRE :
-  // -30 % NORMAL
-  // -20 % REFLET
-  // 3 FOIS
-  // =========================================================
+  async function tryQuitApp() {
+    els.ambient.pause();
 
-  btnCamp.addEventListener(
-    'click',
-    () => {
-
-      if (
-        state.campLeft <= 0
-        ||
-        gameOverShown
-      ){
-
-        return;
-
-      }
-
-
-      const requestedDelta =
-
-        state.world === 'reflet'
-          ? -20
-          : -30;
-
-
-      state.campLeft -=
-        1;
-
-
-      const previousValue =
-        state.value;
-
-
-      state.value =
-        clamp(
-          state.value
-          +
-          requestedDelta
-        );
-
-
-      const actualDelta =
-        state.value
-        -
-        previousValue;
-
-
-      addHistory(
-        actualDelta
-      );
-
-
-      microEffect(
-        state.value
-      );
-
-
-      render();
-
-
-      checkGameOver();
-
-
-      maybeHaunt(
-        true
-      );
-
-    }
-  );
-
-
-  // =========================================================
-  // NOUVELLE PARTIE
-  // =========================================================
-
-  function newGame(){
-
-    state.value =
-      0;
-
-
-    state.world =
-      'normal';
-
-
-    state.players =
-      FIXED_PLAYERS;
-
-
-    state.campLeft =
-      3;
-
-
-    state.anchorUsed = {
-      "1": false,
-      "2": false,
-      "3": false,
-      "4": false
-    };
-
-
-    /*
-      Chaque nouvelle partie crée
-      un nouveau sujet.
-    */
-
-    state.subjectNumber +=
-      1;
-
-
-    history.length =
-      0;
-
-
-    renderHistory();
-
-
-    lastZone =
-      'normal';
-
-
-    hideGameOver();
-
-
-    /*
-      On revient automatiquement
-      sur l'onglet Partie.
-    */
-
-    switchTab(
-      'partie'
+    stopSpecialAudio(
+      els.ritualAudio
     );
 
-
-    render();
-  }
-
-
-  btnNew?.addEventListener(
-    'click',
-    () => {
-
-      const accepted =
-        confirm(
-          'Nouvelle partie ? La jauge et les usages spéciaux seront remis à zéro.'
-        );
-
-
-      if (
-        accepted
-      ){
-
-        newGame();
-
-      }
-
-    }
-  );
-
-
-  goYes?.addEventListener(
-    'click',
-    () => {
-
-      newGame();
-
-    }
-  );
-
-
-  goNo?.addEventListener(
-    'click',
-    () => {
-
-      try{
-
-        navigator.vibrate?.(
-          120
-        );
-
-      }catch(_){}
-
-
-      tryQuitApp();
-
-    }
-  );
-
-
-  // =========================================================
-  // MUSIQUE
-  // =========================================================
-
-  let ambientIdx =
-    0;
-
-
-  function playAmbientCurrent(){
-
-    if (
-      !state.musicOn
-    ){
-
-      return;
-
-    }
-
-
-    ambientEl.loop =
-      false;
-
-
-    ambientEl.src =
-
-      AMBIENT_TRACKS[
-        ambientIdx
-        %
-        AMBIENT_TRACKS.length
-      ];
-
-
-    ambientEl.volume =
-      0.55;
-
-
-    ambientEl
-      .play()
-      .catch(
-        () => {}
-      );
-  }
-
-
-  ambientEl.addEventListener(
-    'ended',
-    () => {
-
-      ambientIdx =
-
-        (
-          ambientIdx
-          +
-          1
-        )
-
-        %
-
-        AMBIENT_TRACKS.length;
-
-
-      playAmbientCurrent();
-
-    }
-  );
-
-
-  audioBtn.addEventListener(
-    'click',
-    () => {
-
-      state.musicOn =
-        !state.musicOn;
-
-
-      if (
-        state.musicOn
-      ){
-
-        playAmbientCurrent();
-
-      }else{
-
-        ambientEl.pause();
-
-      }
-
-
-      render();
-
-    }
-  );
-
-
-  // =========================================================
-  // FULLSCREEN
-  // =========================================================
-
-  if (
-    fsBtn
-  ){
-
-    fsBtn.addEventListener(
-      'click',
-      async () => {
-
-        if (
-          isFullscreen()
-        ){
-
-          await exitFullscreen();
-
-        }else{
-
-          await enterFullscreen();
-
-        }
-
-
-        render();
-
-      }
+    stopSpecialAudio(
+      els.campAudio
     );
 
-  }
+    try {
+      if (
+        document.fullscreenElement
+      ) {
+        await document
+          .exitFullscreen();
+      }
+    }
 
-
-  document.addEventListener(
-    'fullscreenchange',
-    render
-  );
-
-
-  // =========================================================
-  // GATE
-  // =========================================================
-
-  async function sha256Hex(
-    text
-  ){
-
-    const encoded =
-      new TextEncoder()
-        .encode(
-          text
-        );
-
-
-    const buffer =
-      await crypto.subtle.digest(
-        'SHA-256',
-        encoded
-      );
-
-
-    return Array
-      .from(
-        new Uint8Array(
-          buffer
-        )
-      )
-      .map(
-        byte =>
-          byte
-            .toString(16)
-            .padStart(
-              2,
-              '0'
-            )
-      )
-      .join('');
-  }
-
-
-  function okGate(){
-
-    gate.style.display =
-      'none';
-
+    catch (_) {}
 
     if (
-      'serviceWorker'
-      in
-      navigator
-    ){
+      window.history.length > 1
+    ) {
+      window.history.back();
+    }
 
-      navigator
-        .serviceWorker
-        .register(
-          './service-worker.js'
-        );
-
+    else {
+      window.close();
     }
   }
 
+  // =========================================================
+  // PLEIN ÉCRAN
+  // =========================================================
 
-  async function checkGate(){
-
-    const stored =
-      localStorage.getItem(
-        GATE_KEY
+  function updateFullscreenButton() {
+    const active =
+      Boolean(
+        document.fullscreenElement
       );
 
+    els.fsToggle.textContent =
+      active
+        ? 'Quitter plein écran'
+        : 'Plein écran';
 
-    if (
-      stored === PASSPHRASE_HASH
-    ){
-
-      okGate();
-
-      return;
-
-    }
-
-
-    gate.style.display =
-      'flex';
+    els.fsToggle.setAttribute(
+      'aria-pressed',
+      String(active)
+    );
   }
 
-
-  gateBtn.addEventListener(
-    'click',
-    async () => {
-
-      const hash =
-        await sha256Hex(
-          (
-            gateInput.value
-            ||
-            ''
-          )
-          .trim()
-        );
-
-
-      const target =
-        PASSPHRASE_HASH.replace(
-          'sha256:',
-          ''
-        );
-
-
+  async function toggleFullscreen() {
+    try {
       if (
-        hash === target
-      ){
-
-        localStorage.setItem(
-          GATE_KEY,
-          PASSPHRASE_HASH
-        );
-
-
-        okGate();
-
-      }else{
-
-        gateError.textContent =
-          'Mot de passe incorrect.';
-
+        document.fullscreenElement
+      ) {
+        await document
+          .exitFullscreen();
       }
 
-    }
-  );
-
-
-  gateInput.addEventListener(
-    'keydown',
-    event => {
-
-      if (
-        event.key === 'Enter'
-      ){
-
-        gateBtn.click();
-
+      else {
+        await document
+          .documentElement
+          .requestFullscreen();
       }
-
     }
-  );
 
+    catch (_) {}
+
+    updateFullscreenButton();
+  }
 
   // =========================================================
   // WAKE LOCK
   // =========================================================
 
-  let wakeLock =
-    null;
+  async function requestWakeLock() {
+    if (
+      !('wakeLock' in navigator)
+      || document.visibilityState
+        !== 'visible'
+    ) {
+      return;
+    }
 
+    try {
+      wakeLock =
+        await navigator
+          .wakeLock
+          .request('screen');
+    }
 
-  async function requestWakeLock(){
-
-    try{
-
-      if (
-        'wakeLock'
-        in
-        navigator
-      ){
-
-        wakeLock =
-          await navigator
-            .wakeLock
-            .request(
-              'screen'
-            );
-
-      }
-
-    }catch(_){}
+    catch (_) {
+      wakeLock = null;
+    }
   }
 
+  // =========================================================
+  // ONGLETS
+  // =========================================================
 
-  document.addEventListener(
-    'visibilitychange',
-    () => {
+  function setupTabs() {
+    const buttons =
+      [
+        ...document
+          .querySelectorAll(
+            '.tab-btn'
+          )
+      ];
+
+    const panels =
+      [
+        ...document
+          .querySelectorAll(
+            '.tab-panel'
+          )
+      ];
+
+    for (const btn of buttons) {
+      btn.addEventListener(
+        'click',
+        () => {
+          const target =
+            btn.dataset.tab;
+
+          for (
+            const item
+            of buttons
+          ) {
+            const active =
+              item === btn;
+
+            item.classList
+              .toggle(
+                'active',
+                active
+              );
+
+            item.setAttribute(
+              'aria-selected',
+              String(active)
+            );
+          }
+
+          for (
+            const panel
+            of panels
+          ) {
+            panel.classList
+              .toggle(
+                'active',
+                panel.id
+                  === `tab-${target}`
+              );
+          }
+        }
+      );
+    }
+  }
+
+  // =========================================================
+  // PORTE D'ACCÈS PLAYTEST
+  // =========================================================
+
+  async function sha256Hex(
+    message
+  ) {
+    const data =
+      new TextEncoder()
+        .encode(message);
+
+    const hash =
+      await crypto.subtle
+        .digest(
+          'SHA-256',
+          data
+        );
+
+    return [
+      ...new Uint8Array(hash)
+    ]
+      .map(
+        byte =>
+          byte
+            .toString(16)
+            .padStart(2, '0')
+      )
+      .join('');
+  }
+
+  async function submitGate() {
+    const pass =
+      els.gateInput.value;
+
+    if (!pass) {
+      els.gateError.textContent =
+        'Entrez le mot de passe.';
+
+      return;
+    }
+
+    try {
+      const hash =
+        `sha256:${
+          await sha256Hex(pass)
+        }`;
 
       if (
-        document.visibilityState
-        ===
-        'visible'
-      ){
+        hash
+        !== PASSPHRASE_HASH
+      ) {
+        els.gateError.textContent =
+          'Mot de passe incorrect.';
 
-        requestWakeLock();
-
+        els.gateInput.select();
+        return;
       }
 
-    }
-  );
+      localStorage.setItem(
+        GATE_KEY,
+        PASSPHRASE_HASH
+      );
 
+      els.gateError.textContent =
+        '';
+
+      els.gate
+        .classList
+        .remove('show');
+
+      startApp();
+    }
+
+    catch (_) {
+      els.gateError.textContent =
+        'Impossible de vérifier le mot de passe sur cet appareil.';
+    }
+  }
 
   // =========================================================
   // INSTALLATION PWA
   // =========================================================
 
-  let deferredPrompt =
-    null;
-
-
-  const banner =
-    document.getElementById(
-      'installBanner'
-    );
-
-
-  const btnInstall =
-    document.getElementById(
-      'installBtn'
-    );
-
-
-  const btnInstallClose =
-    document.getElementById(
-      'installClose'
-    );
-
-
-  const installText =
-    document.getElementById(
-      'installText'
-    );
-
-
-  const isIOS =
-    /iPhone|iPad|iPod/i
-      .test(
-        navigator.userAgent
-      );
-
-
-  const isStandalone =
-
-    window
-      .matchMedia(
-        '(display-mode: standalone)'
-      )
-      .matches
-
-    ||
-
-    window.navigator.standalone;
-
-
-  function showBanner(){
-
-    if (
-      isStandalone
-    ){
-
-      return;
-
-    }
-
-
-    banner.classList.add(
-      'show'
-    );
-
-
-    banner.setAttribute(
-      'aria-hidden',
-      'false'
-    );
-
-
-    if (
-      isIOS
-    ){
-
-      installText.textContent =
-        'Sur iPhone : touchez “Partager” puis “Ajouter à l’écran d’accueil”.';
-
-
-      btnInstall.textContent =
-        'OK';
-
-    }
-  }
-
-
-  function hideBanner(
-    permanently = false
-  ){
-
-    banner.classList.remove(
-      'show'
-    );
-
-
-    banner.setAttribute(
-      'aria-hidden',
-      'true'
-    );
-
-
-    if (
-      permanently
-    ){
-
-      localStorage.setItem(
-        'hideInstall',
-        '1'
-      );
-
-    }
-  }
-
-
-  window.addEventListener(
-    'beforeinstallprompt',
-    event => {
-
-      event.preventDefault();
-
-
-      deferredPrompt =
-        event;
-
-
-      maybeShowInstallBanner();
-
-    }
-  );
-
-
-  btnInstall?.addEventListener(
-    'click',
-    async () => {
-
-      if (
-        isIOS
-      ){
-
-        hideBanner(
-          true
-        );
-
-        return;
-
-      }
-
-
-      if (
-        !deferredPrompt
-      ){
-
-        return;
-
-      }
-
-
-      deferredPrompt.prompt();
-
-
-      const choice =
-        await deferredPrompt.userChoice;
-
-
-      deferredPrompt =
-        null;
-
-
-      if (
-        choice.outcome === 'accepted'
-      ){
-
-        hideBanner(
-          true
-        );
-
-      }
-
-    }
-  );
-
-
-  btnInstallClose?.addEventListener(
-    'click',
-    () => {
-
-      hideBanner(
-        true
-      );
-
-    }
-  );
-
-
-  function maybeShowInstallBanner(){
-
-    if (
-      isStandalone
-    ){
-
-      return;
-
-    }
-
-
+  function setupInstallBanner() {
     const params =
       new URLSearchParams(
         location.search
       );
 
+    const requested =
+      params.get('install')
+        === '1';
 
-    const askedFromQR =
-      params.get(
-        'install'
-      )
-      ===
-      '1';
+    const standalone =
+      matchMedia(
+        '(display-mode: standalone)'
+      ).matches
+      || window.navigator
+        .standalone === true;
 
-
-    const userRefused =
-      localStorage.getItem(
+    if (
+      standalone
+      || !requested
+      || localStorage.getItem(
         'hideInstall'
-      )
-      ===
-      '1';
+      ) === '1'
+    ) {
+      return;
+    }
 
+    els.installBanner
+      .classList
+      .add('show');
 
-    if (
-      isIOS
-    ){
+    els.installBanner
+      .setAttribute(
+        'aria-hidden',
+        'false'
+      );
 
-      if (
-        askedFromQR
-        &&
-        !userRefused
-      ){
-
-        showBanner();
-
+    window.addEventListener(
+      'beforeinstallprompt',
+      event => {
+        event.preventDefault();
+        deferredInstallPrompt =
+          event;
       }
+    );
 
-      return;
+    els.installBtn.addEventListener(
+      'click',
+      async () => {
+        if (
+          !deferredInstallPrompt
+        ) {
+          els.installText
+            .textContent =
+              'Utilisez le menu du navigateur pour installer l’application.';
 
-    }
+          return;
+        }
 
+        deferredInstallPrompt
+          .prompt();
 
-    if (
-      !deferredPrompt
-    ){
+        try {
+          await deferredInstallPrompt
+            .userChoice;
+        }
 
-      return;
+        catch (_) {}
 
-    }
+        deferredInstallPrompt =
+          null;
 
+        hideInstallBanner(false);
+      }
+    );
 
-    if (
-      askedFromQR
-      ||
-      !userRefused
-    ){
+    els.installClose.addEventListener(
+      'click',
+      () =>
+        hideInstallBanner(true)
+    );
+  }
 
-      showBanner();
+  function hideInstallBanner(
+    neverShowAgain
+  ) {
+    els.installBanner
+      .classList
+      .remove('show');
 
+    els.installBanner
+      .setAttribute(
+        'aria-hidden',
+        'true'
+      );
+
+    if (neverShowAgain) {
+      localStorage.setItem(
+        'hideInstall',
+        '1'
+      );
     }
   }
 
+  // =========================================================
+  // SERVICE WORKER
+  // =========================================================
+
+  function registerServiceWorker() {
+    if (
+      !('serviceWorker' in navigator)
+    ) {
+      return;
+    }
+
+    navigator
+      .serviceWorker
+      .register(
+        './service-worker.js'
+      )
+      .then(
+        registration =>
+          registration
+            .update()
+            .catch(() => {})
+      )
+      .catch(() => {});
+  }
 
   // =========================================================
-  // INITIALISATION
+  // DÉMARRAGE
   // =========================================================
 
-  function init(){
+  function startApp() {
+    if (appStarted) {
+      return;
+    }
+
+    appStarted =
+      true;
+
+    registerServiceWorker();
+    requestWakeLock();
+    schedulePassiveHaunt();
+
+    if (state.musicOn) {
+      setMusic(true);
+    }
+
+    if (state.value >= 100) {
+      checkGameOver();
+    }
+  }
+
+  // ---------- Événements ----------
+  function bindEvents() {
+    // Journal
+    els.btnJournal.addEventListener(
+      'click',
+      openJournal
+    );
+
+    els.journalClose.addEventListener(
+      'click',
+      closeJournal
+    );
+
+    els.journalModal.addEventListener(
+      'click',
+      event => {
+        if (
+          event.target
+          === els.journalModal
+        ) {
+          closeJournal();
+        }
+      }
+    );
+
+    // Modale générique
+    els.actionModalYes
+      .addEventListener(
+        'click',
+        () => {
+          const action =
+            pendingAction;
+
+          closeActionModal();
+
+          if (action) {
+            action();
+          }
+        }
+      );
+
+    els.actionModalNo
+      .addEventListener(
+        'click',
+        closeActionModal
+      );
+
+    els.actionModalClose
+      .addEventListener(
+        'click',
+        closeActionModal
+      );
+
+    els.actionModal
+      .addEventListener(
+        'click',
+        event => {
+          if (
+            event.target
+            === els.actionModal
+          ) {
+            closeActionModal();
+          }
+        }
+      );
+
+    // Profanation
+    els.btnRitual
+      .addEventListener(
+        'click',
+        requestRitual
+      );
+
+    els.btnRitualHelp
+      .addEventListener(
+        'click',
+        () =>
+          showInfo(
+            'Profanation de la chair',
+            RITUAL_HELP
+          )
+      );
+
+    // Camp
+    els.btnCamp
+      .addEventListener(
+        'click',
+        requestCamp
+      );
+
+    els.btnCampHelp
+      .addEventListener(
+        'click',
+        () =>
+          showInfo(
+            'Camp de fortune',
+            CAMP_HELP
+          )
+      );
+
+    // Nouvelle partie
+    els.btnNew
+      .addEventListener(
+        'click',
+        requestNewGame
+      );
+
+    // Musique
+    els.audioToggle
+      .addEventListener(
+        'click',
+        () =>
+          setMusic(
+            !state.musicOn
+          )
+      );
+
+    // Plein écran
+    els.fsToggle
+      .addEventListener(
+        'click',
+        toggleFullscreen
+      );
+
+    document
+      .addEventListener(
+        'fullscreenchange',
+        updateFullscreenButton
+      );
+
+    // Game Over
+    els.goYes
+      .addEventListener(
+        'click',
+        newGame
+      );
+
+    els.goNo
+      .addEventListener(
+        'click',
+        tryQuitApp
+      );
+
+    // Mot de passe
+    els.gateBtn
+      .addEventListener(
+        'click',
+        submitGate
+      );
+
+    els.gateInput
+      .addEventListener(
+        'keydown',
+        event => {
+          if (
+            event.key
+            === 'Enter'
+          ) {
+            submitGate();
+          }
+        }
+      );
+
+    els.gateInput
+      .addEventListener(
+        'input',
+        () => {
+          els.gateError
+            .textContent = '';
+        }
+      );
 
     /*
-      On construit immédiatement
-      les 8 boutons.
+      Si la musique était enregistrée ON
+      mais que le navigateur bloque
+      l'autoplay, le premier toucher
+      réessaiera de la lancer.
     */
+    document.addEventListener(
+      'pointerdown',
+      unlockAmbientOnce,
+      {
+        once: true
+      }
+    );
 
+    // Retour dans l'application
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (
+          document.visibilityState
+          === 'visible'
+        ) {
+          requestWakeLock();
+        }
+      }
+    );
+
+    // Échap ferme seulement
+    // les modales non critiques.
+    document.addEventListener(
+      'keydown',
+      event => {
+        if (
+          event.key !== 'Escape'
+        ) {
+          return;
+        }
+
+        if (
+          els.actionModal
+            .classList
+            .contains('show')
+        ) {
+          closeActionModal();
+        }
+
+        else if (
+          els.journalModal
+            .classList
+            .contains('show')
+        ) {
+          closeJournal();
+        }
+      }
+    );
+  }
+
+  // ---------- Initialisation ----------
+  function init() {
     buildInstabilityButtons();
+    setupTabs();
+    bindEvents();
+    setupInstallBanner();
 
+    els.version.textContent =
+      VERSION;
 
-    /*
-      4 joueurs fixes.
-    */
-
-    state.players =
-      FIXED_PLAYERS;
-
-
-    /*
-      Monde automatiquement dérivé
-      de l'Instabilité.
-    */
-
-    updateWorld();
-
-
-    /*
-      Mot de passe playtest.
-    */
-
-    checkGate();
-
-
-    /*
-      Journal.
-    */
-
-    renderHistory();
-
-
-    /*
-      Interface.
-    */
+    els.ambient.volume =
+      AMBIENT_VOLUME;
 
     render();
 
-
-    /*
-      Effets passifs.
-    */
-
-    schedulePassive();
-
-
-    /*
-      Musique éventuellement
-      déjà activée.
-    */
-
     if (
-      state.musicOn
-    ){
+      localStorage.getItem(
+        GATE_KEY
+      ) === PASSPHRASE_HASH
+    ) {
+      els.gate
+        .classList
+        .remove('show');
 
-      playAmbientCurrent();
-
+      startApp();
     }
 
+    else {
+      els.gate
+        .classList
+        .add('show');
 
-    /*
-      Anti-veille.
-    */
-
-    requestWakeLock();
-
-
-    /*
-      Installation PWA.
-    */
-
-    maybeShowInstallBanner();
-
+      setTimeout(
+        () =>
+          els.gateInput.focus(),
+        0
+      );
+    }
   }
 
-
-  document.addEventListener(
-    'DOMContentLoaded',
-    init
-  );
-
+  init();
 })();
