@@ -1,2272 +1,1046 @@
 <!doctype html>
 <html lang="fr">
-
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RdV Companion</title>
+  <meta name="theme-color" content="#0b0b0c">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
 
-  <title>Compagnon — Instabilité</title>
-
-  <meta
-    name="theme-color"
-    content="#111111"
-  >
-
-  <link
-    rel="manifest"
-    href="manifest.webmanifest"
-  >
-
-  <link
-    rel="icon"
-    href="icons/icon-192.png"
-  >
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap"
-    rel="stylesheet"
-  >
-
-  <!-- PWA -->
-  <meta
-    name="apple-mobile-web-app-capable"
-    content="yes"
-  >
-
-  <meta
-    name="apple-mobile-web-app-status-bar-style"
-    content="black-translucent"
-  >
-
-  <meta
-    name="mobile-web-app-capable"
-    content="yes"
-  >
-
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
 
   <style>
-
     :root{
-      --bg:#0f0f10;
-      --fg:#eaeaea;
-      --muted:#a0a0a0;
-      --card:#18181b;
-      --accent:#e11d48;
-      --ok:#10b981;
-      --warn:#f59e0b;
-
+      --bg:#0b0b0c;
+      --card:rgba(22,22,25,.94);
+      --card-soft:rgba(27,27,30,.88);
+      --border:#303034;
+      --border-soft:#252529;
+      --fg:#ededed;
+      --muted:#9b9ba1;
+      --red:#b9262e;
+      --red-dark:#75171d;
+      --green:#2e6b42;
       --font-ui:"Special Elite",system-ui,sans-serif;
       --font-body:"EB Garamond",Georgia,serif;
     }
 
-
-    *{
-      box-sizing:border-box;
-    }
-
-
-    html,
+    *{box-sizing:border-box}
+    html,body{min-height:100%;margin:0}
     body{
-      min-height:100%;
-    }
-
-
-    body{
-      margin:0;
-
-      font-family:var(--font-body);
-
       color:var(--fg);
-
-      background:
-        #0b0b0c
-        url("img/bg.webp")
-        center / cover
-        fixed
-        no-repeat !important;
-
-      padding-top:env(safe-area-inset-top);
-      padding-left:env(safe-area-inset-left);
-      padding-right:env(safe-area-inset-right);
-      padding-bottom:env(safe-area-inset-bottom);
+      font-family:var(--font-body);
+      background:#080809 url("img/bg.webp") center/cover fixed no-repeat;
+      padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
     }
 
-
-    button,
-    .section-title,
-    .subject-id,
-    .instability-title,
-    .percent,
-    .tab-btn,
-    .alert .content{
-      font-family:var(--font-ui);
-    }
-
-
-    /* =========================================================
-       LAYOUT GÉNÉRAL
-       ========================================================= */
+    button,input{font:inherit}
+    button{touch-action:manipulation}
 
     main{
-      width:min(960px,100%);
-
+      width:min(100%,760px);
       margin:0 auto;
-
-      padding:8px 16px 18px;
-
-      display:flex;
-
-      flex-direction:column;
-
-      gap:10px;
+      padding:12px;
     }
-
 
     .card{
-      background:rgba(24,24,27,.96);
-
-      border:1px solid #232325;
-
-      border-radius:16px;
-
-      padding:16px;
+      background:var(--card);
+      border:1px solid var(--border-soft);
+      border-radius:15px;
+      box-shadow:0 8px 28px rgba(0,0,0,.22);
     }
 
+    .muted{color:var(--muted)}
+    .hidden{display:none!important}
 
-    .section-title{
-      font-size:17px;
-
-      color:#fff;
-    }
-
-
-    .muted{
-      color:var(--muted);
-
-      font-size:14px;
-    }
-
-
-    .line{
-      height:1px;
-
-      background:#29292c;
-
-      margin:12px 0;
-    }
-
-
-    /* =========================================================
-       ONGLETS DU DOSSIER
-       ========================================================= */
+    /* ---------- Onglets ---------- */
 
     .tabs-bar{
-      width:100%;
-
       display:grid;
-
       grid-template-columns:repeat(3,1fr);
-
       gap:5px;
-
-      align-items:end;
-
-      position:relative;
-
-      z-index:20;
+      margin-bottom:9px;
     }
-
 
     .tab-btn{
-      border:1px solid #2d2d31;
-
-      border-bottom-color:#232325;
-
-      border-radius:11px 11px 4px 4px;
-
-      padding:10px 6px 9px;
-
-      background:rgba(22,22,24,.92);
-
-      color:#999;
-
-      font-size:14px;
-
+      min-height:43px;
+      padding:9px 5px;
+      border:1px solid var(--border);
+      border-radius:11px 11px 5px 5px;
+      background:rgba(21,21,23,.94);
+      color:#9c9ca1;
+      font-family:var(--font-ui);
+      font-size:13px;
+      letter-spacing:.4px;
       cursor:pointer;
-
-      box-shadow:none;
-
-      transition:
-        transform .15s ease,
-        filter .15s ease,
-        color .15s ease;
     }
-
-
-    .tab-btn:hover{
-      filter:brightness(1.12);
-    }
-
 
     .tab-btn.active{
-      color:#f0f0f0;
-
-      background:#1b1b1e;
-
-      border-color:#39393d;
-
-      transform:translateY(2px);
-
-      text-shadow:
-        0 0 12px
-        rgba(255,255,255,.15);
+      color:#f1f1f1;
+      background:#1d1d20;
+      border-bottom-color:#777;
     }
 
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
 
-    .tab-panel{
-      display:none;
-    }
+    /* ---------- Carte Instabilité ---------- */
 
-
-    .tab-panel.active{
-      display:block;
-    }
-
-
-    /* =========================================================
-       BLOC PRINCIPAL
-       ========================================================= */
-
-    .instability-card{
-      overflow:hidden;
-    }
-
+    .instability-card{padding:13px}
 
     .instability-layout{
       display:grid;
-
-      grid-template-columns:
-        minmax(0,.92fr)
-        minmax(0,1.08fr);
-
-      gap:18px;
-
-      align-items:stretch;
+      grid-template-columns:minmax(0,42%) minmax(0,58%);
+      gap:12px;
+      align-items:start;
     }
 
-
-    /* =========================================================
-       COLONNE GAUCHE — SUJET / MASQUE
-       ========================================================= */
-
-    .mask-column{
-      min-width:0;
-
-      display:flex;
-
-      flex-direction:column;
-
-      align-items:center;
-    }
-
+    .mask-column,
+    .instability-column{min-width:0}
 
     .subject-id{
-      width:100%;
-
-      min-height:26px;
-
-      display:flex;
-
-      align-items:center;
-
-      justify-content:center;
-
-      color:#e9e9e9;
-
-      font-size:18px;
-
-      line-height:1.15;
-
-      letter-spacing:1px;
-
-      text-align:center;
-
-      margin-bottom:5px;
-
-      text-shadow:
-        0 0 12px
-        rgba(255,255,255,.12);
+      min-height:22px;
+      color:#b5b5ba;
+      font-family:var(--font-ui);
+      font-size:13px;
+      letter-spacing:.8px;
+      white-space:nowrap;
     }
-
-
-    /*
-      Le conteneur existe toujours techniquement
-      pour conserver les dimensions du masque.
-
-      Mais visuellement :
-      - pas de cadre
-      - pas de fond
-      - pas de bordure
-      - pas d'ombre intérieure
-    */
 
     .mask-stage{
-      width:min(100%,240px);
-
-      aspect-ratio:2 / 3;
-
+      width:100%;
       display:flex;
-
-      align-items:center;
-
       justify-content:center;
-
-      background:transparent;
-
-      border:none;
-
-      box-shadow:none;
-
-      overflow:visible;
+      align-items:flex-start;
+      margin-top:4px;
     }
 
-
-    .mask-img{
+    .mask-stage img{
       display:block;
-
       width:100%;
-
-      height:100%;
-
+      max-width:225px;
+      aspect-ratio:2/3;
       object-fit:contain;
-
+      object-position:center;
+      filter:drop-shadow(0 6px 10px rgba(0,0,0,.38));
       user-select:none;
-
       -webkit-user-drag:none;
-
-      filter:
-        drop-shadow(
-          0 9px 18px
-          rgba(0,0,0,.40)
-        );
     }
 
-
-    /*
-      Journal placé sous le masque,
-      dans l'espace auparavant inutilisé.
-    */
-
-    .mask-tools{
-      width:100%;
-
-      display:flex;
-
-      justify-content:center;
-
-      margin-top:6px;
-    }
-
-
-    .journal-btn{
-      width:min(150px,100%);
-
-      padding:8px 7px !important;
-
-      font-size:12px !important;
-    }
-
-
-    /* =========================================================
-       COLONNE DROITE — INSTABILITÉ
-       ========================================================= */
-
-    .instability-column{
-      min-width:0;
-
-      display:flex;
-
-      flex-direction:column;
-
-      align-items:center;
-    }
-
-
-    /*
-      INSTABILITÉ MENTALE est désormais au-dessus du %.
-
-      Il se retrouve donc horizontalement en face de SUJET #XX.
-    */
-
-    .instability-head{
-      width:100%;
-
-      text-align:center;
-    }
-
+    /* Petite réserve volontaire sous le masque pour de futurs éléments. */
+    .mask-reserve{height:14px}
 
     .instability-title{
-      min-height:26px;
-
-      display:flex;
-
-      align-items:center;
-
-      justify-content:center;
-
-      color:#d0d0d0;
-
-      font-size:18px;
-
-      line-height:1.15;
-
-      letter-spacing:.25px;
-
-      white-space:nowrap;
-
+      min-height:22px;
+      color:#dedee1;
+      font-family:var(--font-ui);
+      font-size:clamp(13px,3.2vw,17px);
+      letter-spacing:.05px;
       text-align:center;
-
-      text-shadow:
-        0 0 10px
-        rgba(255,255,255,.08);
+      white-space:nowrap;
     }
-
 
     .percent{
-      margin:3px 0 7px;
-
-      font-size:48px;
-
-      font-weight:800;
-
-      line-height:1;
-
-      letter-spacing:.5px;
-
+      margin:3px 0 10px;
       text-align:center;
+      font-family:var(--font-ui);
+      font-size:clamp(36px,10vw,50px);
+      font-weight:800;
+      line-height:1;
+      letter-spacing:.3px;
     }
-
-
-    /* =========================================================
-       8 BOUTONS D'INSTABILITÉ
-       ========================================================= */
 
     .instability-buttons{
-      width:100%;
-
-      max-width:280px;
-
       display:grid;
-
-      gap:8px;
-
-      margin-top:3px;
-    }
-
-
-    .instability-row{
-      display:grid;
-
-      grid-template-columns:1fr 1fr;
-
-      gap:14px;
-
-      align-items:center;
-
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:7px 6px;
       justify-items:center;
     }
 
-
-    .btn{
-      width:64px;
-
-      height:64px;
-
+    .instability-btn{
+      width:min(100%,68px);
+      aspect-ratio:1;
       padding:0;
-
-      margin:0;
-
-      border:none !important;
-
-      outline:none !important;
-
-      box-shadow:none !important;
-
-      background-color:transparent;
-
-      background-size:contain;
-
-      background-repeat:no-repeat;
-
-      background-position:center;
-
-      color:transparent;
-
+      border:0;
+      outline:0;
+      background:transparent;
       cursor:pointer;
-
       -webkit-appearance:none;
-
       appearance:none;
     }
 
-
-    .btn:hover{
-      filter:brightness(1.08);
-    }
-
-
-    .btn:active{
-      transform:translateY(1px);
-
-      filter:brightness(.92);
-    }
-
-
-    .btn:disabled{
-      opacity:.4;
-
-      cursor:not-allowed;
-    }
-
-
-    .btn:focus{
-      outline:none;
-
-      box-shadow:none;
-    }
-
-
-    /* Positifs */
-
-    .btn-plus.btn-p5{
-      background-image:url("img/btn_plus5.png");
-    }
-
-    .btn-plus.btn-p10{
-      background-image:url("img/btn_plus10.png");
-    }
-
-    .btn-plus.btn-p15{
-      background-image:url("img/btn_plus15.png");
-    }
-
-    .btn-plus.btn-p20{
-      background-image:url("img/btn_plus20.png");
-    }
-
-
-    /* Négatifs */
-
-    .btn-minus.btn-m5{
-      background-image:url("img/btn_moins5.png");
-    }
-
-    .btn-minus.btn-m10{
-      background-image:url("img/btn_moins10.png");
-    }
-
-    .btn-minus.btn-m15{
-      background-image:url("img/btn_moins15.png");
-    }
-
-    .btn-minus.btn-m20{
-      background-image:url("img/btn_moins20.png");
-    }
-
-
-    /* =========================================================
-       MUSIQUE / PLEIN ÉCRAN
-       ========================================================= */
-
-    .primary-controls{
+    .instability-btn img{
+      display:block;
       width:100%;
+      height:100%;
+      object-fit:contain;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
 
-      display:flex;
+    .instability-btn:active{transform:translateY(1px) scale(.98)}
+    .instability-btn:disabled{opacity:.45;cursor:not-allowed}
 
-      gap:6px;
+    /* Journal / Musique / Plein écran enfin sur la même ligne. */
 
-      justify-content:center;
-
-      align-items:center;
-
+    .utility-controls{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:7px;
       margin-top:9px;
     }
 
-
-    .primary-controls button{
-      font-size:12px !important;
-
-      padding:8px 8px !important;
-    }
-
-
-    /* =========================================================
-       BOUTONS CLASSIQUES
-       ========================================================= */
-
-    button:not(.btn){
-      border-radius:11px;
-
-      border:1px solid #2d2d31;
-
-      background:#1f1f23;
-
-      color:var(--fg);
-
+    .utility-btn{
+      min-width:0;
+      min-height:46px;
+      padding:7px 4px;
+      border:1px solid #343438;
+      border-radius:10px;
+      background:#202023;
+      color:#e5e5e5;
+      font-family:var(--font-ui);
+      font-size:clamp(10px,2.8vw,13px);
+      line-height:1.15;
       cursor:pointer;
-
-      outline:none;
-
-      box-shadow:none;
+      white-space:normal;
     }
 
+    .utility-btn:active{transform:translateY(1px)}
+    .utility-btn[aria-pressed="true"]{border-color:#55555c}
 
-    button:not(.btn):disabled{
-      opacity:.4;
-
-      cursor:not-allowed;
-    }
-
-
-    button:not(.btn):not(:disabled):hover{
-      filter:brightness(1.12);
-    }
-
-
-    /* =========================================================
-       ACTIONS SPÉCIALES
-       ========================================================= */
+    /* ---------- Actions spéciales ---------- */
 
     .actions-card{
-      display:flex;
-
-      flex-direction:column;
-
-      gap:0;
+      margin-top:11px;
+      padding:14px;
     }
-
 
     .actions-title{
-      margin-bottom:4px;
+      margin:0 0 5px;
+      font-family:var(--font-ui);
+      font-size:16px;
+      letter-spacing:.4px;
     }
 
-
-    .special-action{
-      padding:10px 0;
+    .action-block{
+      padding:13px 0;
+      border-bottom:1px solid var(--border-soft);
     }
 
-
-    .special-action + .special-action{
-      border-top:1px solid #29292c;
-    }
-
+    .action-block:last-of-type{border-bottom:0}
 
     .action-header{
       display:flex;
-
       align-items:center;
-
-      justify-content:space-between;
-
+      justify-content:flex-start;
       gap:8px;
-
-      margin-bottom:7px;
+      min-width:0;
+      margin-bottom:9px;
     }
-
 
     .action-name{
+      min-width:0;
       font-family:var(--font-ui);
-
       font-size:15px;
-
-      color:#efefef;
+      color:#e8e8e8;
     }
-
-
-    /*
-      Petit bouton d'aide.
-
-      Le comportement sera ajouté dans app.js
-      au prochain passage.
-    */
 
     .info-btn{
+      flex:0 0 28px;
       width:28px;
-
       height:28px;
-
-      min-width:28px;
-
-      padding:0 !important;
-
-      border-radius:50% !important;
-
-      font-size:15px !important;
-
-      line-height:1;
-
-      display:flex;
-
-      align-items:center;
-
-      justify-content:center;
-
-      color:#bbb !important;
+      padding:0;
+      border:1px solid #48484e;
+      border-radius:50%;
+      background:#222226;
+      color:#d0d0d3;
+      font-family:var(--font-ui);
+      font-size:14px;
+      cursor:pointer;
     }
-
 
     .action-controls{
-      display:flex;
-
-      align-items:center;
-
-      justify-content:space-between;
-
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
       gap:10px;
-
-      flex-wrap:wrap;
+      align-items:center;
     }
 
-
-    .action-use{
-      min-width:115px;
-
-      padding:9px 12px !important;
-
-      font-size:13px !important;
-    }
-
-
-    .action-info{
-      flex:1;
-
-      min-width:150px;
-
-      text-align:right;
-    }
-
-
-    .new-game-row{
-      border-top:1px solid #29292c;
-
-      margin-top:3px;
-
-      padding-top:12px;
-
-      display:flex;
-
-      justify-content:center;
-    }
-
-
-    #btnNew{
-      min-width:160px;
-
-      padding:9px 14px !important;
-    }
-
-
-    /* =========================================================
-       ANCIEN CONTEXTE — CACHÉ PROVISOIREMENT
-       =========================================================
-
-       Ces éléments restent uniquement pour éviter que
-       app.js v0.7 ne plante pendant notre transition.
-
-       Ils seront supprimés lorsque je te donnerai
-       le nouveau app.js v0.7.1.
-    */
-
-    .legacy-context{
-      display:none !important;
-    }
-
-
-    /* =========================================================
-       JOURNAL — MODALE
-       ========================================================= */
-
-    #historyList{
-      list-style:none;
-
-      margin:0;
-
-      padding:0;
-
-      font-size:16px;
-
-      line-height:1.55;
-
-      text-align:left;
-    }
-
-
-    .journal-modal .modal-title{
-      color:#ececec;
-
-      text-shadow:
-        0 0 16px
-        rgba(255,255,255,.10);
-    }
-
-
-    .journal-box{
-      max-height:55vh;
-
-      overflow:auto;
-
-      background:#101012;
-
-      border:1px solid #28282c;
-
+    .action-btn{
+      min-height:44px;
+      padding:9px 12px;
+      border:1px solid #45454a;
       border-radius:10px;
-
-      padding:12px;
-
-      margin-bottom:14px;
-    }
-
-
-    /* =========================================================
-       PLACEHOLDERS DES FUTURS ONGLETS
-       ========================================================= */
-
-    .future-card{
-      text-align:center;
-
-      padding:32px 20px;
-
-      color:#999;
-    }
-
-
-    .future-title{
+      background:#222226;
+      color:#ececec;
       font-family:var(--font-ui);
-
-      color:#ddd;
-
-      font-size:22px;
-
-      margin-bottom:8px;
+      font-size:12px;
+      line-height:1.2;
+      cursor:pointer;
     }
 
+    .action-btn:disabled{
+      opacity:.38;
+      cursor:not-allowed;
+      filter:saturate(.4);
+    }
 
-    /* =========================================================
-       OVERLAYS FX
-       ========================================================= */
+    .action-status{
+      color:#aaaab0;
+      font-size:14px;
+      white-space:nowrap;
+    }
+
+    .new-game-zone{
+      margin-top:29px;
+      padding-top:17px;
+      border-top:1px solid var(--border-soft);
+      text-align:center;
+    }
+
+    .new-game-btn{
+      min-height:43px;
+      padding:9px 18px;
+      border:1px solid #4b3134;
+      border-radius:10px;
+      background:#21191b;
+      color:#d8c5c7;
+      font-family:var(--font-ui);
+      font-size:13px;
+      cursor:pointer;
+    }
+
+    /* ---------- Bestiaire / Aide ---------- */
+
+    .placeholder-card{
+      padding:22px 16px;
+      text-align:center;
+    }
+
+    .placeholder-title{
+      margin:0 0 10px;
+      font-family:var(--font-ui);
+      font-size:19px;
+    }
+
+    .placeholder-text{
+      margin:0;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.4;
+    }
+
+    #version{
+      margin-top:12px;
+      text-align:center;
+      color:#74747a;
+      font-size:12px;
+    }
+
+    /* ---------- Effets ---------- */
 
     .overlay-flash,
-    .overlay-black{
+    .overlay-black,
+    .vignette{
       position:fixed;
-
       inset:0;
-
       pointer-events:none;
-
-      opacity:0;
-
-      transition:opacity .15s;
-
-      z-index:9999;
     }
-
 
     .overlay-flash{
+      z-index:9997;
       background:#fff;
+      opacity:0;
+      transition:opacity .15s;
     }
 
-
     .overlay-black{
+      z-index:9998;
       background:#000;
-
+      opacity:0;
       transition:opacity .4s;
     }
 
-
-    /* =========================================================
-       ALERTES 50 %
-       ========================================================= */
-
-    .alert{
-      position:fixed;
-
-      inset:0;
-
-      display:flex;
-
-      align-items:center;
-
-      justify-content:center;
-
-      background:rgba(0,0,0,.8);
-
-      opacity:0;
-
-      pointer-events:none;
-
-      z-index:10000;
-
-      transition:opacity 1s ease;
-    }
-
-
-    .alert.show{
-      opacity:1;
-
-      pointer-events:auto;
-    }
-
-
-    .alert .content{
-      text-align:center;
-
-      font-size:2.4rem;
-
-      max-width:80%;
-
-      text-shadow:
-        0 0 12px
-        rgba(0,0,0,.9);
-
-      transition:transform .4s ease;
-    }
-
-
-    .alert.reflet .content{
-      color:#c71f1f;
-
-      text-shadow:
-        0 0 25px
-        rgba(200,30,30,.9);
-
-      transform:scale(1.1);
-    }
-
-
-    .alert.normal .content{
-      color:#f8f8f8;
-
-      text-shadow:
-        0 0 25px
-        rgba(255,255,255,.7);
-    }
-
-
-    /* =========================================================
-       AMBIANCE
-       ========================================================= */
-
-    .fx-blur{
-      filter:blur(1px);
-    }
-
-
-    @keyframes subtle-shake{
-
-      0%,
-      100%{
-        transform:translate(0,0);
-      }
-
-      20%{
-        transform:translate(1px,-1px);
-      }
-
-      40%{
-        transform:translate(-1px,1px);
-      }
-
-      60%{
-        transform:translate(1px,0);
-      }
-
-      80%{
-        transform:translate(-1px,0);
-      }
-
-    }
-
-
-    .fx-shake{
-      animation:subtle-shake .35s ease;
-    }
-
-
     .vignette{
-      position:fixed;
-
-      inset:0;
-
-      pointer-events:none;
-
+      z-index:9996;
       opacity:0;
-
       transition:opacity .6s ease;
-
-      z-index:9998;
-
       background:
         radial-gradient(
           ellipse at center,
-          rgba(0,0,0,0) 60%,
-          rgba(150,0,0,.22) 85%,
-          rgba(0,0,0,.75) 100%
+          rgba(0,0,0,0) 55%,
+          rgba(130,0,0,.18) 82%,
+          rgba(0,0,0,.82) 100%
         );
     }
 
+    .threshold-alert{
+      position:fixed;
+      inset:0;
+      z-index:10000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:30px;
+      background:rgba(0,0,0,.84);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .8s ease;
+    }
 
-    /* =========================================================
-       GATE
-       ========================================================= */
+    .threshold-alert.show{
+      opacity:1;
+      pointer-events:auto;
+    }
 
+    .threshold-content{
+      max-width:640px;
+      text-align:center;
+      font-family:var(--font-ui);
+      font-size:clamp(28px,8vw,48px);
+      line-height:1.15;
+    }
+
+    .threshold-alert.reflet .threshold-content{
+      color:#c92830;
+      text-shadow:0 0 25px rgba(190,22,28,.85);
+    }
+
+    .threshold-alert.normal .threshold-content{
+      color:#f2f2f2;
+      text-shadow:0 0 24px rgba(255,255,255,.45);
+    }
+
+    .fx-blur{filter:blur(1px)}
+
+    @keyframes subtle-shake{
+      0%,100%{transform:translate(0)}
+      25%{transform:translate(1px,-1px)}
+      50%{transform:translate(-1px,1px)}
+      75%{transform:translate(1px,0)}
+    }
+
+    .fx-shake{animation:subtle-shake .35s ease}
+
+    /* ---------- Modales ---------- */
+
+    .modal,
     .gate{
       position:fixed;
-
       inset:0;
-
-      background:#0b0b0c;
-
-      z-index:20000;
-
-      display:flex;
-
-      align-items:center;
-
-      justify-content:center;
-    }
-
-
-    .gate-inner{
-      background:#141416;
-
-      border:1px solid #2a2a2e;
-
-      padding:24px;
-
-      border-radius:16px;
-
-      max-width:320px;
-
-      width:90%;
-
-      text-align:center;
-    }
-
-
-    .gate-inner input{
-      width:80%;
-
-      padding:8px 12px;
-
-      margin:12px 0;
-
-      border-radius:8px;
-
-      border:1px solid #2a2a2e;
-
-      background:#0f0f10;
-
-      color:#fff;
-
-      text-align:center;
-    }
-
-
-    .gate-inner .error{
-      color:#e11d48;
-
-      font-size:13px;
-
-      margin-bottom:8px;
-    }
-
-
-    /* =========================================================
-       BANNIÈRE INSTALLATION
-       ========================================================= */
-
-    .install-banner{
-      position:fixed;
-
-      left:12px;
-
-      right:12px;
-
-      bottom:12px;
-
-      display:none;
-
-      align-items:center;
-
-      justify-content:space-between;
-
-      gap:12px;
-
-      padding:10px 12px;
-
-      background:#141416;
-
-      border:1px solid #2a2a2e;
-
-      border-radius:12px;
-
-      z-index:10050;
-    }
-
-
-    .install-banner.show{
-      display:flex;
-    }
-
-
-    .install-actions{
-      display:flex;
-
-      gap:8px;
-    }
-
-
-    #installBtn,
-    #installClose{
-      padding:8px 12px;
-    }
-
-
-    /* =========================================================
-       MODALES
-       ========================================================= */
-
-    .modal{
-      position:fixed;
-
-      inset:0;
-
-      display:none;
-
-      align-items:center;
-
-      justify-content:center;
-
-      background:rgba(0,0,0,.88);
-
       z-index:10060;
-
-      padding:16px;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background:rgba(0,0,0,.88);
     }
 
+    .modal.show,
+    .gate.show{display:flex}
 
-    .modal.show{
-      display:flex;
+    .modal-inner,
+    .gate-inner{
+      width:min(100%,520px);
+      max-height:85%;
+      overflow:auto;
+      padding:20px;
+      border:1px solid #343439;
+      border-radius:15px;
+      background:#151517;
+      box-shadow:0 15px 50px rgba(0,0,0,.5);
     }
 
-
-    .modal-inner{
-      max-width:560px;
-
-      width:90%;
-
-      background:#141416;
-
-      border:1px solid #2a2a2e;
-
-      border-radius:16px;
-
-      padding:22px;
-
+    .modal-title,
+    .gate-title{
+      margin:0 0 10px;
+      color:#ececef;
+      font-family:var(--font-ui);
+      font-size:22px;
+      line-height:1.2;
       text-align:center;
     }
 
-
-    .modal-title{
-      font-family:var(--font-ui);
-
-      font-size:28px;
-
-      letter-spacing:.5px;
-
-      color:#c71f1f;
-
-      margin-bottom:10px;
-
-      text-shadow:
-        0 0 18px
-        rgba(200,30,30,.55);
+    .gameover-title{
+      color:#c32932;
+      text-shadow:0 0 16px rgba(190,25,30,.45);
     }
-
 
     .modal-text{
-      font-size:18px;
-
-      color:#eaeaea;
-
-      opacity:.9;
-
-      line-height:1.35;
-
-      margin-bottom:16px;
+      color:#dddde0;
+      font-size:17px;
+      line-height:1.45;
+      white-space:pre-line;
     }
-
 
     .modal-actions{
       display:flex;
-
-      gap:10px;
-
       justify-content:center;
+      gap:10px;
+      margin-top:17px;
+      flex-wrap:wrap;
     }
-
 
     .modal-btn{
-      padding:10px 14px !important;
-
-      border-radius:12px !important;
+      min-width:105px;
+      min-height:43px;
+      padding:8px 14px;
+      border:1px solid #444449;
+      border-radius:10px;
+      background:#222225;
+      color:#ededed;
+      font-family:var(--font-ui);
+      font-size:13px;
+      cursor:pointer;
     }
 
+    .modal-yes{border-color:#3c6848}
+    .modal-no{border-color:#674044}
 
-    .modal-yes{
-      border-color:#256d1b !important;
+    /* Journal */
+
+    .journal-list{
+      list-style:none;
+      margin:0;
+      padding:0;
+      text-align:left;
     }
 
-
-    .modal-no{
-      border-color:#5b1b1b !important;
+    .journal-list li{
+      padding:8px 3px;
+      border-bottom:1px solid #28282c;
+      font-size:16px;
     }
 
+    .journal-empty{
+      color:var(--muted);
+      text-align:center;
+    }
 
-    /* =========================================================
-       SMARTPHONE
-       ========================================================= */
+    /* Gate */
 
-    @media (max-width:768px){
+    .gate{z-index:10100}
 
-      main{
-        padding:
-          max(
-            7px,
-            env(safe-area-inset-top)
-          )
-          10px
-          12px;
+    .gate-text{
+      margin:0 0 13px;
+      color:var(--muted);
+      text-align:center;
+      font-size:16px;
+    }
 
+    .gate-input{
+      width:100%;
+      min-height:44px;
+      padding:9px 11px;
+      border:1px solid #39393e;
+      border-radius:9px;
+      outline:none;
+      background:#0e0e10;
+      color:#eee;
+      font-size:16px;
+    }
+
+    .gate-error{
+      min-height:22px;
+      padding-top:5px;
+      color:#c84a51;
+      font-size:14px;
+      text-align:center;
+    }
+
+    .gate-btn{
+      display:block;
+      width:100%;
+      min-height:43px;
+      margin-top:5px;
+      border:1px solid #444449;
+      border-radius:9px;
+      background:#222225;
+      color:#eee;
+      font-family:var(--font-ui);
+      cursor:pointer;
+    }
+
+    /* ---------- Installation PWA ---------- */
+
+    .install-banner{
+      position:fixed;
+      left:12px;
+      right:12px;
+      bottom:max(12px,env(safe-area-inset-bottom));
+      z-index:10050;
+      display:none;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      max-width:720px;
+      margin:auto;
+      padding:10px 12px;
+      border:1px solid #36363b;
+      border-radius:12px;
+      background:#151517;
+    }
+
+    .install-banner.show{display:flex}
+
+    .install-actions{
+      display:flex;
+      gap:6px;
+    }
+
+    .install-btn{
+      min-height:38px;
+      padding:7px 10px;
+      border:1px solid #414146;
+      border-radius:8px;
+      background:#232326;
+      color:#eee;
+      cursor:pointer;
+    }
+
+    /* ---------- Très petits écrans ---------- */
+
+    @media (max-width:420px){
+      main{padding:8px}
+
+      .instability-card,
+      .actions-card{padding:11px}
+
+      .instability-layout{
+        grid-template-columns:minmax(0,41%) minmax(0,59%);
         gap:8px;
       }
 
+      .subject-id{font-size:11px}
+      .instability-title{font-size:clamp(11px,3.15vw,14px)}
+      .percent{margin-bottom:8px}
 
-      .tabs-bar{
-        gap:4px;
+      .instability-buttons{gap:5px}
+      .utility-controls{gap:5px}
+
+      .utility-btn{
+        min-height:45px;
+        padding:6px 2px;
+        font-size:10px;
       }
 
-
-      .tab-btn{
-        padding:9px 4px 8px;
-
-        font-size:13px;
-      }
-
-
-      .card{
-        padding:11px;
-
-        border-radius:13px;
-      }
-
-
-      .instability-layout{
-        grid-template-columns:
-          minmax(0,.90fr)
-          minmax(0,1.10fr);
-
-        gap:9px;
-      }
-
-
-      .subject-id,
-      .instability-title{
-        min-height:23px;
-
-        font-size:15px;
-      }
-
-
-      .mask-stage{
-        width:min(100%,175px);
-      }
-
-
-      .percent{
-        font-size:42px;
-
-        margin-top:2px;
-
-        margin-bottom:6px;
-      }
-
-
-      .instability-buttons{
-        max-width:220px;
-
-        gap:5px;
-
-        margin-top:2px;
-      }
-
-
-      .instability-row{
-        gap:8px;
-      }
-
-
-      .btn{
-        width:54px;
-
-        height:54px;
-      }
-
-
-      .mask-tools{
-        margin-top:5px;
-      }
-
-
-      .journal-btn{
-        font-size:11px !important;
-
-        padding:7px 6px !important;
-      }
-
-
-      .primary-controls{
-        gap:5px;
-
-        margin-top:7px;
-      }
-
-
-      .primary-controls button{
-        font-size:11px !important;
-
-        padding:7px 6px !important;
-      }
-
-
-      .actions-card{
-        padding:13px;
-      }
-
-
-      .action-name{
-        font-size:15px;
-      }
-
-
-      .action-info{
-        text-align:left;
-
-        min-width:100%;
-      }
-
-
-      .alert .content{
-        font-size:2rem;
-      }
-
-    }
-
-
-    /* =========================================================
-       PETITS SMARTPHONES
-       ========================================================= */
-
-    @media (max-width:380px){
-
-      .instability-layout{
-        grid-template-columns:
-          minmax(0,.88fr)
-          minmax(0,1.12fr);
-
+      .action-controls{
+        grid-template-columns:1fr;
         gap:6px;
       }
 
-
-      .subject-id,
-      .instability-title{
+      .action-status{
+        text-align:center;
         font-size:13px;
       }
-
-
-      .mask-stage{
-        width:min(100%,150px);
-      }
-
-
-      .percent{
-        font-size:37px;
-      }
-
-
-      .btn{
-        width:48px;
-
-        height:48px;
-      }
-
-
-      .journal-btn{
-        width:100%;
-      }
-
-
-      .primary-controls{
-        flex-direction:column;
-      }
-
-
-      .primary-controls button{
-        width:100%;
-      }
-
     }
 
-
-    /* =========================================================
-       PAYSAGE BAS
-       ========================================================= */
-
-    @media
-      (orientation:landscape)
-      and
-      (max-height:520px){
-
-      main{
-        padding:6px 10px;
-      }
-
-
-      .tab-btn{
-        padding:6px 4px;
-
-        font-size:12px;
-      }
-
-
-      .instability-card{
-        padding:9px 14px;
-      }
-
-
-      .mask-stage{
-        width:min(100%,180px);
-      }
-
-
-      .subject-id,
-      .instability-title{
-        min-height:20px;
-
-        font-size:14px;
-      }
-
-
-      .percent{
-        font-size:35px;
-
-        margin:1px 0 3px;
-      }
-
-
-      .instability-buttons{
-        gap:3px;
-      }
-
-
-      .btn{
-        width:47px;
-
-        height:47px;
-      }
-
-
-      .primary-controls{
-        margin-top:4px;
-      }
-
+    @media (max-width:340px){
+      .tab-btn{font-size:11px}
+      .instability-title{font-size:10.5px}
+      .utility-btn{font-size:9px}
+      .action-name{font-size:14px}
     }
 
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        scroll-behavior:auto!important;
+        animation-duration:.01ms!important;
+        transition-duration:.01ms!important;
+      }
+    }
   </style>
-
 </head>
-
 
 <body>
 
+  <!-- Effets globaux -->
+  <div id="fxFlash" class="overlay-flash"></div>
+  <div id="fxBlack" class="overlay-black"></div>
+  <div id="vignette" class="vignette"></div>
 
-  <!-- =======================================================
-       FX
-       ======================================================= -->
-
-  <div
-    class="overlay-flash"
-    id="fxFlash"
-  ></div>
-
-
-  <div
-    class="overlay-black"
-    id="fxBlack"
-  ></div>
-
-
-  <div
-    class="vignette"
-    id="vignette"
-  ></div>
-
-
-  <div
-    class="alert"
-    id="alert"
-  >
-
-    <div
-      class="content"
-      id="alertText"
-    ></div>
-
+  <div id="alert" class="threshold-alert" aria-hidden="true">
+    <div id="alertText" class="threshold-content"></div>
   </div>
 
+  <main id="appMain">
 
-  <!-- =======================================================
-       APPLICATION
-       ======================================================= -->
-
-  <main>
-
-
-    <!-- =====================================================
-         ONGLETS
-         ===================================================== -->
-
-    <nav
-      class="tabs-bar"
-      aria-label="Navigation"
-    >
-
+    <!-- Onglets -->
+    <nav class="tabs-bar" role="tablist" aria-label="Navigation principale">
       <button
         class="tab-btn active"
-        data-tab="partie"
         type="button"
-      >
+        role="tab"
+        aria-selected="true"
+        aria-controls="tab-partie"
+        data-tab="partie">
         PARTIE
       </button>
 
-
       <button
         class="tab-btn"
-        data-tab="bestiaire"
         type="button"
-      >
+        role="tab"
+        aria-selected="false"
+        aria-controls="tab-bestiaire"
+        data-tab="bestiaire">
         BESTIAIRE
       </button>
 
-
       <button
         class="tab-btn"
-        data-tab="aide"
         type="button"
-      >
+        role="tab"
+        aria-selected="false"
+        aria-controls="tab-aide"
+        data-tab="aide">
         AIDE
       </button>
-
     </nav>
 
+    <!-- ==================== PARTIE ==================== -->
 
-    <!-- =====================================================
-         ONGLET PARTIE
-         ===================================================== -->
-
-    <section
-      id="tab-partie"
-      class="tab-panel active"
-    >
-
-
-      <!-- ===================================================
-           MASQUE / INSTABILITÉ
-           =================================================== -->
+    <section id="tab-partie" class="tab-panel active" role="tabpanel">
 
       <section class="card instability-card">
-
-
         <div class="instability-layout">
 
-
-          <!-- ===============================================
-               GAUCHE
-               =============================================== -->
-
+          <!-- Colonne masque -->
           <div class="mask-column">
+            <div id="subjectId" class="subject-id">SUJET #01</div>
 
-
-            <div
-              class="subject-id"
-              id="subjectId"
-            >
-              SUJET #01
-            </div>
-
-
-            <div
-              class="mask-stage"
-              id="maskContainer"
-            >
-
+            <div id="maskContainer" class="mask-stage">
               <img
                 id="maskImage"
-                class="mask-img"
                 src="img/masque0.png"
-                alt="Masque représentant l’état d’instabilité mentale"
-              >
-
+                alt="État mental du sujet">
             </div>
 
-
-            <!--
-              Le Journal quitte désormais le bas de page.
-
-              Il utilisera une modale au prochain passage app.js.
-            -->
-
-            <div class="mask-tools">
-
-              <button
-                id="btnJournal"
-                class="journal-btn"
-                type="button"
-              >
-                Journal
-              </button>
-
-            </div>
-
-
+            <div class="mask-reserve" aria-hidden="true"></div>
           </div>
 
-
-          <!-- ===============================================
-               DROITE
-               =============================================== -->
-
+          <!-- Colonne jauge -->
           <div class="instability-column">
-
-
-            <div class="instability-head">
-
-
-              <div class="instability-title">
-                INSTABILITÉ MENTALE
-              </div>
-
-
-              <div
-                class="percent"
-                id="percent"
-              >
-                0 %
-              </div>
-
-
-            </div>
-
-
-            <!--
-              app.js génère ici :
-
-              -5      +5
-              -10    +10
-              -15    +15
-              -20    +20
-            -->
+            <div class="instability-title">INSTABILITÉ MENTALE</div>
+            <div id="percent" class="percent">0%</div>
 
             <div
               id="instabilityButtons"
               class="instability-buttons"
-            ></div>
-
-
-            <div class="primary-controls">
-
-
-              <button
-                id="audioToggle"
-                type="button"
-              >
-                MUSIQUE OFF
-              </button>
-
-
-              <button
-                id="fsToggle"
-                type="button"
-                aria-pressed="false"
-              >
-                Plein écran
-              </button>
-
-
+              aria-label="Modifier l'instabilité mentale">
             </div>
-
-
           </div>
-
 
         </div>
 
+        <!-- Commandes parfaitement alignées -->
+        <div class="utility-controls">
+          <button id="btnJournal" class="utility-btn" type="button">
+            JOURNAL
+          </button>
 
+          <button
+            id="audioToggle"
+            class="utility-btn"
+            type="button"
+            aria-pressed="false">
+            MUSIQUE OFF
+          </button>
+
+          <button
+            id="fsToggle"
+            class="utility-btn"
+            type="button"
+            aria-pressed="false">
+            Plein écran
+          </button>
+        </div>
       </section>
 
-
-      <!-- ===================================================
-           ACTIONS SPÉCIALES
-           =================================================== -->
-
+      <!-- Actions spéciales -->
       <section class="card actions-card">
+        <h2 class="actions-title">ACTIONS SPÉCIALES</h2>
 
-
-        <div class="section-title actions-title">
-          Actions spéciales
-        </div>
-
-
-        <!-- ===============================================
-             POINT D'ANCRAGE
-             ===============================================
-
-             Le nom et la mécanique seront remplacés
-             plus tard par le système définitif
-             de Totem de résurrection.
-        -->
-
-        <div class="special-action">
-
-
+        <!-- Profanation -->
+        <div class="action-block">
           <div class="action-header">
-
-
-            <div class="action-name">
-              Point d’ancrage
-            </div>
-
+            <span class="action-name">Profanation de la chair</span>
 
             <button
-              id="btnAnchorHelp"
+              id="btnRitualHelp"
               class="info-btn"
               type="button"
-              aria-label="Informations sur le Point d’ancrage"
-            >
+              aria-label="Aide : Profanation de la chair">
               ?
             </button>
-
-
           </div>
-
 
           <div class="action-controls">
-
-
             <button
-              id="btnAnchor"
-              class="action-use"
+              id="btnRitual"
+              class="action-btn"
               type="button"
-            >
-              UTILISER
+              disabled>
+              ACCOMPLIR LE RITUEL
             </button>
 
-
-            <span
-              class="muted action-info"
-              id="anchorInfo"
-            >
-              Disponible
+            <span id="ritualInfo" class="action-status">
+              Restants : 2/2
             </span>
-
-
           </div>
-
-
         </div>
 
-
-        <!-- ===============================================
-             CAMP DE FORTUNE
-             =============================================== -->
-
-        <div class="special-action">
-
-
+        <!-- Camp -->
+        <div class="action-block">
           <div class="action-header">
-
-
-            <div class="action-name">
-              Camp de fortune
-            </div>
-
+            <span class="action-name">Camp de fortune</span>
 
             <button
               id="btnCampHelp"
               class="info-btn"
               type="button"
-              aria-label="Informations sur le Camp de fortune"
-            >
+              aria-label="Aide : Camp de fortune">
               ?
             </button>
-
-
           </div>
 
-
           <div class="action-controls">
-
-
             <button
               id="btnCamp"
-              class="action-use"
-              type="button"
-            >
+              class="action-btn"
+              type="button">
               UTILISER
             </button>
 
-
-            <span
-              class="muted action-info"
-              id="campInfo"
-            >
-              Utilisations restantes : 3
+            <span id="campInfo" class="action-status">
+              Restants : 2/2
             </span>
-
-
           </div>
-
-
         </div>
 
-
-        <!-- ===============================================
-             NOUVELLE PARTIE
-             =============================================== -->
-
-        <div class="new-game-row">
-
-
-          <button
-            id="btnNew"
-            type="button"
-          >
+        <!-- Nouvelle partie volontairement séparée -->
+        <div class="new-game-zone">
+          <button id="btnNew" class="new-game-btn" type="button">
             Nouvelle partie
           </button>
-
-
         </div>
-
-
       </section>
-
-
-      <!-- ===================================================
-           ANCIEN CONTEXTE
-           CACHÉ TEMPORAIREMENT
-           ===================================================
-
-           Ces champs empêchent app.js v0.7 de planter
-           avant notre prochaine modification.
-
-           Ils seront retirés dès le nouveau app.js.
-      -->
-
-      <div
-        class="legacy-context"
-        aria-hidden="true"
-      >
-
-
-        <input
-          type="radio"
-          name="world"
-          value="normal"
-          checked
-        >
-
-
-        <input
-          type="radio"
-          name="world"
-          value="reflet"
-        >
-
-
-        <select id="players">
-
-          <option value="2">
-            2
-          </option>
-
-          <option value="3">
-            3
-          </option>
-
-          <option
-            value="4"
-            selected
-          >
-            4
-          </option>
-
-        </select>
-
-
-        <select id="quartier">
-
-          <option value="1">
-            1
-          </option>
-
-          <option value="2">
-            2
-          </option>
-
-          <option value="3">
-            3
-          </option>
-
-          <option value="4">
-            4
-          </option>
-
-        </select>
-
-
-      </div>
-
 
     </section>
 
+    <!-- ==================== BESTIAIRE ==================== -->
 
-    <!-- =====================================================
-         ONGLET BESTIAIRE
-         ===================================================== -->
-
-    <section
-      id="tab-bestiaire"
-      class="tab-panel"
-    >
-
-
-      <section class="card future-card">
-
-
-        <div class="future-title">
-          Bestiaire
-        </div>
-
-
-        <div class="muted">
-          Le registre des créatures sera intégré ici.
-        </div>
-
-
-      </section>
-
-
+    <section id="tab-bestiaire" class="tab-panel" role="tabpanel">
+      <div class="card placeholder-card">
+        <h2 class="placeholder-title">BESTIAIRE</h2>
+        <p class="placeholder-text">
+          Les données du Bestiaire seront intégrées dans une prochaine mise à jour.
+        </p>
+      </div>
     </section>
 
+    <!-- ==================== AIDE ==================== -->
 
-    <!-- =====================================================
-         ONGLET AIDE
-         ===================================================== -->
-
-    <section
-      id="tab-aide"
-      class="tab-panel"
-    >
-
-
-      <section class="card future-card">
-
-
-        <div class="future-title">
-          Aide
-        </div>
-
-
-        <div class="muted">
-          Cette section sera définie ultérieurement.
-        </div>
-
-
-      </section>
-
-
+    <section id="tab-aide" class="tab-panel" role="tabpanel">
+      <div class="card placeholder-card">
+        <h2 class="placeholder-title">AIDE</h2>
+        <p class="placeholder-text">
+          Cette section sera complétée lors d’une prochaine mise à jour.
+        </p>
+      </div>
     </section>
 
-
-    <!-- =====================================================
-         VERSION
-         ===================================================== -->
-
-    <div
-      class="muted"
-      id="version"
-      style="
-        text-align:center;
-        opacity:.55;
-        margin-top:2px;
-      "
-    ></div>
-
-
-    <!-- =====================================================
-         BANNIÈRE INSTALLATION
-         ===================================================== -->
-
-    <div
-      id="installBanner"
-      class="install-banner"
-      aria-hidden="true"
-    >
-
-
-      <div class="install-msg">
-
-        <span id="installText">
-          Installer l’application sur cet appareil ?
-        </span>
-
-      </div>
-
-
-      <div class="install-actions">
-
-
-        <button
-          id="installBtn"
-          type="button"
-        >
-          Installer
-        </button>
-
-
-        <button
-          id="installClose"
-          type="button"
-          aria-label="Fermer"
-        >
-          ✕
-        </button>
-
-
-      </div>
-
-
-    </div>
-
-
+    <div id="version">v0.7.2 Playtest</div>
   </main>
 
-
-  <!-- =======================================================
-       JOURNAL D'INSTABILITÉ
-       ======================================================= -->
+  <!-- ==================== JOURNAL ==================== -->
 
   <div
     id="journalModal"
-    class="modal journal-modal"
-  >
-
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="journalTitle">
 
     <div class="modal-inner">
+      <h2 id="journalTitle" class="modal-title">Journal</h2>
 
-
-      <div class="modal-title">
-        Journal d’instabilité
-      </div>
-
-
-      <div class="journal-box">
-
-        <ul id="historyList"></ul>
-
-      </div>
-
+      <ul id="historyList" class="journal-list">
+        <li class="journal-empty">Aucune modification pour le moment.</li>
+      </ul>
 
       <div class="modal-actions">
-
-
-        <button
-          id="journalClose"
-          class="modal-btn"
-          type="button"
-        >
+        <button id="journalClose" class="modal-btn" type="button">
           Fermer
         </button>
-
-
       </div>
-
-
     </div>
-
-
   </div>
 
-
-  <!-- =======================================================
-       GATE PLAYTEST
-       ======================================================= -->
+  <!-- ==================== MODALE ACTION / AIDE / RÉSULTAT ==================== -->
 
   <div
-    class="gate"
-    id="gate"
-    style="display:none"
-  >
+    id="actionModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="actionModalTitle">
 
+    <div class="modal-inner">
+      <h2 id="actionModalTitle" class="modal-title"></h2>
 
-    <div class="gate-inner">
+      <div id="actionModalText" class="modal-text"></div>
 
+      <div class="modal-actions">
+        <button
+          id="actionModalYes"
+          class="modal-btn modal-yes"
+          type="button">
+          Oui
+        </button>
 
-      <h2
-        style="
-          margin:0 0 8px;
-          font-size:18px;
-        "
-      >
-        Accès playtest
+        <button
+          id="actionModalNo"
+          class="modal-btn modal-no"
+          type="button">
+          Non
+        </button>
+
+        <button
+          id="actionModalClose"
+          class="modal-btn hidden"
+          type="button">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FIN DE PARTIE ==================== -->
+
+  <div
+    id="gameover"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="gameoverTitle">
+
+    <div class="modal-inner">
+      <h2 id="gameoverTitle" class="modal-title gameover-title">
+        Fin de partie
       </h2>
 
+      <div class="modal-text" style="text-align:center">
+        Vous êtes complètement happés par le Vice.
+        Impossible d’en ressortir…
+      </div>
 
-      <p
-        class="muted"
-        style="margin-top:0"
-      >
-        Entrez le mot de passe commun
-        (fourni par l’organisateur).
+      <div class="modal-actions">
+        <button
+          id="goYes"
+          class="modal-btn modal-yes"
+          type="button">
+          Recommencer
+        </button>
+
+        <button
+          id="goNo"
+          class="modal-btn modal-no"
+          type="button">
+          Quitter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ACCÈS PLAYTEST ==================== -->
+
+  <div id="gate" class="gate">
+    <div class="gate-inner">
+      <h2 class="gate-title">Accès playtest</h2>
+
+      <p class="gate-text">
+        Entrez le mot de passe commun fourni par l’organisateur.
       </p>
-
 
       <input
         id="gateInput"
+        class="gate-input"
         type="password"
         placeholder="Mot de passe"
-      >
+        autocomplete="current-password">
 
+      <div id="gateError" class="gate-error"></div>
 
-      <div
-        class="error"
-        id="gateError"
-      ></div>
-
-
-      <button
-        id="gateBtn"
-        type="button"
-      >
+      <button id="gateBtn" class="gate-btn" type="button">
         Entrer
       </button>
-
-
     </div>
-
-
   </div>
 
+  <!-- ==================== INSTALLATION PWA ==================== -->
 
-  <!-- =======================================================
-       AUDIO
-       ======================================================= -->
+  <div
+    id="installBanner"
+    class="install-banner"
+    aria-hidden="true">
+
+    <span id="installText">
+      Installer l’application sur cet appareil ?
+    </span>
+
+    <div class="install-actions">
+      <button id="installBtn" class="install-btn" type="button">
+        Installer
+      </button>
+
+      <button
+        id="installClose"
+        class="install-btn"
+        type="button"
+        aria-label="Fermer">
+        ✕
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== AUDIO ==================== -->
 
   <audio
     id="ambient"
     src="audio/ambient_loop.mp3"
     loop
-    preload="auto"
-  ></audio>
-
+    preload="auto">
+  </audio>
 
   <audio
     id="groan"
     src="audio/groan.wav"
-    preload="auto"
-  ></audio>
+    preload="auto">
+  </audio>
 
+  <!-- Nouveaux sons des actions spéciales -->
+  <audio
+    id="ritualAudio"
+    src="audio/ritual_resurrection.wav"
+    preload="auto">
+  </audio>
 
-  <!-- =======================================================
-       FIN DE PARTIE
-       ======================================================= -->
-
-  <div
-    id="gameover"
-    class="modal"
-  >
-
-
-    <div class="modal-inner">
-
-
-      <div class="modal-title">
-        Fin de partie
-      </div>
-
-
-      <div class="modal-text">
-
-        Vous êtes complètement happés par le Vice.
-
-        <br>
-
-        Impossible d’en ressortir…
-
-      </div>
-
-
-      <div class="modal-actions">
-
-
-        <button
-          id="goYes"
-          class="modal-btn modal-yes"
-          type="button"
-        >
-          Recommencer
-        </button>
-
-
-        <button
-          id="goNo"
-          class="modal-btn modal-no"
-          type="button"
-        >
-          Quitter
-        </button>
-
-
-      </div>
-
-
-    </div>
-
-
-  </div>
-
-
-  <!-- =======================================================
-       SCRIPT
-       ======================================================= -->
+  <audio
+    id="campAudio"
+    src="audio/camp_rest.wav"
+    preload="auto">
+  </audio>
 
   <script src="app.js"></script>
-
-
 </body>
-
 </html>
