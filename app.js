@@ -3,15 +3,31 @@
 
   // ---------- Configuration ----------
   const STEPS = [5, 10, 15, 20];
-  const LSK = key => `jds_${key}`;
-  const VERSION = 'v0.7.2 Playtest';
   const THRESHOLD = 50;
+  const VERSION = 'v0.8.0 Playtest';
   const AMBIENT_VOLUME = 0.55;
+  const LSK = key => `jds_${key}`;
+  const REDUCED_MOTION =
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
   const PASSPHRASE_HASH =
     'sha256:779d99b88c773f38617d286974f7882cbbc7f91781ef98287c55a5e89ea09e9f';
 
   const GATE_KEY = 'playtest_gate_hash';
+
+  // ---------- États visuels du masque ----------
+  const MASK_STATES = [
+    { min: 0,  src: 'img/masque0.png' },
+    { min: 15, src: 'img/masque15.png' },
+    { min: 25, src: 'img/masque25.png' },
+    { min: 40, src: 'img/masque40.png' },
+    { min: 50, src: 'img/masque50.png' },
+    { min: 65, src: 'img/masque65.png' },
+    { min: 75, src: 'img/masque75.png' },
+    { min: 90, src: 'img/masque90.png' }
+  ];
+
+  const MAJOR_MASK_STATES = new Set([25, 50, 75]);
 
   const HAUNT = {
     perClickProb: 0.14,
@@ -36,26 +52,19 @@
     exit: 'audio/voice_return_normal.mp3'
   };
 
-  const MASK_STATES = [
-    { min: 0, src: 'img/masque0.png' }
-
-    // Plus tard :
-    // { min: 25, src: 'img/masque25.png' },
-    // { min: 50, src: 'img/masque50.png' },
-    // { min: 75, src: 'img/masque75.png' },
-    // { min: 100, src: 'img/masque100.png' }
-  ];
-
   // ---------- DOM ----------
   const $ = id => document.getElementById(id);
 
   const els = {
     appMain: $('appMain'),
-
     percent: $('percent'),
     subjectId: $('subjectId'),
-    maskImage: $('maskImage'),
     instabilityButtons: $('instabilityButtons'),
+
+    maskContainer: $('maskContainer'),
+    maskImage: $('maskImage'),
+    maskImageNext: $('maskImageNext'),
+    maskAura: $('maskAura'),
 
     vignette: $('vignette'),
     fxFlash: $('fxFlash'),
@@ -71,7 +80,6 @@
     audioToggle: $('audioToggle'),
     fsToggle: $('fsToggle'),
     ambient: $('ambient'),
-
     ritualAudio: $('ritualAudio'),
     campAudio: $('campAudio'),
 
@@ -109,62 +117,65 @@
     version: $('version')
   };
 
-  // ---------- État ----------
+  // ---------- Utilitaires / état ----------
   const clamp = (n, min, max) =>
     Math.min(max, Math.max(min, n));
 
-  const readInt = (key, fallback) => {
-    const value = Number.parseInt(
-      localStorage.getItem(LSK(key)),
-      10
-    );
+  const randomBetween = (min, max) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
+  function readInt(key, fallback) {
+    const value =
+      Number.parseInt(
+        localStorage.getItem(LSK(key)),
+        10
+      );
 
     return Number.isFinite(value)
       ? value
       : fallback;
-  };
+  }
 
-  const readBool = (key, fallback) => {
+  function readBool(key, fallback) {
     const value =
       localStorage.getItem(LSK(key));
 
-    return value === null
-      ? fallback
-      : value === 'true';
-  };
+    if (value === null) return fallback;
+
+    return value === 'true'
+      || value === '1';
+  }
 
   const state = {
-    value: clamp(
-      readInt('instability', 0),
-      0,
-      100
-    ),
+    value:
+      clamp(
+        readInt('instability', 0),
+        0,
+        100
+      ),
 
-    subjectNumber: Math.max(
-      1,
-      readInt('subjectNumber', 1)
-    ),
+    subjectNumber:
+      Math.max(
+        1,
+        readInt('subjectNumber', 1)
+      ),
 
     musicOn:
       readBool('musicOn', false),
 
-    ritualUsed: clamp(
-      readInt('ritualUsed', 0),
-      0,
-      2
-    ),
+    ritualUsed:
+      clamp(
+        readInt('ritualUsed', 0),
+        0,
+        2
+      ),
 
-    /*
-      Migration automatique :
-      l'ancienne version pouvait encore avoir
-      campLeft = 3 en localStorage.
-      On le limite maintenant à 2.
-    */
-    campLeft: clamp(
-      readInt('campLeft', 2),
-      0,
-      2
-    )
+    campLeft:
+      clamp(
+        readInt('campLeft', 2),
+        0,
+        2
+      )
   };
 
   let history = [];
@@ -173,10 +184,21 @@
   let gameOverShown = false;
   let alertTimer = null;
   let passiveTimer = null;
+  let maskDisturbanceTimer = null;
+  let maskTransitionTimer = null;
+  let maskReactionTimer = null;
+
   let wakeLock = null;
   let appStarted = false;
   let specialAudioActive = false;
   let deferredInstallPrompt = null;
+
+  let maskInitialized = false;
+  let currentMaskMin = null;
+  let pendingMaskMin = null;
+  let maskRequestToken = 0;
+
+  const preloadedMasks = new Map();
 
   const worldFromValue = value =>
     value >= THRESHOLD
@@ -184,7 +206,8 @@
       : 'normal';
 
   const isReflet = () =>
-    worldFromValue(state.value) === 'reflet';
+    worldFromValue(state.value)
+      === 'reflet';
 
   function save() {
     localStorage.setItem(
@@ -218,34 +241,541 @@
     );
   }
 
-  // ---------- Boutons d'Instabilité ----------
+  // =========================================================
+  // MASQUES V0.8
+  // =========================================================
+
+  function getMaskState(value) {
+    return (
+      [...MASK_STATES]
+        .reverse()
+        .find(mask => value >= mask.min)
+      || MASK_STATES[0]
+    );
+  }
+
+  /*
+    On charge les 8 PNG dès le lancement afin que
+    les changements de masque soient instantanés.
+  */
+  function preloadMasks() {
+    for (const mask of MASK_STATES) {
+      const img = new Image();
+
+      img.src = mask.src;
+
+      preloadedMasks.set(
+        mask.min,
+        img
+      );
+    }
+  }
+
+  /*
+    Termine immédiatement une transition encore en cours.
+    Utile si plusieurs boutons sont pressés rapidement.
+  */
+  function commitPendingMask() {
+    if (pendingMaskMin === null) {
+      return;
+    }
+
+    const mask =
+      MASK_STATES.find(
+        item =>
+          item.min === pendingMaskMin
+      );
+
+    if (mask) {
+      els.maskImage.src =
+        mask.src;
+    }
+
+    els.maskContainer
+      .classList
+      .remove('mask-transition');
+
+    currentMaskMin =
+      pendingMaskMin;
+
+    pendingMaskMin =
+      null;
+
+    clearTimeout(
+      maskTransitionTimer
+    );
+
+    maskTransitionTimer =
+      null;
+  }
+
+  /*
+    Petite réaction lorsque le masque change réellement
+    d'état.
+
+    25 / 50 / 75 sont volontairement plus marqués.
+  */
+  function reactMaskToEvolution(targetMin) {
+    if (REDUCED_MOTION) return;
+
+    clearTimeout(
+      maskReactionTimer
+    );
+
+    els.maskContainer
+      .classList
+      .remove(
+        'mask-evolve',
+        'mask-major'
+      );
+
+    void els.maskContainer.offsetWidth;
+
+    const reactionClass =
+      MAJOR_MASK_STATES.has(targetMin)
+        ? 'mask-major'
+        : 'mask-evolve';
+
+    els.maskContainer
+      .classList
+      .add(reactionClass);
+
+    maskReactionTimer =
+      setTimeout(
+        () => {
+          els.maskContainer
+            .classList
+            .remove(
+              'mask-evolve',
+              'mask-major'
+            );
+        },
+
+        reactionClass === 'mask-major'
+          ? 760
+          : 560
+      );
+  }
+
+  /*
+    Fondu entre les deux images superposées.
+  */
+  function startMaskTransition(target) {
+    /*
+      Premier affichage :
+      aucun fondu inutile au démarrage.
+    */
+    if (
+      !maskInitialized
+      || REDUCED_MOTION
+    ) {
+      els.maskImage.src =
+        target.src;
+
+      els.maskImageNext.src =
+        target.src;
+
+      els.maskContainer
+        .classList
+        .remove('mask-transition');
+
+      currentMaskMin =
+        target.min;
+
+      pendingMaskMin =
+        null;
+
+      maskInitialized =
+        true;
+
+      return;
+    }
+
+    if (
+      target.min === currentMaskMin
+      || target.min === pendingMaskMin
+    ) {
+      return;
+    }
+
+    /*
+      Si une transition est encore en cours,
+      on la finalise proprement.
+    */
+    if (pendingMaskMin !== null) {
+      commitPendingMask();
+    }
+
+    const requestToken =
+      ++maskRequestToken;
+
+    const preloaded =
+      preloadedMasks.get(
+        target.min
+      );
+
+    els.maskImageNext.src =
+      target.src;
+
+    const begin = () => {
+      /*
+        Empêche une ancienne image chargée tardivement
+        de remplacer un masque plus récent.
+      */
+      if (
+        requestToken
+        !== maskRequestToken
+      ) {
+        return;
+      }
+
+      pendingMaskMin =
+        target.min;
+
+      els.maskContainer
+        .classList
+        .remove('mask-transition');
+
+      void els.maskContainer.offsetWidth;
+
+      els.maskContainer
+        .classList
+        .add('mask-transition');
+
+      reactMaskToEvolution(
+        target.min
+      );
+
+      clearTimeout(
+        maskTransitionTimer
+      );
+
+      maskTransitionTimer =
+        setTimeout(
+          commitPendingMask,
+          460
+        );
+    };
+
+    if (
+      preloaded?.complete
+      && preloaded.naturalWidth > 0
+    ) {
+      begin();
+    }
+
+    else if (preloaded) {
+      preloaded.addEventListener(
+        'load',
+        begin,
+        { once: true }
+      );
+
+      preloaded.addEventListener(
+        'error',
+        begin,
+        { once: true }
+      );
+    }
+
+    else {
+      begin();
+    }
+  }
+
+  function updateMask() {
+    startMaskTransition(
+      getMaskState(state.value)
+    );
+
+    updateMaskAtmosphere();
+  }
+
+  /*
+    Plus l'Instabilité monte, plus le masque et
+    son environnement deviennent subtilement vivants.
+  */
+  function updateMaskAtmosphere() {
+    const value =
+      state.value;
+
+    const stage =
+      els.maskContainer;
+
+    /*
+      À partir de 65 %, le masque "respire"
+      presque imperceptiblement.
+    */
+    stage.classList.toggle(
+      'mask-breathe',
+      value >= 65
+      && !REDUCED_MOTION
+    );
+
+    /*
+      Dès 75 %, une aura rouge lente commence.
+    */
+    stage.classList.toggle(
+      'mask-red',
+      value >= 75
+      && !REDUCED_MOTION
+    );
+
+    stage.classList.toggle(
+      'mask-critical',
+      value >= 90
+    );
+
+    /*
+      Entre 50 et 75 % :
+      apparition graduelle de l'aura,
+      avant sa pulsation réelle.
+    */
+    if (
+      value >= 50
+      && value < 75
+    ) {
+      const t =
+        (value - 50) / 25;
+
+      els.maskAura.style.opacity =
+        String(
+          0.08 + t * 0.22
+        );
+
+      els.maskAura.style.transform =
+        `scale(${0.88 + t * 0.08})`;
+    }
+
+    else {
+      els.maskAura.style.opacity =
+        '';
+
+      els.maskAura.style.transform =
+        '';
+    }
+
+    /*
+      Vignette progressive.
+      Elle reste volontairement très faible à 65 %,
+      puis devient réellement perceptible après 75 %.
+    */
+    if (value < 65) {
+      els.vignette.style.opacity =
+        '0';
+    }
+
+    else if (value < 75) {
+      els.vignette.style.opacity =
+        String(
+          0.08
+          + (
+            (value - 65) / 10
+          ) * 0.10
+        );
+    }
+
+    else if (value < 90) {
+      els.vignette.style.opacity =
+        String(
+          0.18
+          + (
+            (value - 75) / 15
+          ) * 0.22
+        );
+    }
+
+    else {
+      els.vignette.style.opacity =
+        String(
+          Math.min(
+            0.72,
+            0.45
+            + (
+              (value - 90) / 10
+            ) * 0.27
+          )
+        );
+    }
+
+    /*
+      Même le pourcentage commence légèrement
+      à changer de caractère à forte Instabilité.
+    */
+    if (value < 75) {
+      els.percent.style.color =
+        '';
+
+      els.percent.style.textShadow =
+        '';
+    }
+
+    else if (value < 90) {
+      els.percent.style.color =
+        '#ead7d8';
+
+      els.percent.style.textShadow =
+        '0 0 12px rgba(125,10,15,.18)';
+    }
+
+    else {
+      els.percent.style.color =
+        '#efc6c8';
+
+      els.percent.style.textShadow =
+        '0 0 16px rgba(160,14,20,.38)';
+    }
+  }
+
+  /*
+    Petit glitch du masque seulement.
+    Jamais l'interface entière.
+  */
+  function triggerMaskGlitch() {
+    if (
+      REDUCED_MOTION
+      || state.value < 65
+      || !isPartieTabActive()
+    ) {
+      return;
+    }
+
+    if (
+      specialAudioActive
+      || anyBlockingModalOpen()
+    ) {
+      return;
+    }
+
+    els.maskContainer
+      .classList
+      .remove('mask-glitch');
+
+    void els.maskContainer.offsetWidth;
+
+    els.maskContainer
+      .classList
+      .add('mask-glitch');
+
+    setTimeout(
+      () => {
+        els.maskContainer
+          .classList
+          .remove('mask-glitch');
+      },
+      220
+    );
+  }
+
+  /*
+    Les glitches sont volontairement rares
+    et deviennent seulement plus probables
+    lorsque la jauge approche de la rupture.
+  */
+  function scheduleMaskDisturbance() {
+    clearTimeout(
+      maskDisturbanceTimer
+    );
+
+    let min = 26000;
+    let max = 52000;
+
+    if (state.value >= 90) {
+      [min, max] =
+        [11000, 26000];
+    }
+
+    else if (state.value >= 75) {
+      [min, max] =
+        [16000, 36000];
+    }
+
+    else if (state.value >= 65) {
+      [min, max] =
+        [22000, 46000];
+    }
+
+    maskDisturbanceTimer =
+      setTimeout(
+        () => {
+          if (state.value >= 65) {
+            const chance =
+              state.value >= 90
+                ? 0.62
+                : state.value >= 75
+                  ? 0.42
+                  : 0.24;
+
+            if (
+              Math.random()
+              < chance
+            ) {
+              triggerMaskGlitch();
+            }
+          }
+
+          scheduleMaskDisturbance();
+        },
+
+        randomBetween(
+          min,
+          max
+        )
+      );
+  }
+
+  // =========================================================
+  // BOUTONS D'INSTABILITÉ
+  // =========================================================
+
   function buildInstabilityButtons() {
-    els.instabilityButtons.innerHTML = '';
+    els.instabilityButtons.innerHTML =
+      '';
 
     for (const step of STEPS) {
-      for (const delta of [-step, step]) {
-        const minus = delta < 0;
+      for (
+        const delta
+        of [-step, step]
+      ) {
+        const minus =
+          delta < 0;
 
         const btn =
           document.createElement('button');
 
-        btn.type = 'button';
-        btn.className = 'instability-btn';
-        btn.dataset.delta = String(delta);
+        btn.type =
+          'button';
+
+        btn.className =
+          'instability-btn';
+
+        btn.dataset.delta =
+          String(delta);
 
         btn.setAttribute(
           'aria-label',
-          `${minus ? 'Réduire' : 'Augmenter'} l'instabilité de ${step} %`
+
+          `${minus
+            ? 'Réduire'
+            : 'Augmenter'
+          } l'instabilité de ${step} %`
         );
 
         const img =
           document.createElement('img');
 
         img.src =
-          `img/btn_${minus ? 'moins' : 'plus'}${step}.png`;
+          `img/btn_${
+            minus
+              ? 'moins'
+              : 'plus'
+          }${step}.png`;
 
         img.alt =
-          `${minus ? '−' : '+'}${step} %`;
+          `${minus
+            ? '−'
+            : '+'
+          }${step} %`;
 
         btn.appendChild(img);
 
@@ -271,25 +801,10 @@
     }
   }
 
-  // ---------- Masque ----------
-  function updateMask() {
-    const mask =
-      [...MASK_STATES]
-        .reverse()
-        .find(
-          item =>
-            state.value >= item.min
-        ) || MASK_STATES[0];
+  // =========================================================
+  // RENDU
+  // =========================================================
 
-    if (
-      els.maskImage.getAttribute('src')
-      !== mask.src
-    ) {
-      els.maskImage.src = mask.src;
-    }
-  }
-
-  // ---------- Rendu principal ----------
   function render() {
     els.percent.textContent =
       `${state.value}%`;
@@ -300,29 +815,23 @@
       ).padStart(2, '0')}`;
 
     els.ritualInfo.textContent =
-      `Restants : ${2 - state.ritualUsed}/2`;
+      `Restants : ${
+        2 - state.ritualUsed
+      }/2`;
 
     els.campInfo.textContent =
-      `Restants : ${state.campLeft}/2`;
+      `Restants : ${
+        state.campLeft
+      }/2`;
 
     const gameOver =
       state.value >= 100;
 
-    /*
-      Profanation :
-      uniquement dans le Reflet,
-      2 utilisations maximum.
-    */
     els.btnRitual.disabled =
       !isReflet()
       || state.ritualUsed >= 2
       || gameOver;
 
-    /*
-      Camp :
-      disponible dans les deux mondes,
-      tant qu'il reste des utilisations.
-    */
     els.btnCamp.disabled =
       state.campLeft <= 0
       || gameOver;
@@ -333,7 +842,9 @@
       )
       .forEach(btn => {
         const delta =
-          Number(btn.dataset.delta);
+          Number(
+            btn.dataset.delta
+          );
 
         btn.disabled =
           gameOver
@@ -359,17 +870,15 @@
       String(state.musicOn)
     );
 
-    els.vignette.style.opacity =
-      state.value >= 90
-        ? '1'
-        : '0';
-
     updateMask();
     updateFullscreenButton();
     save();
   }
 
-  // ---------- Journal ----------
+  // =========================================================
+  // JOURNAL
+  // =========================================================
+
   function addHistory(
     delta,
     source
@@ -394,19 +903,25 @@
     history.unshift({
       time,
       source,
+
       delta:
         `${sign}${Math.abs(delta)} %`,
+
       value:
         state.value
     });
 
-    if (history.length > 50) {
-      history.length = 50;
+    if (
+      history.length > 50
+    ) {
+      history.length =
+        50;
     }
   }
 
   function renderHistory() {
-    els.historyList.innerHTML = '';
+    els.historyList.innerHTML =
+      '';
 
     if (!history.length) {
       const li =
@@ -418,18 +933,24 @@
       li.textContent =
         'Aucune modification pour le moment.';
 
-      els.historyList.appendChild(li);
+      els.historyList
+        .appendChild(li);
+
       return;
     }
 
-    for (const item of history) {
+    for (
+      const item
+      of history
+    ) {
       const li =
         document.createElement('li');
 
       li.textContent =
         `${item.time} — ${item.source} : ${item.delta} → ${item.value} %`;
 
-      els.historyList.appendChild(li);
+      els.historyList
+        .appendChild(li);
     }
   }
 
@@ -449,12 +970,16 @@
       .remove('show');
   }
 
-  // ---------- Modale générique ----------
+  // =========================================================
+  // MODALE GÉNÉRIQUE
+  // =========================================================
+
   function showInfo(
     title,
     text
   ) {
-    pendingAction = null;
+    pendingAction =
+      null;
 
     els.actionModalTitle.textContent =
       title;
@@ -478,7 +1003,8 @@
       .classList
       .add('show');
 
-    els.actionModalClose.focus();
+    els.actionModalClose
+      .focus();
   }
 
   function showConfirm(
@@ -486,7 +1012,8 @@
     text,
     onYes
   ) {
-    pendingAction = onYes;
+    pendingAction =
+      onYes;
 
     els.actionModalTitle.textContent =
       title;
@@ -510,18 +1037,47 @@
       .classList
       .add('show');
 
-    els.actionModalYes.focus();
+    els.actionModalYes
+      .focus();
   }
 
   function closeActionModal() {
-    pendingAction = null;
+    pendingAction =
+      null;
 
     els.actionModal
       .classList
       .remove('show');
   }
 
-  // ---------- Modification Instabilité ----------
+  function anyBlockingModalOpen() {
+    return (
+      els.gate
+        .classList
+        .contains('show')
+      ||
+      els.actionModal
+        .classList
+        .contains('show')
+      ||
+      els.journalModal
+        .classList
+        .contains('show')
+      ||
+      els.gameover
+        .classList
+        .contains('show')
+      ||
+      els.alert
+        .classList
+        .contains('show')
+    );
+  }
+
+  // =========================================================
+  // INSTABILITÉ
+  // =========================================================
+
   function applyInstabilityDelta(
     delta,
     {
@@ -584,7 +1140,6 @@
     };
   }
 
-  // ---------- Passage Monde normal / Reflet ----------
   function handleThresholdTransition(
     before,
     after
@@ -617,7 +1172,9 @@
     text,
     voicePath
   ) {
-    clearTimeout(alertTimer);
+    clearTimeout(
+      alertTimer
+    );
 
     els.alert.className =
       `threshold-alert ${kind}`;
@@ -625,11 +1182,6 @@
     els.alertText.textContent =
       text;
 
-    /*
-      Temporairement au-dessus des modales.
-      Important si le Camp fait repasser
-      de 50% à 35%, par exemple.
-    */
     els.alert.style.zIndex =
       '10080';
 
@@ -648,29 +1200,37 @@
     );
 
     alertTimer =
-      setTimeout(() => {
-        els.alert
-          .classList
-          .remove('show');
+      setTimeout(
+        () => {
+          els.alert
+            .classList
+            .remove('show');
 
-        els.alert.setAttribute(
-          'aria-hidden',
-          'true'
-        );
+          els.alert.setAttribute(
+            'aria-hidden',
+            'true'
+          );
 
-        setTimeout(
-          () => {
-            els.alert.style.zIndex = '';
-          },
-          850
-        );
-      }, 5000);
+          setTimeout(
+            () => {
+              els.alert.style.zIndex =
+                '';
+            },
+            850
+          );
+        },
+        5000
+      );
   }
 
-  // ---------- Effets visuels ----------
+  // =========================================================
+  // EFFETS VISUELS GLOBAUX
+  // =========================================================
+
   function microEffect() {
     if (
-      state.value < 60
+      REDUCED_MOTION
+      || state.value < 60
       || state.value >= 90
     ) {
       return;
@@ -690,7 +1250,7 @@
       .add('fx-shake');
 
     if (
-      Math.random() < 0.45
+      Math.random() < 0.32
     ) {
       els.appMain
         .classList
@@ -721,7 +1281,9 @@
 
 Chaque survivant perd 1 PV et l’Instabilité Mentale augmente de 10 %.
 
-Le personnage ressuscité revient avec 3 PV, ainsi qu’avec l’équipement qu’il possédait encore lors de sa mort. Les objets déjà récupérés par ses compagnons ne lui sont pas rendus.`;
+Le personnage ressuscité revient avec 3 PV, ainsi qu’avec l’équipement qu’il possédait encore lors de sa mort. Les objets déjà récupérés par ses compagnons ne lui sont pas rendus.
+
+Si un survivant n’a plus qu’1 PV au moment du rituel, il perd ce dernier PV et meurt. Le rituel est néanmoins accompli normalement.`;
 
   function requestRitual() {
     if (
@@ -744,10 +1306,6 @@ Accomplir le rituel ?`,
   }
 
   function performRitual() {
-    /*
-      On revérifie la condition
-      au moment de valider.
-    */
     if (
       !isReflet()
       || state.ritualUsed >= 2
@@ -756,28 +1314,17 @@ Accomplir le rituel ?`,
       return;
     }
 
-    /*
-      L'utilisation est consommée
-      dès que le rituel est accepté.
-    */
-    state.ritualUsed += 1;
+    state.ritualUsed +=
+      1;
 
     save();
     render();
 
-    /*
-      Son dédié :
-      ritual_resurrection.wav
-    */
     playSpecialAudio(
       els.ritualAudio,
       1
     );
 
-    /*
-      Le rituel ajoute automatiquement
-      +10% d'Instabilité.
-    */
     const result =
       applyInstabilityDelta(
         10,
@@ -791,10 +1338,12 @@ Accomplir le rituel ?`,
       );
 
     /*
-      Si +10% fait atteindre 100%,
-      la Fin de partie prend la priorité.
+      À 100 %, le Game Over
+      prend la priorité.
     */
-    if (result.gameOver) {
+    if (
+      result.gameOver
+    ) {
       return;
     }
 
@@ -854,42 +1403,23 @@ Souhaitez-vous déployer le camp maintenant ?`,
     }
 
     /*
-      IMPORTANT :
-      on mémorise le monde AVANT
-      d'appliquer la réduction.
-
-      Exemple :
-      50% dans le Reflet
-      → Camp
-      → effet Reflet = -15%
-      → jauge finale 35%.
-
-      Le joueur n'obtient PAS les soins,
-      même s'il revient ensuite
-      dans le Monde normal.
+      Le monde est mémorisé AVANT
+      la baisse d'Instabilité.
     */
     const wasReflet =
       isReflet();
 
-    state.campLeft -= 1;
+    state.campLeft -=
+      1;
 
     save();
     render();
 
-    /*
-      Son dédié :
-      camp_rest.wav
-    */
     playSpecialAudio(
       els.campAudio,
       0.95
     );
 
-    /*
-      Effet automatique :
-      Normal = -10%
-      Reflet = -15%
-    */
     applyInstabilityDelta(
       wasReflet
         ? -15
@@ -932,7 +1462,10 @@ Chaque personnage encore en vie soigne 2 blessures.`
     }
   }
 
-  // ---------- Nouvelle partie ----------
+  // =========================================================
+  // NOUVELLE PARTIE
+  // =========================================================
+
   function requestNewGame() {
     showConfirm(
       'Nouvelle partie',
@@ -966,14 +1499,19 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     state.campLeft =
       2;
 
-    /*
-      Nouveau numéro de sujet
-      à chaque nouvelle partie.
-    */
-    state.subjectNumber += 1;
+    state.subjectNumber +=
+      1;
 
-    history = [];
-    gameOverShown = false;
+    history =
+      [];
+
+    gameOverShown =
+      false;
+
+    if (state.musicOn) {
+      els.ambient.volume =
+        AMBIENT_VOLUME;
+    }
 
     closeActionModal();
 
@@ -1014,18 +1552,13 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     audio.pause();
 
     try {
-      audio.currentTime = 0;
+      audio.currentTime =
+        0;
     }
 
     catch (_) {}
   }
 
-  /*
-    Lors d'un rituel ou d'un camp,
-    la musique ambiante principale
-    est presque entièrement abaissée
-    pour laisser respirer le son spécial.
-  */
   function playSpecialAudio(
     audio,
     volume = 1
@@ -1055,15 +1588,18 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     audio.volume =
       volume;
 
-    const restore = () => {
-      specialAudioActive =
-        false;
+    const restore =
+      () => {
+        specialAudioActive =
+          false;
 
-      if (state.musicOn) {
-        els.ambient.volume =
-          AMBIENT_VOLUME;
-      }
-    };
+        if (
+          state.musicOn
+        ) {
+          els.ambient.volume =
+            AMBIENT_VOLUME;
+        }
+      };
 
     audio.onended =
       restore;
@@ -1076,8 +1612,12 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       .catch(restore);
   }
 
-  async function setMusic(on) {
-    state.musicOn = on;
+  async function setMusic(
+    on
+  ) {
+    state.musicOn =
+      on;
+
     save();
 
     if (on) {
@@ -1115,16 +1655,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   // =========================================================
   // EFFETS HANTÉS
   // =========================================================
-
-  function randomBetween(
-    min,
-    max
-  ) {
-    return Math.floor(
-      Math.random()
-      * (max - min + 1)
-    ) + min;
-  }
 
   function flash(
     element,
@@ -1208,7 +1738,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     hauntVisual();
 
     if (
-      Math.random() < 0.85
+      Math.random()
+      < 0.85
     ) {
       playRandomHauntSfx();
     }
@@ -1222,12 +1753,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     passiveTimer =
       setTimeout(
         () => {
-          /*
-            Pas d'événement aléatoire
-            pendant le rituel / camp,
-            devant le mot de passe,
-            ou après la défaite.
-          */
           if (
             !specialAudioActive
             && !els.gate
@@ -1236,7 +1761,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
             && state.value < 100
           ) {
             if (
-              Math.random() < 0.60
+              Math.random()
+              < 0.60
             ) {
               playRandomHauntSfx();
             }
@@ -1264,7 +1790,9 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   // =========================================================
 
   function checkGameOver() {
-    if (state.value < 100) {
+    if (
+      state.value < 100
+    ) {
       return false;
     }
 
@@ -1381,13 +1909,24 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     }
 
     catch (_) {
-      wakeLock = null;
+      wakeLock =
+        null;
     }
   }
 
   // =========================================================
   // ONGLETS
   // =========================================================
+
+  function isPartieTabActive() {
+    return (
+      document
+        .getElementById('tab-partie')
+        ?.classList
+        .contains('active')
+      ?? true
+    );
+  }
 
   function setupTabs() {
     const buttons =
@@ -1406,7 +1945,10 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           )
       ];
 
-    for (const btn of buttons) {
+    for (
+      const btn
+      of buttons
+    ) {
       btn.addEventListener(
         'click',
         () => {
@@ -1440,7 +1982,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
               .toggle(
                 'active',
                 panel.id
-                  === `tab-${target}`
+                === `tab-${target}`
               );
           }
         }
@@ -1503,6 +2045,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           'Mot de passe incorrect.';
 
         els.gateInput.select();
+
         return;
       }
 
@@ -1572,46 +2115,53 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       'beforeinstallprompt',
       event => {
         event.preventDefault();
+
         deferredInstallPrompt =
           event;
       }
     );
 
-    els.installBtn.addEventListener(
-      'click',
-      async () => {
-        if (
-          !deferredInstallPrompt
-        ) {
-          els.installText
-            .textContent =
-              'Utilisez le menu du navigateur pour installer l’application.';
+    els.installBtn
+      .addEventListener(
+        'click',
+        async () => {
+          if (
+            !deferredInstallPrompt
+          ) {
+            els.installText
+              .textContent =
+                'Utilisez le menu du navigateur pour installer l’application.';
 
-          return;
+            return;
+          }
+
+          deferredInstallPrompt
+            .prompt();
+
+          try {
+            await deferredInstallPrompt
+              .userChoice;
+          }
+
+          catch (_) {}
+
+          deferredInstallPrompt =
+            null;
+
+          hideInstallBanner(
+            false
+          );
         }
+      );
 
-        deferredInstallPrompt
-          .prompt();
-
-        try {
-          await deferredInstallPrompt
-            .userChoice;
-        }
-
-        catch (_) {}
-
-        deferredInstallPrompt =
-          null;
-
-        hideInstallBanner(false);
-      }
-    );
-
-    els.installClose.addEventListener(
-      'click',
-      () =>
-        hideInstallBanner(true)
-    );
+    els.installClose
+      .addEventListener(
+        'click',
+        () =>
+          hideInstallBanner(
+            true
+          )
+      );
   }
 
   function hideInstallBanner(
@@ -1673,42 +2223,58 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       true;
 
     registerServiceWorker();
+
     requestWakeLock();
+
     schedulePassiveHaunt();
+
+    /*
+      Nouveau en v0.8 :
+      événements visuels rares du masque.
+    */
+    scheduleMaskDisturbance();
 
     if (state.musicOn) {
       setMusic(true);
     }
 
-    if (state.value >= 100) {
+    if (
+      state.value >= 100
+    ) {
       checkGameOver();
     }
   }
 
-  // ---------- Événements ----------
+  // =========================================================
+  // ÉVÉNEMENTS
+  // =========================================================
+
   function bindEvents() {
     // Journal
-    els.btnJournal.addEventListener(
-      'click',
-      openJournal
-    );
+    els.btnJournal
+      .addEventListener(
+        'click',
+        openJournal
+      );
 
-    els.journalClose.addEventListener(
-      'click',
-      closeJournal
-    );
+    els.journalClose
+      .addEventListener(
+        'click',
+        closeJournal
+      );
 
-    els.journalModal.addEventListener(
-      'click',
-      event => {
-        if (
-          event.target
-          === els.journalModal
-        ) {
-          closeJournal();
+    els.journalModal
+      .addEventListener(
+        'click',
+        event => {
+          if (
+            event.target
+            === els.journalModal
+          ) {
+            closeJournal();
+          }
         }
-      }
-    );
+      );
 
     // Modale générique
     els.actionModalYes
@@ -1828,7 +2394,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         tryQuitApp
       );
 
-    // Mot de passe
+    // Gate
     els.gateBtn
       .addEventListener(
         'click',
@@ -1853,72 +2419,87 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         'input',
         () => {
           els.gateError
-            .textContent = '';
+            .textContent =
+              '';
         }
       );
 
     /*
-      Si la musique était enregistrée ON
-      mais que le navigateur bloque
-      l'autoplay, le premier toucher
-      réessaiera de la lancer.
+      Si l'autoplay est bloqué,
+      le premier toucher réessaie.
     */
-    document.addEventListener(
-      'pointerdown',
-      unlockAmbientOnce,
-      {
-        once: true
-      }
-    );
-
-    // Retour dans l'application
-    document.addEventListener(
-      'visibilitychange',
-      () => {
-        if (
-          document.visibilityState
-          === 'visible'
-        ) {
-          requestWakeLock();
+    document
+      .addEventListener(
+        'pointerdown',
+        unlockAmbientOnce,
+        {
+          once: true
         }
-      }
-    );
+      );
 
-    // Échap ferme seulement
-    // les modales non critiques.
-    document.addEventListener(
-      'keydown',
-      event => {
-        if (
-          event.key !== 'Escape'
-        ) {
-          return;
+    document
+      .addEventListener(
+        'visibilitychange',
+        () => {
+          if (
+            document.visibilityState
+            === 'visible'
+          ) {
+            requestWakeLock();
+          }
         }
+      );
 
-        if (
-          els.actionModal
-            .classList
-            .contains('show')
-        ) {
-          closeActionModal();
-        }
+    /*
+      Échap ne ferme que les modales
+      non critiques.
+    */
+    document
+      .addEventListener(
+        'keydown',
+        event => {
+          if (
+            event.key
+            !== 'Escape'
+          ) {
+            return;
+          }
 
-        else if (
-          els.journalModal
-            .classList
-            .contains('show')
-        ) {
-          closeJournal();
+          if (
+            els.actionModal
+              .classList
+              .contains('show')
+          ) {
+            closeActionModal();
+          }
+
+          else if (
+            els.journalModal
+              .classList
+              .contains('show')
+          ) {
+            closeJournal();
+          }
         }
-      }
-    );
+      );
   }
 
-  // ---------- Initialisation ----------
+  // =========================================================
+  // INITIALISATION
+  // =========================================================
+
   function init() {
+    /*
+      On commence par charger tous les masques.
+    */
+    preloadMasks();
+
     buildInstabilityButtons();
+
     setupTabs();
+
     bindEvents();
+
     setupInstallBanner();
 
     els.version.textContent =
@@ -1927,6 +2508,10 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     els.ambient.volume =
       AMBIENT_VOLUME;
 
+    /*
+      Le bon masque est immédiatement sélectionné
+      si une ancienne partie est restaurée.
+    */
     render();
 
     if (
