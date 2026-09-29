@@ -18,20 +18,17 @@
     :root{
       --bg:#0b0b0c;
       --card:rgba(22,22,25,.94);
-      --card-soft:rgba(27,27,30,.88);
       --border:#303034;
       --border-soft:#252529;
       --fg:#ededed;
       --muted:#9b9ba1;
-      --red:#b9262e;
-      --red-dark:#75171d;
-      --green:#2e6b42;
       --font-ui:"Special Elite",system-ui,sans-serif;
       --font-body:"EB Garamond",Georgia,serif;
     }
 
     *{box-sizing:border-box}
     html,body{min-height:100%;margin:0}
+
     body{
       color:var(--fg);
       font-family:var(--font-body);
@@ -45,6 +42,8 @@
 
     button,input{font:inherit}
     button{touch-action:manipulation}
+    .hidden{display:none!important}
+    .muted{color:var(--muted)}
 
     main{
       width:min(100%,760px);
@@ -59,10 +58,9 @@
       box-shadow:0 8px 28px rgba(0,0,0,.22);
     }
 
-    .muted{color:var(--muted)}
-    .hidden{display:none!important}
-
-    /* ---------- Onglets ---------- */
+    /* =========================================================
+       ONGLETS
+       ========================================================= */
 
     .tabs-bar{
       display:grid;
@@ -93,7 +91,9 @@
     .tab-panel{display:none}
     .tab-panel.active{display:block}
 
-    /* ---------- Carte Instabilité ---------- */
+    /* =========================================================
+       CARTE INSTABILITÉ
+       ========================================================= */
 
     .instability-card{padding:13px}
 
@@ -105,7 +105,9 @@
     }
 
     .mask-column,
-    .instability-column{min-width:0}
+    .instability-column{
+      min-width:0;
+    }
 
     .subject-id{
       min-height:22px;
@@ -116,28 +118,226 @@
       white-space:nowrap;
     }
 
+    /* =========================================================
+       MASQUE — V0.8
+       Deux images parfaitement superposées permettent
+       un fondu sans aucun déplacement entre les états.
+       ========================================================= */
+
     .mask-stage{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      margin-top:4px;
+      position:relative;
+      width:min(100%,225px);
+      aspect-ratio:2/3;
+      margin:4px auto 0;
+      overflow:visible;
+      isolation:isolate;
+      transform-origin:center;
     }
 
-    .mask-stage img{
+    .mask-image{
+      position:absolute;
+      inset:0;
+      z-index:2;
       display:block;
       width:100%;
-      max-width:225px;
-      aspect-ratio:2/3;
+      height:100%;
       object-fit:contain;
       object-position:center;
-      filter:drop-shadow(0 6px 10px rgba(0,0,0,.38));
       user-select:none;
+      pointer-events:none;
       -webkit-user-drag:none;
+      filter:drop-shadow(0 6px 10px rgba(0,0,0,.38));
+      transform:translateZ(0);
+      backface-visibility:hidden;
     }
 
-    /* Petite réserve volontaire sous le masque pour de futurs éléments. */
+    #maskImage{
+      opacity:1;
+    }
+
+    #maskImageNext{
+      z-index:3;
+      opacity:0;
+    }
+
+    /* Fondu vers le nouvel état */
+    .mask-stage.mask-transition #maskImage{
+      opacity:0;
+      transition:opacity .42s ease;
+    }
+
+    .mask-stage.mask-transition #maskImageNext{
+      opacity:1;
+      transition:opacity .42s ease;
+    }
+
+    /*
+      Aura derrière le masque.
+      Invisible en temps normal, pilotée par JS selon l'Instabilité.
+    */
+    .mask-aura{
+      position:absolute;
+      z-index:0;
+      inset:13% 5%;
+      border-radius:50%;
+      opacity:0;
+      pointer-events:none;
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(145,14,18,.26) 0%,
+          rgba(88,4,8,.12) 40%,
+          transparent 73%
+        );
+      filter:blur(15px);
+      transform:scale(.88);
+      transition:opacity .8s ease;
+    }
+
+    /*
+      Voile très léger utilisé uniquement lors de micro-glitches.
+    */
+    .mask-noise{
+      position:absolute;
+      z-index:4;
+      inset:4%;
+      opacity:0;
+      pointer-events:none;
+      border-radius:45%;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent 0 3px,
+          rgba(255,255,255,.025) 4px,
+          transparent 5px 8px
+        );
+      mix-blend-mode:screen;
+    }
+
+    /*
+      État vivant : respiration quasi imperceptible.
+      On ne l'utilisera qu'aux niveaux élevés.
+    */
+    .mask-stage.mask-breathe{
+      animation:mask-breathe 5.8s ease-in-out infinite;
+    }
+
+    .mask-stage.mask-red .mask-aura{
+      opacity:.62;
+      animation:mask-aura-pulse 3.8s ease-in-out infinite;
+    }
+
+    .mask-stage.mask-red .mask-image{
+      filter:
+        drop-shadow(0 6px 10px rgba(0,0,0,.38))
+        drop-shadow(0 0 8px rgba(125,12,17,.16));
+    }
+
+    /*
+      Réaction courte lorsqu'un palier visuel est franchi.
+    */
+    .mask-stage.mask-evolve{
+      animation:mask-evolve .52s cubic-bezier(.2,.75,.25,1);
+    }
+
+    .mask-stage.mask-major{
+      animation:mask-major .72s cubic-bezier(.2,.8,.25,1);
+    }
+
+    /*
+      Glitch rare : volontairement très court et discret.
+    */
+    .mask-stage.mask-glitch .mask-image{
+      animation:mask-glitch .18s steps(2,end);
+    }
+
+    .mask-stage.mask-glitch .mask-noise{
+      animation:mask-noise .18s steps(2,end);
+    }
+
+    /*
+      Effet de malaise à très forte Instabilité.
+      Pas de gros zoom : le masque doit rester visuellement stable.
+    */
+    .mask-stage.mask-critical{
+      filter:saturate(1.06) contrast(1.04);
+    }
+
+    @keyframes mask-breathe{
+      0%,100%{
+        transform:scale(1);
+      }
+      50%{
+        transform:scale(1.007);
+      }
+    }
+
+    @keyframes mask-aura-pulse{
+      0%,100%{
+        opacity:.35;
+        transform:scale(.86);
+      }
+      50%{
+        opacity:.7;
+        transform:scale(1.02);
+      }
+    }
+
+    @keyframes mask-evolve{
+      0%{transform:scale(1)}
+      28%{transform:scale(1.018)}
+      55%{transform:scale(.995)}
+      100%{transform:scale(1)}
+    }
+
+    @keyframes mask-major{
+      0%{transform:translate(0) scale(1)}
+      18%{transform:translate(-1px,0) scale(1.022)}
+      34%{transform:translate(1px,-1px) scale(1.012)}
+      52%{transform:translate(-1px,1px) scale(.997)}
+      72%{transform:translate(1px,0) scale(1.004)}
+      100%{transform:translate(0) scale(1)}
+    }
+
+    @keyframes mask-glitch{
+      0%{
+        transform:translate(0);
+        filter:
+          drop-shadow(0 6px 10px rgba(0,0,0,.38))
+          contrast(1);
+      }
+      34%{
+        transform:translate(-2px,1px);
+        filter:
+          drop-shadow(2px 0 rgba(130,0,0,.3))
+          contrast(1.13);
+      }
+      68%{
+        transform:translate(2px,-1px);
+        filter:
+          drop-shadow(-2px 0 rgba(180,180,180,.1))
+          contrast(.96);
+      }
+      100%{
+        transform:translate(0);
+      }
+    }
+
+    @keyframes mask-noise{
+      0%,100%{opacity:0}
+      30%{opacity:.28}
+      65%{opacity:.12}
+    }
+
+    /*
+      Petite réserve volontaire sous le masque :
+      on conserve l'espace pour de futurs éléments.
+    */
     .mask-reserve{height:14px}
+
+    /* =========================================================
+       JAUGE / BOUTONS
+       ========================================================= */
 
     .instability-title{
       min-height:22px;
@@ -187,10 +387,18 @@
       -webkit-user-drag:none;
     }
 
-    .instability-btn:active{transform:translateY(1px) scale(.98)}
-    .instability-btn:disabled{opacity:.45;cursor:not-allowed}
+    .instability-btn:active{
+      transform:translateY(1px) scale(.98);
+    }
 
-    /* Journal / Musique / Plein écran enfin sur la même ligne. */
+    .instability-btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    /* =========================================================
+       COMMANDES
+       ========================================================= */
 
     .utility-controls{
       display:grid;
@@ -214,10 +422,17 @@
       white-space:normal;
     }
 
-    .utility-btn:active{transform:translateY(1px)}
-    .utility-btn[aria-pressed="true"]{border-color:#55555c}
+    .utility-btn:active{
+      transform:translateY(1px);
+    }
 
-    /* ---------- Actions spéciales ---------- */
+    .utility-btn[aria-pressed="true"]{
+      border-color:#55555c;
+    }
+
+    /* =========================================================
+       ACTIONS SPÉCIALES
+       ========================================================= */
 
     .actions-card{
       margin-top:11px;
@@ -236,7 +451,9 @@
       border-bottom:1px solid var(--border-soft);
     }
 
-    .action-block:last-of-type{border-bottom:0}
+    .action-block:last-of-type{
+      border-bottom:0;
+    }
 
     .action-header{
       display:flex;
@@ -319,7 +536,9 @@
       cursor:pointer;
     }
 
-    /* ---------- Bestiaire / Aide ---------- */
+    /* =========================================================
+       PLACEHOLDERS
+       ========================================================= */
 
     .placeholder-card{
       padding:22px 16px;
@@ -346,7 +565,9 @@
       font-size:12px;
     }
 
-    /* ---------- Effets ---------- */
+    /* =========================================================
+       EFFETS GLOBAUX
+       ========================================================= */
 
     .overlay-flash,
     .overlay-black,
@@ -373,13 +594,13 @@
     .vignette{
       z-index:9996;
       opacity:0;
-      transition:opacity .6s ease;
+      transition:opacity .7s ease;
       background:
         radial-gradient(
           ellipse at center,
-          rgba(0,0,0,0) 55%,
-          rgba(130,0,0,.18) 82%,
-          rgba(0,0,0,.82) 100%
+          rgba(0,0,0,0) 52%,
+          rgba(105,0,0,.14) 78%,
+          rgba(0,0,0,.85) 100%
         );
     }
 
@@ -420,7 +641,9 @@
       text-shadow:0 0 24px rgba(255,255,255,.45);
     }
 
-    .fx-blur{filter:blur(1px)}
+    .fx-blur{
+      filter:blur(1px);
+    }
 
     @keyframes subtle-shake{
       0%,100%{transform:translate(0)}
@@ -429,9 +652,13 @@
       75%{transform:translate(1px,0)}
     }
 
-    .fx-shake{animation:subtle-shake .35s ease}
+    .fx-shake{
+      animation:subtle-shake .35s ease;
+    }
 
-    /* ---------- Modales ---------- */
+    /* =========================================================
+       MODALES
+       ========================================================= */
 
     .modal,
     .gate{
@@ -446,7 +673,9 @@
     }
 
     .modal.show,
-    .gate.show{display:flex}
+    .gate.show{
+      display:flex;
+    }
 
     .modal-inner,
     .gate-inner{
@@ -506,7 +735,9 @@
     .modal-yes{border-color:#3c6848}
     .modal-no{border-color:#674044}
 
-    /* Journal */
+    /* =========================================================
+       JOURNAL
+       ========================================================= */
 
     .journal-list{
       list-style:none;
@@ -526,7 +757,9 @@
       text-align:center;
     }
 
-    /* Gate */
+    /* =========================================================
+       GATE
+       ========================================================= */
 
     .gate{z-index:10100}
 
@@ -570,7 +803,9 @@
       cursor:pointer;
     }
 
-    /* ---------- Installation PWA ---------- */
+    /* =========================================================
+       INSTALLATION PWA
+       ========================================================= */
 
     .install-banner{
       position:fixed;
@@ -590,7 +825,9 @@
       background:#151517;
     }
 
-    .install-banner.show{display:flex}
+    .install-banner.show{
+      display:flex;
+    }
 
     .install-actions{
       display:flex;
@@ -607,13 +844,17 @@
       cursor:pointer;
     }
 
-    /* ---------- Très petits écrans ---------- */
+    /* =========================================================
+       PETITS ÉCRANS
+       ========================================================= */
 
     @media (max-width:420px){
       main{padding:8px}
 
       .instability-card,
-      .actions-card{padding:11px}
+      .actions-card{
+        padding:11px;
+      }
 
       .instability-layout{
         grid-template-columns:minmax(0,41%) minmax(0,59%);
@@ -621,7 +862,11 @@
       }
 
       .subject-id{font-size:11px}
-      .instability-title{font-size:clamp(11px,3.15vw,14px)}
+
+      .instability-title{
+        font-size:clamp(11px,3.15vw,14px);
+      }
+
       .percent{margin-bottom:8px}
 
       .instability-buttons{gap:5px}
@@ -655,6 +900,7 @@
       *,*::before,*::after{
         scroll-behavior:auto!important;
         animation-duration:.01ms!important;
+        animation-iteration-count:1!important;
         transition-duration:.01ms!important;
       }
     }
@@ -719,10 +965,28 @@
             <div id="subjectId" class="subject-id">SUJET #01</div>
 
             <div id="maskContainer" class="mask-stage">
+
+              <!-- Aura pilotée selon l'Instabilité -->
+              <div id="maskAura" class="mask-aura" aria-hidden="true"></div>
+
+              <!-- Masque actuellement affiché -->
               <img
                 id="maskImage"
+                class="mask-image"
                 src="img/masque0.png"
                 alt="État mental du sujet">
+
+              <!-- Calque utilisé pour les transitions -->
+              <img
+                id="maskImageNext"
+                class="mask-image"
+                src="img/masque0.png"
+                alt=""
+                aria-hidden="true">
+
+              <!-- Bruit visuel très ponctuel -->
+              <div id="maskNoise" class="mask-noise" aria-hidden="true"></div>
+
             </div>
 
             <div class="mask-reserve" aria-hidden="true"></div>
@@ -742,7 +1006,6 @@
 
         </div>
 
-        <!-- Commandes parfaitement alignées -->
         <div class="utility-controls">
           <button id="btnJournal" class="utility-btn" type="button">
             JOURNAL
@@ -827,7 +1090,6 @@
           </div>
         </div>
 
-        <!-- Nouvelle partie volontairement séparée -->
         <div class="new-game-zone">
           <button id="btnNew" class="new-game-btn" type="button">
             Nouvelle partie
@@ -842,6 +1104,7 @@
     <section id="tab-bestiaire" class="tab-panel" role="tabpanel">
       <div class="card placeholder-card">
         <h2 class="placeholder-title">BESTIAIRE</h2>
+
         <p class="placeholder-text">
           Les données du Bestiaire seront intégrées dans une prochaine mise à jour.
         </p>
@@ -853,13 +1116,14 @@
     <section id="tab-aide" class="tab-panel" role="tabpanel">
       <div class="card placeholder-card">
         <h2 class="placeholder-title">AIDE</h2>
+
         <p class="placeholder-text">
           Cette section sera complétée lors d’une prochaine mise à jour.
         </p>
       </div>
     </section>
 
-    <div id="version">v0.7.2 Playtest</div>
+    <div id="version">v0.8.0 Playtest</div>
   </main>
 
   <!-- ==================== JOURNAL ==================== -->
@@ -875,7 +1139,9 @@
       <h2 id="journalTitle" class="modal-title">Journal</h2>
 
       <ul id="historyList" class="journal-list">
-        <li class="journal-empty">Aucune modification pour le moment.</li>
+        <li class="journal-empty">
+          Aucune modification pour le moment.
+        </li>
       </ul>
 
       <div class="modal-actions">
@@ -886,7 +1152,7 @@
     </div>
   </div>
 
-  <!-- ==================== MODALE ACTION / AIDE / RÉSULTAT ==================== -->
+  <!-- ==================== MODALE ACTION / AIDE ==================== -->
 
   <div
     id="actionModal"
@@ -1028,7 +1294,6 @@
     preload="auto">
   </audio>
 
-  <!-- Nouveaux sons des actions spéciales -->
   <audio
     id="ritualAudio"
     src="audio/ritual_resurrection.wav"
