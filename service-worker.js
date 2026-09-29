@@ -1,4 +1,4 @@
-const CACHE = 'instability-v37';
+const CACHE = 'instability-v38';
 
 const ASSETS = [
   './',
@@ -6,10 +6,19 @@ const ASSETS = [
   './app.js',
   './manifest.webmanifest',
 
-  // Icône / interface
   './icons/icon-192.png',
+
   './img/bg.webp',
+
+  // Masques d'Instabilité
   './img/masque0.png',
+  './img/masque15.png',
+  './img/masque25.png',
+  './img/masque40.png',
+  './img/masque50.png',
+  './img/masque65.png',
+  './img/masque75.png',
+  './img/masque90.png',
 
   // Boutons Instabilité
   './img/btn_moins5.png',
@@ -21,7 +30,7 @@ const ASSETS = [
   './img/btn_moins20.png',
   './img/btn_plus20.png',
 
-  // Ambiance principale
+  // Ambiance
   './audio/ambient_loop.mp3',
   './audio/groan.wav',
 
@@ -46,7 +55,6 @@ const ASSETS = [
   './audio/sounds/wood_creak_single.mp3'
 ];
 
-// ---------- Installation ----------
 self.addEventListener('install', event => {
   event.waitUntil(
     caches
@@ -56,7 +64,6 @@ self.addEventListener('install', event => {
   );
 });
 
-// ---------- Activation ----------
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches
@@ -72,15 +79,20 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ---------- Requêtes ----------
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET') {
+    return;
+  }
 
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
+    caches
+      .match(event.request)
+      .then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
 
-      return fetch(event.request);
-    })
+        return fetch(event.request);
+      })
   );
 });
