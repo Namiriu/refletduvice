@@ -1,4 +1,4 @@
-const CACHE = 'instability-v38';
+const CACHE = 'instability-v39';
 
 const ASSETS = [
   './',
@@ -84,15 +84,96 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  const range = event.request.headers.get('range');
+
+  if (range) {
+    event.respondWith(handleRangeRequest(event.request, range));
+    return;
+  }
+
   event.respondWith(
     caches
       .match(event.request)
-      .then(cachedResponse => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        return fetch(event.request);
-      })
+      .then(cachedResponse => cachedResponse || fetch(event.request))
   );
 });
+
+async function handleRangeRequest(request, rangeHeader) {
+  const cachedResponse = await caches.match(request.url);
+
+  if (!cachedResponse) {
+    return fetch(request);
+  }
+
+  const buffer = await cachedResponse.arrayBuffer();
+  const size = buffer.byteLength;
+
+  const match = /^bytes=(\d*)-(\d*)$/i.exec(rangeHeader);
+
+  if (!match) {
+    return new Response(null, {
+      status: 416,
+      headers: {
+        'Content-Range': `bytes */${size}`
+      }
+    });
+  }
+
+  let start;
+  let end;
+
+  if (match[1] === '') {
+    const suffixLength = Number(match[2]);
+
+    if (!suffixLength) {
+      return new Response(null, {
+        status: 416,
+        headers: {
+          'Content-Range': `bytes */${size}`
+        }
+      });
+    }
+
+    start = Math.max(0, size - suffixLength);
+    end = size - 1;
+  } else {
+    start = Number(match[1]);
+    end = match[2] === ''
+      ? size - 1
+      : Math.min(Number(match[2]), size - 1);
+  }
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start < 0 ||
+    end < start ||
+    start >= size
+  ) {
+    return new Response(null, {
+      status: 416,
+      headers: {
+        'Content-Range': `bytes */${size}`
+      }
+    });
+  }
+
+  const slicedBuffer = buffer.slice(start, end + 1);
+
+  const headers = new Headers();
+
+  headers.set(
+    'Content-Type',
+    cachedResponse.headers.get('Content-Type') || 'application/octet-stream'
+  );
+
+  headers.set('Accept-Ranges', 'bytes');
+  headers.set('Content-Range', `bytes ${start}-${end}/${size}`);
+  headers.set('Content-Length', String(slicedBuffer.byteLength));
+
+  return new Response(slicedBuffer, {
+    status: 206,
+    statusText: 'Partial Content',
+    headers
+  });
+}
