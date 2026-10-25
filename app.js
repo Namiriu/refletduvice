@@ -1,23 +1,32 @@
 (() => {
   'use strict';
 
-  // ---------- Configuration ----------
+  // =========================================================
+  // CONFIGURATION
+  // =========================================================
+
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.8.0 Playtest';
+  const VERSION = 'v0.9.0 Playtest';
   const AMBIENT_VOLUME = 0.55;
+  const DUCK_VOLUME = 0.06;
   const LSK = key => `jds_${key}`;
-  const REDUCED_MOTION =
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  const REDUCED_MOTION = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
   const PASSPHRASE_HASH =
     'sha256:779d99b88c773f38617d286974f7882cbbc7f91781ef98287c55a5e89ea09e9f';
-
   const GATE_KEY = 'playtest_gate_hash';
 
-  // ---------- États visuels du masque ----------
+  const BESTIAIRE_PATHS = {
+    image: 'bestiaire/images/',
+    video: 'bestiaire/videos/',
+    audio: 'bestiaire/audio/'
+  };
+
+  const BESTIAIRE_RUNTIME_CACHE = 'instability-runtime-v1';
+
   const MASK_STATES = [
-    { min: 0,  src: 'img/masque0.png' },
+    { min: 0, src: 'img/masque0.png' },
     { min: 15, src: 'img/masque15.png' },
     { min: 25, src: 'img/masque25.png' },
     { min: 40, src: 'img/masque40.png' },
@@ -52,7 +61,10 @@
     exit: 'audio/voice_return_normal.mp3'
   };
 
-  // ---------- DOM ----------
+  // =========================================================
+  // DOM
+  // =========================================================
+
   const $ = id => document.getElementById(id);
 
   const els = {
@@ -114,10 +126,30 @@
     installBtn: $('installBtn'),
     installClose: $('installClose'),
 
+    bestiaireSearch: $('bestiaireSearch'),
+    bestiaireMeta: $('bestiaireMeta'),
+    bestiaireList: $('bestiaireList'),
+    bestiaireEmpty: $('bestiaireEmpty'),
+
+    dossierModal: $('dossierModal'),
+    dossierTitle: $('dossierTitle'),
+    dossierLore: $('dossierLore'),
+    dossierAudio: $('dossierAudio'),
+    dossierAudioBtn: $('dossierAudioBtn'),
+    dossierAudioIcon: $('dossierAudioIcon'),
+    dossierAudioLabel: $('dossierAudioLabel'),
+    dossierAudioProgressFill: $('dossierAudioProgressFill'),
+    dossierAudioTime: $('dossierAudioTime'),
+    dossierClose: $('dossierClose'),
+    bestiaireNarration: $('bestiaireNarration'),
+
     version: $('version')
   };
 
-  // ---------- Utilitaires / état ----------
+  // =========================================================
+  // ÉTAT / UTILITAIRES
+  // =========================================================
+
   const clamp = (n, min, max) =>
     Math.min(max, Math.max(min, n));
 
@@ -125,11 +157,7 @@
     Math.floor(Math.random() * (max - min + 1)) + min;
 
   function readInt(key, fallback) {
-    const value =
-      Number.parseInt(
-        localStorage.getItem(LSK(key)),
-        10
-      );
+    const value = Number.parseInt(localStorage.getItem(LSK(key)), 10);
 
     return Number.isFinite(value)
       ? value
@@ -137,8 +165,7 @@
   }
 
   function readBool(key, fallback) {
-    const value =
-      localStorage.getItem(LSK(key));
+    const value = localStorage.getItem(LSK(key));
 
     if (value === null) return fallback;
 
@@ -147,35 +174,26 @@
   }
 
   const state = {
-    value:
-      clamp(
-        readInt('instability', 0),
-        0,
-        100
-      ),
+    value: clamp(readInt('instability', 0), 0, 100),
 
-    subjectNumber:
-      Math.max(
-        1,
-        readInt('subjectNumber', 1)
-      ),
+    subjectNumber: Math.max(
+      1,
+      readInt('subjectNumber', 1)
+    ),
 
-    musicOn:
-      readBool('musicOn', false),
+    musicOn: readBool('musicOn', false),
 
-    ritualUsed:
-      clamp(
-        readInt('ritualUsed', 0),
-        0,
-        2
-      ),
+    ritualUsed: clamp(
+      readInt('ritualUsed', 0),
+      0,
+      2
+    ),
 
-    campLeft:
-      clamp(
-        readInt('campLeft', 2),
-        0,
-        2
-      )
+    campLeft: clamp(
+      readInt('campLeft', 2),
+      0,
+      2
+    )
   };
 
   let history = [];
@@ -191,6 +209,7 @@
   let wakeLock = null;
   let appStarted = false;
   let specialAudioActive = false;
+  let bestiaireNarrationActive = false;
   let deferredInstallPrompt = null;
 
   let maskInitialized = false;
@@ -200,14 +219,19 @@
 
   const preloadedMasks = new Map();
 
+  let openCreatureSlug = null;
+  let openCreatureEntry = null;
+  let bestiaireMediaToken = 0;
+  let activeDossierCreature = null;
+  let narrationLoadedUrl = null;
+
   const worldFromValue = value =>
     value >= THRESHOLD
       ? 'reflet'
       : 'normal';
 
   const isReflet = () =>
-    worldFromValue(state.value)
-      === 'reflet';
+    worldFromValue(state.value) === 'reflet';
 
   function save() {
     localStorage.setItem(
@@ -241,8 +265,39 @@
     );
   }
 
+  function normalizeSearch(text) {
+    return String(text ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('fr-FR')
+      .trim();
+  }
+
+  function formatTime(seconds) {
+    if (
+      !Number.isFinite(seconds)
+      || seconds < 0
+    ) {
+      return '--:--';
+    }
+
+    const total = Math.floor(seconds);
+    const minutes = Math.floor(total / 60);
+    const secs = total % 60;
+
+    return `${minutes}:${String(secs).padStart(2, '0')}`;
+  }
+
+  function syncAmbientVolume() {
+    els.ambient.volume =
+      specialAudioActive
+      || bestiaireNarrationActive
+        ? DUCK_VOLUME
+        : AMBIENT_VOLUME;
+  }
+
   // =========================================================
-  // MASQUES V0.8
+  // MASQUES
   // =========================================================
 
   function getMaskState(value) {
@@ -254,10 +309,6 @@
     );
   }
 
-  /*
-    On charge les 8 PNG dès le lancement afin que
-    les changements de masque soient instantanés.
-  */
   function preloadMasks() {
     for (const mask of MASK_STATES) {
       const img = new Image();
@@ -271,56 +322,35 @@
     }
   }
 
-  /*
-    Termine immédiatement une transition encore en cours.
-    Utile si plusieurs boutons sont pressés rapidement.
-  */
   function commitPendingMask() {
     if (pendingMaskMin === null) {
       return;
     }
 
-    const mask =
-      MASK_STATES.find(
-        item =>
-          item.min === pendingMaskMin
-      );
+    const mask = MASK_STATES.find(
+      item => item.min === pendingMaskMin
+    );
 
     if (mask) {
-      els.maskImage.src =
-        mask.src;
+      els.maskImage.src = mask.src;
     }
 
     els.maskContainer
       .classList
       .remove('mask-transition');
 
-    currentMaskMin =
-      pendingMaskMin;
+    currentMaskMin = pendingMaskMin;
+    pendingMaskMin = null;
 
-    pendingMaskMin =
-      null;
+    clearTimeout(maskTransitionTimer);
 
-    clearTimeout(
-      maskTransitionTimer
-    );
-
-    maskTransitionTimer =
-      null;
+    maskTransitionTimer = null;
   }
 
-  /*
-    Petite réaction lorsque le masque change réellement
-    d'état.
-
-    25 / 50 / 75 sont volontairement plus marqués.
-  */
   function reactMaskToEvolution(targetMin) {
     if (REDUCED_MOTION) return;
 
-    clearTimeout(
-      maskReactionTimer
-    );
+    clearTimeout(maskReactionTimer);
 
     els.maskContainer
       .classList
@@ -340,53 +370,36 @@
       .classList
       .add(reactionClass);
 
-    maskReactionTimer =
-      setTimeout(
-        () => {
-          els.maskContainer
-            .classList
-            .remove(
-              'mask-evolve',
-              'mask-major'
-            );
-        },
-
-        reactionClass === 'mask-major'
-          ? 760
-          : 560
-      );
+    maskReactionTimer = setTimeout(
+      () => {
+        els.maskContainer
+          .classList
+          .remove(
+            'mask-evolve',
+            'mask-major'
+          );
+      },
+      reactionClass === 'mask-major'
+        ? 760
+        : 560
+    );
   }
 
-  /*
-    Fondu entre les deux images superposées.
-  */
   function startMaskTransition(target) {
-    /*
-      Premier affichage :
-      aucun fondu inutile au démarrage.
-    */
     if (
       !maskInitialized
       || REDUCED_MOTION
     ) {
-      els.maskImage.src =
-        target.src;
-
-      els.maskImageNext.src =
-        target.src;
+      els.maskImage.src = target.src;
+      els.maskImageNext.src = target.src;
 
       els.maskContainer
         .classList
         .remove('mask-transition');
 
-      currentMaskMin =
-        target.min;
-
-      pendingMaskMin =
-        null;
-
-      maskInitialized =
-        true;
+      currentMaskMin = target.min;
+      pendingMaskMin = null;
+      maskInitialized = true;
 
       return;
     }
@@ -398,30 +411,18 @@
       return;
     }
 
-    /*
-      Si une transition est encore en cours,
-      on la finalise proprement.
-    */
     if (pendingMaskMin !== null) {
       commitPendingMask();
     }
 
-    const requestToken =
-      ++maskRequestToken;
+    const requestToken = ++maskRequestToken;
 
     const preloaded =
-      preloadedMasks.get(
-        target.min
-      );
+      preloadedMasks.get(target.min);
 
-    els.maskImageNext.src =
-      target.src;
+    els.maskImageNext.src = target.src;
 
     const begin = () => {
-      /*
-        Empêche une ancienne image chargée tardivement
-        de remplacer un masque plus récent.
-      */
       if (
         requestToken
         !== maskRequestToken
@@ -429,8 +430,7 @@
         return;
       }
 
-      pendingMaskMin =
-        target.min;
+      pendingMaskMin = target.min;
 
       els.maskContainer
         .classList
@@ -446,9 +446,7 @@
         target.min
       );
 
-      clearTimeout(
-        maskTransitionTimer
-      );
+      clearTimeout(maskTransitionTimer);
 
       maskTransitionTimer =
         setTimeout(
@@ -491,30 +489,16 @@
     updateMaskAtmosphere();
   }
 
-  /*
-    Plus l'Instabilité monte, plus le masque et
-    son environnement deviennent subtilement vivants.
-  */
   function updateMaskAtmosphere() {
-    const value =
-      state.value;
+    const value = state.value;
+    const stage = els.maskContainer;
 
-    const stage =
-      els.maskContainer;
-
-    /*
-      À partir de 65 %, le masque "respire"
-      presque imperceptiblement.
-    */
     stage.classList.toggle(
       'mask-breathe',
       value >= 65
       && !REDUCED_MOTION
     );
 
-    /*
-      Dès 75 %, une aura rouge lente commence.
-    */
     stage.classList.toggle(
       'mask-red',
       value >= 75
@@ -526,11 +510,6 @@
       value >= 90
     );
 
-    /*
-      Entre 50 et 75 % :
-      apparition graduelle de l'aura,
-      avant sa pulsation réelle.
-    */
     if (
       value >= 50
       && value < 75
@@ -548,18 +527,10 @@
     }
 
     else {
-      els.maskAura.style.opacity =
-        '';
-
-      els.maskAura.style.transform =
-        '';
+      els.maskAura.style.opacity = '';
+      els.maskAura.style.transform = '';
     }
 
-    /*
-      Vignette progressive.
-      Elle reste volontairement très faible à 65 %,
-      puis devient réellement perceptible après 75 %.
-    */
     if (value < 65) {
       els.vignette.style.opacity =
         '0';
@@ -569,9 +540,7 @@
       els.vignette.style.opacity =
         String(
           0.08
-          + (
-            (value - 65) / 10
-          ) * 0.10
+          + ((value - 65) / 10) * 0.10
         );
     }
 
@@ -579,9 +548,7 @@
       els.vignette.style.opacity =
         String(
           0.18
-          + (
-            (value - 75) / 15
-          ) * 0.22
+          + ((value - 75) / 15) * 0.22
         );
     }
 
@@ -591,23 +558,14 @@
           Math.min(
             0.72,
             0.45
-            + (
-              (value - 90) / 10
-            ) * 0.27
+            + ((value - 90) / 10) * 0.27
           )
         );
     }
 
-    /*
-      Même le pourcentage commence légèrement
-      à changer de caractère à forte Instabilité.
-    */
     if (value < 75) {
-      els.percent.style.color =
-        '';
-
-      els.percent.style.textShadow =
-        '';
+      els.percent.style.color = '';
+      els.percent.style.textShadow = '';
     }
 
     else if (value < 90) {
@@ -627,10 +585,6 @@
     }
   }
 
-  /*
-    Petit glitch du masque seulement.
-    Jamais l'interface entière.
-  */
   function triggerMaskGlitch() {
     if (
       REDUCED_MOTION
@@ -642,6 +596,7 @@
 
     if (
       specialAudioActive
+      || bestiaireNarrationActive
       || anyBlockingModalOpen()
     ) {
       return;
@@ -667,15 +622,8 @@
     );
   }
 
-  /*
-    Les glitches sont volontairement rares
-    et deviennent seulement plus probables
-    lorsque la jauge approche de la rupture.
-  */
   function scheduleMaskDisturbance() {
-    clearTimeout(
-      maskDisturbanceTimer
-    );
+    clearTimeout(maskDisturbanceTimer);
 
     let min = 26000;
     let max = 52000;
@@ -725,7 +673,7 @@
   }
 
   // =========================================================
-  // BOUTONS D'INSTABILITÉ
+  // INSTABILITÉ / RENDU
   // =========================================================
 
   function buildInstabilityButtons() {
@@ -754,7 +702,6 @@
 
         btn.setAttribute(
           'aria-label',
-
           `${minus
             ? 'Réduire'
             : 'Augmenter'
@@ -800,10 +747,6 @@
       }
     }
   }
-
-  // =========================================================
-  // RENDU
-  // =========================================================
 
   function render() {
     els.percent.textContent =
@@ -874,209 +817,6 @@
     updateFullscreenButton();
     save();
   }
-
-  // =========================================================
-  // JOURNAL
-  // =========================================================
-
-  function addHistory(
-    delta,
-    source
-  ) {
-    if (!delta) return;
-
-    const sign =
-      delta > 0
-        ? '+'
-        : '−';
-
-    const time =
-      new Date()
-        .toLocaleTimeString(
-          'fr-FR',
-          {
-            hour: '2-digit',
-            minute: '2-digit'
-          }
-        );
-
-    history.unshift({
-      time,
-      source,
-
-      delta:
-        `${sign}${Math.abs(delta)} %`,
-
-      value:
-        state.value
-    });
-
-    if (
-      history.length > 50
-    ) {
-      history.length =
-        50;
-    }
-  }
-
-  function renderHistory() {
-    els.historyList.innerHTML =
-      '';
-
-    if (!history.length) {
-      const li =
-        document.createElement('li');
-
-      li.className =
-        'journal-empty';
-
-      li.textContent =
-        'Aucune modification pour le moment.';
-
-      els.historyList
-        .appendChild(li);
-
-      return;
-    }
-
-    for (
-      const item
-      of history
-    ) {
-      const li =
-        document.createElement('li');
-
-      li.textContent =
-        `${item.time} — ${item.source} : ${item.delta} → ${item.value} %`;
-
-      els.historyList
-        .appendChild(li);
-    }
-  }
-
-  function openJournal() {
-    renderHistory();
-
-    els.journalModal
-      .classList
-      .add('show');
-
-    els.journalClose.focus();
-  }
-
-  function closeJournal() {
-    els.journalModal
-      .classList
-      .remove('show');
-  }
-
-  // =========================================================
-  // MODALE GÉNÉRIQUE
-  // =========================================================
-
-  function showInfo(
-    title,
-    text
-  ) {
-    pendingAction =
-      null;
-
-    els.actionModalTitle.textContent =
-      title;
-
-    els.actionModalText.textContent =
-      text;
-
-    els.actionModalYes
-      .classList
-      .add('hidden');
-
-    els.actionModalNo
-      .classList
-      .add('hidden');
-
-    els.actionModalClose
-      .classList
-      .remove('hidden');
-
-    els.actionModal
-      .classList
-      .add('show');
-
-    els.actionModalClose
-      .focus();
-  }
-
-  function showConfirm(
-    title,
-    text,
-    onYes
-  ) {
-    pendingAction =
-      onYes;
-
-    els.actionModalTitle.textContent =
-      title;
-
-    els.actionModalText.textContent =
-      text;
-
-    els.actionModalYes
-      .classList
-      .remove('hidden');
-
-    els.actionModalNo
-      .classList
-      .remove('hidden');
-
-    els.actionModalClose
-      .classList
-      .add('hidden');
-
-    els.actionModal
-      .classList
-      .add('show');
-
-    els.actionModalYes
-      .focus();
-  }
-
-  function closeActionModal() {
-    pendingAction =
-      null;
-
-    els.actionModal
-      .classList
-      .remove('show');
-  }
-
-  function anyBlockingModalOpen() {
-    return (
-      els.gate
-        .classList
-        .contains('show')
-      ||
-      els.actionModal
-        .classList
-        .contains('show')
-      ||
-      els.journalModal
-        .classList
-        .contains('show')
-      ||
-      els.gameover
-        .classList
-        .contains('show')
-      ||
-      els.alert
-        .classList
-        .contains('show')
-    );
-  }
-
-  // =========================================================
-  // INSTABILITÉ
-  // =========================================================
 
   function applyInstabilityDelta(
     delta,
@@ -1172,9 +912,7 @@
     text,
     voicePath
   ) {
-    clearTimeout(
-      alertTimer
-    );
+    clearTimeout(alertTimer);
 
     els.alert.className =
       `threshold-alert ${kind}`;
@@ -1223,10 +961,6 @@
       );
   }
 
-  // =========================================================
-  // EFFETS VISUELS GLOBAUX
-  // =========================================================
-
   function microEffect() {
     if (
       REDUCED_MOTION
@@ -1271,7 +1005,1346 @@
   }
 
   // =========================================================
-  // PROFANATION DE LA CHAIR
+  // JOURNAL / MODALES
+  // =========================================================
+
+  function addHistory(
+    delta,
+    source
+  ) {
+    if (!delta) return;
+
+    const sign =
+      delta > 0
+        ? '+'
+        : '−';
+
+    const time =
+      new Date()
+        .toLocaleTimeString(
+          'fr-FR',
+          {
+            hour: '2-digit',
+            minute: '2-digit'
+          }
+        );
+
+    history.unshift({
+      time,
+      source,
+
+      delta:
+        `${sign}${Math.abs(delta)} %`,
+
+      value:
+        state.value
+    });
+
+    if (
+      history.length > 50
+    ) {
+      history.length =
+        50;
+    }
+  }
+
+  function renderHistory() {
+    els.historyList.innerHTML =
+      '';
+
+    if (!history.length) {
+      const li =
+        document.createElement('li');
+
+      li.className =
+        'journal-empty';
+
+      li.textContent =
+        'Aucune modification pour le moment.';
+
+      els.historyList
+        .appendChild(li);
+
+      return;
+    }
+
+    for (
+      const item
+      of history
+    ) {
+      const li =
+        document.createElement('li');
+
+      li.textContent =
+        `${item.time} — ${item.source} : ${item.delta} → ${item.value} %`;
+
+      els.historyList
+        .appendChild(li);
+    }
+  }
+
+  function openJournal() {
+    renderHistory();
+
+    els.journalModal
+      .classList
+      .add('show');
+
+    els.journalClose.focus();
+  }
+
+  function closeJournal() {
+    els.journalModal
+      .classList
+      .remove('show');
+  }
+
+  function showInfo(
+    title,
+    text
+  ) {
+    pendingAction =
+      null;
+
+    els.actionModalTitle.textContent =
+      title;
+
+    els.actionModalText.textContent =
+      text;
+
+    els.actionModalYes
+      .classList
+      .add('hidden');
+
+    els.actionModalNo
+      .classList
+      .add('hidden');
+
+    els.actionModalClose
+      .classList
+      .remove('hidden');
+
+    els.actionModal
+      .classList
+      .add('show');
+
+    els.actionModalClose
+      .focus();
+  }
+
+  function showConfirm(
+    title,
+    text,
+    onYes
+  ) {
+    pendingAction =
+      onYes;
+
+    els.actionModalTitle.textContent =
+      title;
+
+    els.actionModalText.textContent =
+      text;
+
+    els.actionModalYes
+      .classList
+      .remove('hidden');
+
+    els.actionModalNo
+      .classList
+      .remove('hidden');
+
+    els.actionModalClose
+      .classList
+      .add('hidden');
+
+    els.actionModal
+      .classList
+      .add('show');
+
+    els.actionModalYes
+      .focus();
+  }
+
+  function closeActionModal() {
+    pendingAction =
+      null;
+
+    els.actionModal
+      .classList
+      .remove('show');
+  }
+
+  function anyBlockingModalOpen() {
+    return (
+      els.gate
+        .classList
+        .contains('show')
+
+      || els.actionModal
+        .classList
+        .contains('show')
+
+      || els.journalModal
+        .classList
+        .contains('show')
+
+      || els.gameover
+        .classList
+        .contains('show')
+
+      || els.alert
+        .classList
+        .contains('show')
+
+      || els.dossierModal
+        .classList
+        .contains('show')
+    );
+  }
+
+  // =========================================================
+  // BESTIAIRE V0.9
+  // =========================================================
+
+  function getBestiaireData() {
+    const data =
+      Array.isArray(window.BESTIAIRE_DATA)
+        ? window.BESTIAIRE_DATA
+        : [];
+
+    return data
+      .filter(
+        creature =>
+          creature
+          && creature.name
+          && creature.slug
+          && creature.image
+      )
+      .slice()
+      .sort(
+        (a, b) =>
+          a.name.localeCompare(
+            b.name,
+            'fr',
+            {
+              sensitivity: 'base'
+            }
+          )
+      );
+  }
+
+  function bestiaireAsset(
+    type,
+    filename
+  ) {
+    return `${BESTIAIRE_PATHS[type]}${filename}`;
+  }
+
+  async function ensureRuntimeAsset(url) {
+    const absoluteUrl =
+      new URL(
+        url,
+        location.href
+      ).href;
+
+    if (!('caches' in window)) {
+      const response =
+        await fetch(absoluteUrl);
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP ${response.status}`
+        );
+      }
+
+      return;
+    }
+
+    const cache =
+      await caches.open(
+        BESTIAIRE_RUNTIME_CACHE
+      );
+
+    const cached =
+      await cache.match(
+        absoluteUrl
+      );
+
+    if (cached) {
+      return;
+    }
+
+    const response =
+      await fetch(
+        absoluteUrl
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}`
+      );
+    }
+
+    await cache.put(
+      absoluteUrl,
+      response.clone()
+    );
+  }
+
+  function updateBestiaireMeta(
+    shown,
+    total,
+    query
+  ) {
+    if (!els.bestiaireMeta) {
+      return;
+    }
+
+    if (query) {
+      els.bestiaireMeta.textContent =
+        shown === 1
+          ? '1 résultat'
+          : `${shown} résultats`;
+
+      return;
+    }
+
+    els.bestiaireMeta.textContent =
+      total === 1
+        ? '1 créature recensée'
+        : `${total} créatures recensées`;
+  }
+
+  function renderBestiaire(query = '') {
+    if (!els.bestiaireList) {
+      return;
+    }
+
+    closeDossier();
+    closeOpenCreature();
+
+    const all =
+      getBestiaireData();
+
+    const normalizedQuery =
+      normalizeSearch(query);
+
+    const shown =
+      normalizedQuery
+        ? all.filter(
+            creature =>
+              normalizeSearch(
+                creature.name
+              ).includes(
+                normalizedQuery
+              )
+          )
+        : all;
+
+    els.bestiaireList.innerHTML =
+      '';
+
+    els.bestiaireEmpty
+      .classList
+      .toggle(
+        'hidden',
+        shown.length > 0
+      );
+
+    updateBestiaireMeta(
+      shown.length,
+      all.length,
+      normalizedQuery
+    );
+
+    for (
+      const creature
+      of shown
+    ) {
+      els.bestiaireList
+        .appendChild(
+          buildCreatureEntry(
+            creature
+          )
+        );
+    }
+  }
+
+  function buildCreatureEntry(
+    creature
+  ) {
+    const entry =
+      document.createElement(
+        'article'
+      );
+
+    entry.className =
+      'creature-entry';
+
+    entry.dataset.slug =
+      creature.slug;
+
+    const toggle =
+      document.createElement(
+        'button'
+      );
+
+    toggle.type =
+      'button';
+
+    toggle.className =
+      'creature-toggle';
+
+    toggle.setAttribute(
+      'aria-expanded',
+      'false'
+    );
+
+    const name =
+      document.createElement(
+        'span'
+      );
+
+    name.className =
+      'creature-name';
+
+    name.textContent =
+      creature.name;
+
+    const chevron =
+      document.createElement(
+        'span'
+      );
+
+    chevron.className =
+      'creature-chevron';
+
+    chevron.setAttribute(
+      'aria-hidden',
+      'true'
+    );
+
+    chevron.textContent =
+      '›';
+
+    toggle.append(
+      name,
+      chevron
+    );
+
+    const panel =
+      document.createElement(
+        'div'
+      );
+
+    panel.className =
+      'creature-panel';
+
+    const panelInner =
+      document.createElement(
+        'div'
+      );
+
+    panelInner.className =
+      'creature-panel-inner';
+
+    const content =
+      document.createElement(
+        'div'
+      );
+
+    content.className =
+      'creature-content';
+
+    const stage =
+      document.createElement(
+        'div'
+      );
+
+    stage.className =
+      'creature-media-stage';
+
+    const staticImage =
+      document.createElement(
+        'img'
+      );
+
+    staticImage.className =
+      'creature-static';
+
+    staticImage.src =
+      bestiaireAsset(
+        'image',
+        creature.image
+      );
+
+    staticImage.alt =
+      creature.name;
+
+    staticImage.loading =
+      'lazy';
+
+    staticImage.decoding =
+      'async';
+
+    staticImage.addEventListener(
+      'load',
+      () => {
+        if (
+          staticImage.naturalWidth
+          && staticImage.naturalHeight
+        ) {
+          stage.style.setProperty(
+            '--media-ratio',
+            `${staticImage.naturalWidth}/${staticImage.naturalHeight}`
+          );
+        }
+      }
+    );
+
+    const video =
+      document.createElement(
+        'video'
+      );
+
+    video.className =
+      'creature-video';
+
+    video.muted =
+      true;
+
+    video.playsInline =
+      true;
+
+    video.preload =
+      'none';
+
+    video.setAttribute(
+      'playsinline',
+      ''
+    );
+
+    video.setAttribute(
+      'webkit-playsinline',
+      ''
+    );
+
+    const loader =
+      document.createElement(
+        'div'
+      );
+
+    loader.className =
+      'creature-loader';
+
+    loader.textContent =
+      'Chargement de l’archive…';
+
+    stage.append(
+      staticImage,
+      video,
+      loader
+    );
+
+    const actions =
+      document.createElement(
+        'div'
+      );
+
+    actions.className =
+      'creature-actions';
+
+    const dossierButton =
+      document.createElement(
+        'button'
+      );
+
+    dossierButton.type =
+      'button';
+
+    dossierButton.className =
+      'dossier-btn';
+
+    dossierButton.textContent =
+      'DOSSIER';
+
+    dossierButton.addEventListener(
+      'click',
+      event => {
+        event.stopPropagation();
+
+        openDossier(
+          creature
+        );
+      }
+    );
+
+    actions.appendChild(
+      dossierButton
+    );
+
+    content.append(
+      stage,
+      actions
+    );
+
+    panelInner.appendChild(
+      content
+    );
+
+    panel.appendChild(
+      panelInner
+    );
+
+    entry.append(
+      toggle,
+      panel
+    );
+
+    toggle.addEventListener(
+      'click',
+      () => {
+        if (
+          entry.classList
+            .contains('open')
+        ) {
+          closeOpenCreature();
+        }
+
+        else {
+          openCreature(
+            creature,
+            entry,
+            stage,
+            video,
+            loader
+          );
+        }
+      }
+    );
+
+    return entry;
+  }
+
+  function resetCreatureVideo(
+    entry,
+    immediate = true
+  ) {
+    if (!entry) return;
+
+    const stage =
+      entry.querySelector(
+        '.creature-media-stage'
+      );
+
+    const video =
+      entry.querySelector(
+        '.creature-video'
+      );
+
+    const loader =
+      entry.querySelector(
+        '.creature-loader'
+      );
+
+    if (
+      !stage
+      || !video
+    ) {
+      return;
+    }
+
+    stage.classList.remove(
+      'is-loading',
+      'is-playing'
+    );
+
+    if (loader) {
+      loader.textContent =
+        'Chargement de l’archive…';
+    }
+
+    video.pause();
+
+    const unload =
+      () => {
+        video.removeAttribute(
+          'src'
+        );
+
+        try {
+          video.load();
+        }
+
+        catch (_) {}
+      };
+
+    if (immediate) {
+      unload();
+    }
+
+    else {
+      setTimeout(
+        unload,
+        700
+      );
+    }
+  }
+
+  function closeOpenCreature() {
+    bestiaireMediaToken +=
+      1;
+
+    if (!openCreatureEntry) {
+      openCreatureSlug =
+        null;
+
+      return;
+    }
+
+    openCreatureEntry
+      .classList
+      .remove('open');
+
+    openCreatureEntry
+      .querySelector(
+        '.creature-toggle'
+      )
+      ?.setAttribute(
+        'aria-expanded',
+        'false'
+      );
+
+    resetCreatureVideo(
+      openCreatureEntry,
+      true
+    );
+
+    openCreatureEntry =
+      null;
+
+    openCreatureSlug =
+      null;
+  }
+
+  async function openCreature(
+    creature,
+    entry,
+    stage,
+    video,
+    loader
+  ) {
+    closeOpenCreature();
+
+    openCreatureSlug =
+      creature.slug;
+
+    openCreatureEntry =
+      entry;
+
+    entry.classList.add(
+      'open'
+    );
+
+    entry.querySelector(
+      '.creature-toggle'
+    )
+      ?.setAttribute(
+        'aria-expanded',
+        'true'
+      );
+
+    if (!creature.video) {
+      return;
+    }
+
+    const token =
+      ++bestiaireMediaToken;
+
+    const videoUrl =
+      bestiaireAsset(
+        'video',
+        creature.video
+      );
+
+    stage.classList.add(
+      'is-loading'
+    );
+
+    loader.textContent =
+      'Chargement de l’archive…';
+
+    try {
+      await ensureRuntimeAsset(
+        videoUrl
+      );
+
+      if (
+        token !== bestiaireMediaToken
+        || openCreatureSlug
+          !== creature.slug
+      ) {
+        return;
+      }
+
+      video.src =
+        videoUrl;
+
+      video.currentTime =
+        0;
+
+      video.load();
+
+      const onPlaying =
+        () => {
+          if (
+            token !== bestiaireMediaToken
+            || openCreatureSlug
+              !== creature.slug
+          ) {
+            return;
+          }
+
+          stage.classList.remove(
+            'is-loading'
+          );
+
+          stage.classList.add(
+            'is-playing'
+          );
+        };
+
+      const onEnded =
+        () => {
+          if (
+            token !== bestiaireMediaToken
+            || openCreatureSlug
+              !== creature.slug
+          ) {
+            return;
+          }
+
+          stage.classList.remove(
+            'is-loading',
+            'is-playing'
+          );
+
+          resetCreatureVideo(
+            entry,
+            false
+          );
+        };
+
+      const onError =
+        () => {
+          if (
+            token !== bestiaireMediaToken
+            || openCreatureSlug
+              !== creature.slug
+          ) {
+            return;
+          }
+
+          stage.classList.remove(
+            'is-playing'
+          );
+
+          stage.classList.add(
+            'is-loading'
+          );
+
+          loader.textContent =
+            'Animation indisponible.';
+
+          setTimeout(
+            () => {
+              if (
+                openCreatureSlug
+                === creature.slug
+              ) {
+                stage.classList
+                  .remove(
+                    'is-loading'
+                  );
+              }
+            },
+            2600
+          );
+        };
+
+      video.addEventListener(
+        'playing',
+        onPlaying,
+        { once: true }
+      );
+
+      video.addEventListener(
+        'ended',
+        onEnded,
+        { once: true }
+      );
+
+      video.addEventListener(
+        'error',
+        onError,
+        { once: true }
+      );
+
+      await video.play();
+    }
+
+    catch (_) {
+      if (
+        token !== bestiaireMediaToken
+        || openCreatureSlug
+          !== creature.slug
+      ) {
+        return;
+      }
+
+      stage.classList.remove(
+        'is-playing'
+      );
+
+      stage.classList.add(
+        'is-loading'
+      );
+
+      loader.textContent =
+        navigator.onLine
+          ? 'Animation indisponible.'
+          : 'Animation non disponible hors connexion.';
+
+      setTimeout(
+        () => {
+          if (
+            openCreatureSlug
+            === creature.slug
+          ) {
+            stage.classList
+              .remove(
+                'is-loading'
+              );
+          }
+        },
+        3000
+      );
+    }
+  }
+
+  function resetNarrationUI() {
+    bestiaireNarrationActive =
+      false;
+
+    narrationLoadedUrl =
+      null;
+
+    els.bestiaireNarration.pause();
+
+    els.bestiaireNarration
+      .removeAttribute('src');
+
+    try {
+      els.bestiaireNarration.load();
+    }
+
+    catch (_) {}
+
+    els.dossierAudioIcon.textContent =
+      '▶';
+
+    els.dossierAudioLabel.textContent =
+      'ÉCOUTER LE DOSSIER';
+
+    els.dossierAudioProgressFill.style.width =
+      '0%';
+
+    els.dossierAudioTime.textContent =
+      '0:00 / --:--';
+
+    els.dossierAudioBtn.disabled =
+      false;
+
+    syncAmbientVolume();
+  }
+
+  function openDossier(
+    creature
+  ) {
+    activeDossierCreature =
+      creature;
+
+    resetNarrationUI();
+
+    els.dossierTitle.textContent =
+      creature.name;
+
+    els.dossierLore.textContent =
+      creature.lore
+      || 'Aucune donnée disponible.';
+
+    els.dossierAudio
+      .classList
+      .toggle(
+        'hidden',
+        !creature.narration
+      );
+
+    els.dossierModal
+      .classList
+      .add('show');
+
+    els.dossierModal
+      .setAttribute(
+        'aria-hidden',
+        'false'
+      );
+
+    document.body
+      .classList
+      .add('dossier-open');
+
+    els.dossierClose.focus();
+  }
+
+  function closeDossier() {
+    if (!els.dossierModal) {
+      return;
+    }
+
+    resetNarrationUI();
+
+    activeDossierCreature =
+      null;
+
+    els.dossierModal
+      .classList
+      .remove('show');
+
+    els.dossierModal
+      .setAttribute(
+        'aria-hidden',
+        'true'
+      );
+
+    document.body
+      .classList
+      .remove('dossier-open');
+  }
+
+  async function toggleBestiaireNarration() {
+    const creature =
+      activeDossierCreature;
+
+    if (!creature?.narration) {
+      return;
+    }
+
+    const audio =
+      els.bestiaireNarration;
+
+    const audioUrl =
+      bestiaireAsset(
+        'audio',
+        creature.narration
+      );
+
+    if (
+      narrationLoadedUrl === audioUrl
+      && !audio.paused
+    ) {
+      audio.pause();
+
+      bestiaireNarrationActive =
+        false;
+
+      els.dossierAudioIcon.textContent =
+        '▶';
+
+      els.dossierAudioLabel.textContent =
+        'REPRENDRE';
+
+      syncAmbientVolume();
+
+      return;
+    }
+
+    try {
+      if (
+        narrationLoadedUrl
+        !== audioUrl
+      ) {
+        els.dossierAudioBtn.disabled =
+          true;
+
+        els.dossierAudioIcon.textContent =
+          '…';
+
+        els.dossierAudioLabel.textContent =
+          'CHARGEMENT…';
+
+        await ensureRuntimeAsset(
+          audioUrl
+        );
+
+        if (
+          activeDossierCreature
+          !== creature
+        ) {
+          return;
+        }
+
+        narrationLoadedUrl =
+          audioUrl;
+
+        audio.src =
+          audioUrl;
+
+        audio.preload =
+          'auto';
+
+        audio.load();
+      }
+
+      stopSpecialAudio(
+        els.ritualAudio
+      );
+
+      stopSpecialAudio(
+        els.campAudio
+      );
+
+      specialAudioActive =
+        false;
+
+      if (
+        audio.ended
+        || (
+          Number.isFinite(
+            audio.duration
+          )
+          && audio.currentTime
+            >= audio.duration
+        )
+      ) {
+        audio.currentTime =
+          0;
+      }
+
+      bestiaireNarrationActive =
+        true;
+
+      els.dossierAudioBtn.disabled =
+        false;
+
+      els.dossierAudioIcon.textContent =
+        '⏸';
+
+      els.dossierAudioLabel.textContent =
+        'PAUSE';
+
+      syncAmbientVolume();
+
+      await audio.play();
+    }
+
+    catch (_) {
+      bestiaireNarrationActive =
+        false;
+
+      els.dossierAudioBtn.disabled =
+        false;
+
+      els.dossierAudioIcon.textContent =
+        '▶';
+
+      els.dossierAudioLabel.textContent =
+        navigator.onLine
+          ? 'RÉESSAYER'
+          : 'INDISPONIBLE HORS LIGNE';
+
+      syncAmbientVolume();
+    }
+  }
+
+  function updateNarrationProgress() {
+    const audio =
+      els.bestiaireNarration;
+
+    const duration =
+      Number.isFinite(
+        audio.duration
+      )
+        ? audio.duration
+        : 0;
+
+    const current =
+      Number.isFinite(
+        audio.currentTime
+      )
+        ? audio.currentTime
+        : 0;
+
+    const progress =
+      duration > 0
+        ? clamp(
+            (current / duration) * 100,
+            0,
+            100
+          )
+        : 0;
+
+    els.dossierAudioProgressFill.style.width =
+      `${progress}%`;
+
+    els.dossierAudioTime.textContent =
+      `${formatTime(current)} / ${
+        duration
+          ? formatTime(duration)
+          : '--:--'
+      }`;
+  }
+
+  function setupBestiaire() {
+    if (
+      !els.bestiaireList
+      || !els.bestiaireSearch
+    ) {
+      return;
+    }
+
+    renderBestiaire('');
+
+    els.bestiaireSearch
+      .addEventListener(
+        'input',
+        () => {
+          renderBestiaire(
+            els.bestiaireSearch.value
+          );
+        }
+      );
+
+    els.dossierClose
+      .addEventListener(
+        'click',
+        closeDossier
+      );
+
+    els.dossierModal
+      .addEventListener(
+        'click',
+        event => {
+          if (
+            event.target
+            === els.dossierModal
+          ) {
+            closeDossier();
+          }
+        }
+      );
+
+    els.dossierAudioBtn
+      .addEventListener(
+        'click',
+        toggleBestiaireNarration
+      );
+
+    els.bestiaireNarration
+      .addEventListener(
+        'loadedmetadata',
+        updateNarrationProgress
+      );
+
+    els.bestiaireNarration
+      .addEventListener(
+        'durationchange',
+        updateNarrationProgress
+      );
+
+    els.bestiaireNarration
+      .addEventListener(
+        'timeupdate',
+        updateNarrationProgress
+      );
+
+    els.bestiaireNarration
+      .addEventListener(
+        'play',
+        () => {
+          bestiaireNarrationActive =
+            true;
+
+          els.dossierAudioIcon.textContent =
+            '⏸';
+
+          els.dossierAudioLabel.textContent =
+            'PAUSE';
+
+          syncAmbientVolume();
+        }
+      );
+
+    els.bestiaireNarration
+      .addEventListener(
+        'pause',
+        () => {
+          if (
+            els.bestiaireNarration.ended
+          ) {
+            return;
+          }
+
+          bestiaireNarrationActive =
+            false;
+
+          syncAmbientVolume();
+        }
+      );
+
+    els.bestiaireNarration
+      .addEventListener(
+        'ended',
+        () => {
+          bestiaireNarrationActive =
+            false;
+
+          els.dossierAudioIcon.textContent =
+            '↻';
+
+          els.dossierAudioLabel.textContent =
+            'RÉÉCOUTER';
+
+          syncAmbientVolume();
+
+          updateNarrationProgress();
+        }
+      );
+
+    els.bestiaireNarration
+      .addEventListener(
+        'error',
+        () => {
+          bestiaireNarrationActive =
+            false;
+
+          els.dossierAudioBtn.disabled =
+            false;
+
+          els.dossierAudioIcon.textContent =
+            '▶';
+
+          els.dossierAudioLabel.textContent =
+            'RÉESSAYER';
+
+          syncAmbientVolume();
+        }
+      );
+  }
+
+  // =========================================================
+  // PROFANATION / CAMP / NOUVELLE PARTIE
   // =========================================================
 
   const RITUAL_HELP =
@@ -1337,13 +2410,7 @@ Accomplir le rituel ?`,
         }
       );
 
-    /*
-      À 100 %, le Game Over
-      prend la priorité.
-    */
-    if (
-      result.gameOver
-    ) {
+    if (result.gameOver) {
       return;
     }
 
@@ -1359,10 +2426,6 @@ Chaque survivant perd 1 PV.
 Ramenez un allié de votre choix à 3 PV.`
     );
   }
-
-  // =========================================================
-  // CAMP DE FORTUNE
-  // =========================================================
 
   const CAMP_HELP =
 `2 utilisations maximum par partie.
@@ -1402,10 +2465,6 @@ Souhaitez-vous déployer le camp maintenant ?`,
       return;
     }
 
-    /*
-      Le monde est mémorisé AVANT
-      la baisse d'Instabilité.
-    */
     const wasReflet =
       isReflet();
 
@@ -1462,10 +2521,6 @@ Chaque personnage encore en vie soigne 2 blessures.`
     }
   }
 
-  // =========================================================
-  // NOUVELLE PARTIE
-  // =========================================================
-
   function requestNewGame() {
     showConfirm(
       'Nouvelle partie',
@@ -1487,7 +2542,13 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       els.campAudio
     );
 
+    closeDossier();
+    closeOpenCreature();
+
     specialAudioActive =
+      false;
+
+    bestiaireNarrationActive =
       false;
 
     state.value =
@@ -1508,10 +2569,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     gameOverShown =
       false;
 
-    if (state.musicOn) {
-      els.ambient.volume =
-        AMBIENT_VOLUME;
-    }
+    syncAmbientVolume();
 
     closeActionModal();
 
@@ -1565,6 +2623,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   ) {
     if (!audio) return;
 
+    resetNarrationUI();
+
     stopSpecialAudio(
       els.ritualAudio
     );
@@ -1576,14 +2636,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     specialAudioActive =
       true;
 
-    const shouldDuck =
-      state.musicOn
-      && !els.ambient.paused;
-
-    if (shouldDuck) {
-      els.ambient.volume =
-        0.06;
-    }
+    syncAmbientVolume();
 
     audio.volume =
       volume;
@@ -1593,12 +2646,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         specialAudioActive =
           false;
 
-        if (
-          state.musicOn
-        ) {
-          els.ambient.volume =
-            AMBIENT_VOLUME;
-        }
+        syncAmbientVolume();
       };
 
     audio.onended =
@@ -1609,7 +2657,9 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
 
     audio
       .play()
-      .catch(restore);
+      .catch(
+        restore
+      );
   }
 
   async function setMusic(
@@ -1620,10 +2670,9 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
 
     save();
 
-    if (on) {
-      els.ambient.volume =
-        AMBIENT_VOLUME;
+    syncAmbientVolume();
 
+    if (on) {
       try {
         await els.ambient.play();
       }
@@ -1643,8 +2692,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       state.musicOn
       && els.ambient.paused
     ) {
-      els.ambient.volume =
-        AMBIENT_VOLUME;
+      syncAmbientVolume();
 
       els.ambient
         .play()
@@ -1729,6 +2777,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   function maybeHaunt() {
     if (
       specialAudioActive
+      || bestiaireNarrationActive
       || Math.random()
         >= HAUNT.perClickProb
     ) {
@@ -1738,26 +2787,22 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     hauntVisual();
 
     if (
-      Math.random()
-      < 0.85
+      Math.random() < 0.85
     ) {
       playRandomHauntSfx();
     }
   }
 
   function schedulePassiveHaunt() {
-    clearTimeout(
-      passiveTimer
-    );
+    clearTimeout(passiveTimer);
 
     passiveTimer =
       setTimeout(
         () => {
           if (
             !specialAudioActive
-            && !els.gate
-              .classList
-              .contains('show')
+            && !bestiaireNarrationActive
+            && !anyBlockingModalOpen()
             && state.value < 100
           ) {
             if (
@@ -1800,6 +2845,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       gameOverShown =
         true;
 
+      closeDossier();
+      closeOpenCreature();
       closeActionModal();
       closeJournal();
 
@@ -1824,6 +2871,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       els.campAudio
     );
 
+    resetNarrationUI();
+
     try {
       if (
         document.fullscreenElement
@@ -1847,7 +2896,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   }
 
   // =========================================================
-  // PLEIN ÉCRAN
+  // PLEIN ÉCRAN / WAKE LOCK
   // =========================================================
 
   function updateFullscreenButton() {
@@ -1888,10 +2937,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     updateFullscreenButton();
   }
 
-  // =========================================================
-  // WAKE LOCK
-  // =========================================================
-
   async function requestWakeLock() {
     if (
       !('wakeLock' in navigator)
@@ -1921,7 +2966,9 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   function isPartieTabActive() {
     return (
       document
-        .getElementById('tab-partie')
+        .getElementById(
+          'tab-partie'
+        )
         ?.classList
         .contains('active')
       ?? true
@@ -1955,6 +3002,14 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           const target =
             btn.dataset.tab;
 
+          if (
+            target
+            !== 'bestiaire'
+          ) {
+            closeDossier();
+            closeOpenCreature();
+          }
+
           for (
             const item
             of buttons
@@ -1962,11 +3017,10 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
             const active =
               item === btn;
 
-            item.classList
-              .toggle(
-                'active',
-                active
-              );
+            item.classList.toggle(
+              'active',
+              active
+            );
 
             item.setAttribute(
               'aria-selected',
@@ -1978,12 +3032,11 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
             const panel
             of panels
           ) {
-            panel.classList
-              .toggle(
-                'active',
-                panel.id
+            panel.classList.toggle(
+              'active',
+              panel.id
                 === `tab-${target}`
-              );
+            );
           }
         }
       );
@@ -1991,7 +3044,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   }
 
   // =========================================================
-  // PORTE D'ACCÈS PLAYTEST
+  // GATE
   // =========================================================
 
   async function sha256Hex(
@@ -2071,7 +3124,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   }
 
   // =========================================================
-  // INSTALLATION PWA
+  // INSTALLATION PWA / SERVICE WORKER
   // =========================================================
 
   function setupInstallBanner() {
@@ -2185,10 +3238,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     }
   }
 
-  // =========================================================
-  // SERVICE WORKER
-  // =========================================================
-
   function registerServiceWorker() {
     if (
       !('serviceWorker' in navigator)
@@ -2211,7 +3260,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   }
 
   // =========================================================
-  // DÉMARRAGE
+  // DÉMARRAGE / ÉVÉNEMENTS
   // =========================================================
 
   function startApp() {
@@ -2228,13 +3277,11 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
 
     schedulePassiveHaunt();
 
-    /*
-      Nouveau en v0.8 :
-      événements visuels rares du masque.
-    */
     scheduleMaskDisturbance();
 
-    if (state.musicOn) {
+    if (
+      state.musicOn
+    ) {
       setMusic(true);
     }
 
@@ -2245,12 +3292,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     }
   }
 
-  // =========================================================
-  // ÉVÉNEMENTS
-  // =========================================================
-
   function bindEvents() {
-    // Journal
     els.btnJournal
       .addEventListener(
         'click',
@@ -2276,7 +3318,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         }
       );
 
-    // Modale générique
     els.actionModalYes
       .addEventListener(
         'click',
@@ -2317,7 +3358,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         }
       );
 
-    // Profanation
     els.btnRitual
       .addEventListener(
         'click',
@@ -2334,7 +3374,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           )
       );
 
-    // Camp
     els.btnCamp
       .addEventListener(
         'click',
@@ -2351,14 +3390,12 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           )
       );
 
-    // Nouvelle partie
     els.btnNew
       .addEventListener(
         'click',
         requestNewGame
       );
 
-    // Musique
     els.audioToggle
       .addEventListener(
         'click',
@@ -2368,7 +3405,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           )
       );
 
-    // Plein écran
     els.fsToggle
       .addEventListener(
         'click',
@@ -2381,7 +3417,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         updateFullscreenButton
       );
 
-    // Game Over
     els.goYes
       .addEventListener(
         'click',
@@ -2394,7 +3429,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         tryQuitApp
       );
 
-    // Gate
     els.gateBtn
       .addEventListener(
         'click',
@@ -2424,10 +3458,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         }
       );
 
-    /*
-      Si l'autoplay est bloqué,
-      le premier toucher réessaie.
-    */
     document
       .addEventListener(
         'pointerdown',
@@ -2450,10 +3480,6 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
         }
       );
 
-    /*
-      Échap ne ferme que les modales
-      non critiques.
-    */
     document
       .addEventListener(
         'keydown',
@@ -2466,6 +3492,14 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           }
 
           if (
+            els.dossierModal
+              .classList
+              .contains('show')
+          ) {
+            closeDossier();
+          }
+
+          else if (
             els.actionModal
               .classList
               .contains('show')
@@ -2484,19 +3518,14 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       );
   }
 
-  // =========================================================
-  // INITIALISATION
-  // =========================================================
-
   function init() {
-    /*
-      On commence par charger tous les masques.
-    */
     preloadMasks();
 
     buildInstabilityButtons();
 
     setupTabs();
+
+    setupBestiaire();
 
     bindEvents();
 
@@ -2505,13 +3534,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     els.version.textContent =
       VERSION;
 
-    els.ambient.volume =
-      AMBIENT_VOLUME;
+    syncAmbientVolume();
 
-    /*
-      Le bon masque est immédiatement sélectionné
-      si une ancienne partie est restaurée.
-    */
     render();
 
     if (
