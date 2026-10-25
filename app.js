@@ -289,14 +289,14 @@
     return `${minutes}:${String(secs).padStart(2, '0')}`;
   }
 
-function syncAmbientVolume() {
-  els.ambient.volume =
-    specialAudioActive
-    || bestiaireNarrationActive
-    || bestiaireVideoActive
-      ? DUCK_VOLUME
-      : AMBIENT_VOLUME;
-}
+  function syncAmbientVolume() {
+    els.ambient.volume =
+      specialAudioActive
+      || bestiaireNarrationActive
+      || bestiaireVideoActive
+        ? DUCK_VOLUME
+        : AMBIENT_VOLUME;
+  }
 
   // =========================================================
   // MASQUES
@@ -1515,9 +1515,9 @@ function syncAmbientVolume() {
 
     video.muted =
       false;
-    
+
     video.volume =
-        1;
+      1;
 
     video.playsInline =
       true;
@@ -1526,20 +1526,20 @@ function syncAmbientVolume() {
       'none';
 
     video.style.objectPosition =
-  creature.videoPosition
-  || 'center center';
+      creature.videoPosition
+      || 'center center';
 
-const videoScale =
-  Number(
-    creature.videoScale
-  );
+    const videoScale =
+      Number(
+        creature.videoScale
+      );
 
-video.style.transform =
-  `scale(${
-    Number.isFinite(videoScale)
-      ? videoScale
-      : 1
-  })`;
+    video.style.transform =
+      `scale(${
+        Number.isFinite(videoScale)
+          ? videoScale
+          : 1
+      })`;
 
     video.setAttribute(
       'playsinline',
@@ -1577,64 +1577,64 @@ video.style.transform =
       'creature-actions';
 
     const replayButton =
-  document.createElement(
-    'button'
-  );
-
-replayButton.type =
-  'button';
-
-replayButton.className =
-  'replay-btn hidden';
-
-replayButton.textContent =
-  '↻ REJOUER';
-
-replayButton.addEventListener(
-  'click',
-  async event => {
-    event.stopPropagation();
-
-    if (!creature.video) {
-      return;
-    }
-
-    replayButton
-      .classList
-      .add('hidden');
-
-    stage.classList.remove(
-      'is-playing'
-    );
-
-    stage.classList.add(
-      'is-loading'
-    );
-
-    try {
-      video.currentTime =
-        0;
-
-      await video.play();
-    }
-
-    catch (_) {
-      stage.classList.remove(
-        'is-loading',
-        'is-playing'
+      document.createElement(
+        'button'
       );
 
-      replayButton
-        .classList
-        .remove('hidden');
+    replayButton.type =
+      'button';
 
-      bestiaireVideoActive =
-        false;
+    replayButton.className =
+      'replay-btn hidden';
 
-      syncAmbientVolume();
-    }
-  }
-);
+    replayButton.textContent =
+      '↻ REJOUER';
+
+    replayButton.addEventListener(
+      'click',
+      async event => {
+        event.stopPropagation();
+
+        if (!creature.video) {
+          return;
+        }
+
+        replayButton
+          .classList
+          .add('hidden');
+
+        stage.classList.remove(
+          'is-playing'
+        );
+
+        stage.classList.add(
+          'is-loading'
+        );
+
+        try {
+          video.currentTime =
+            0;
+
+          await video.play();
+        }
+
+        catch (_) {
+          stage.classList.remove(
+            'is-loading',
+            'is-playing'
+          );
+
+          replayButton
+            .classList
+            .remove('hidden');
+
+          bestiaireVideoActive =
+            false;
+
+          syncAmbientVolume();
+        }
+      }
+    );
 
     const dossierButton =
       document.createElement(
@@ -1661,10 +1661,10 @@ replayButton.addEventListener(
       }
     );
 
-actions.append(
-  replayButton,
-  dossierButton
-);
+    actions.append(
+      replayButton,
+      dossierButton
+    );
 
     content.append(
       stage,
@@ -1751,9 +1751,9 @@ actions.append(
     video.pause();
 
     bestiaireVideoActive =
-  false;
+      false;
 
-syncAmbientVolume();
+    syncAmbientVolume();
 
     const unload =
       () => {
@@ -1865,20 +1865,20 @@ syncAmbientVolume();
       'Chargement de l’archive…';
 
     try {
-  ensureRuntimeAsset(
-    videoUrl
-  ).catch(() => {});
+      ensureRuntimeAsset(
+        videoUrl
+      ).catch(() => {});
 
-  if (
-    token !== bestiaireMediaToken
-    || openCreatureSlug
-      !== creature.slug
-  ) {
-    return;
-  }
+      if (
+        token !== bestiaireMediaToken
+        || openCreatureSlug
+          !== creature.slug
+      ) {
+        return;
+      }
 
-  video.src =
-    videoUrl;
+      video.src =
+        videoUrl;
 
       video.currentTime =
         0;
@@ -1886,56 +1886,57 @@ syncAmbientVolume();
       video.load();
 
       const onPlaying =
-  () => {
-    if (
-      token !== bestiaireMediaToken
-      || openCreatureSlug
-        !== creature.slug
-    ) {
-      return;
-    }
+        () => {
+          if (
+            token !== bestiaireMediaToken
+            || openCreatureSlug
+              !== creature.slug
+          ) {
+            return;
+          }
 
-    stage.classList.remove(
-      'is-loading'
-    );
+          stage.classList.remove(
+            'is-loading'
+          );
 
-    stage.classList.add(
-      'is-playing'
-    );
+          stage.classList.add(
+            'is-playing'
+          );
 
-    replayButton
-      .classList
-      .add('hidden');
+          replayButton
+            .classList
+            .add('hidden');
 
-    bestiaireVideoActive =
-      true;
+          bestiaireVideoActive =
+            true;
 
-    syncAmbientVolume();
-  };
+          syncAmbientVolume();
+        };
+
       const onEnded =
-  () => {
-    if (
-      token !== bestiaireMediaToken
-      || openCreatureSlug
-        !== creature.slug
-    ) {
-      return;
-    }
+        () => {
+          if (
+            token !== bestiaireMediaToken
+            || openCreatureSlug
+              !== creature.slug
+          ) {
+            return;
+          }
 
-    stage.classList.remove(
-      'is-loading',
-      'is-playing'
-    );
+          stage.classList.remove(
+            'is-loading',
+            'is-playing'
+          );
 
-    replayButton
-      .classList
-      .remove('hidden');
+          replayButton
+            .classList
+            .remove('hidden');
 
-    bestiaireVideoActive =
-      false;
+          bestiaireVideoActive =
+            false;
 
-    syncAmbientVolume();
-  };
+          syncAmbientVolume();
+        };
 
       const onError =
         () => {
@@ -1948,9 +1949,9 @@ syncAmbientVolume();
           }
 
           bestiaireVideoActive =
-  false;
+            false;
 
-syncAmbientVolume();
+          syncAmbientVolume();
 
           stage.classList.remove(
             'is-playing'
@@ -1959,11 +1960,6 @@ syncAmbientVolume();
           stage.classList.add(
             'is-loading'
           );
-
-          bestiaireVideoActive =
-  false;
-
-syncAmbientVolume();
 
           loader.textContent =
             'Animation indisponible.';
@@ -1984,14 +1980,14 @@ syncAmbientVolume();
           );
         };
 
-video.onplaying =
-  onPlaying;
+      video.onplaying =
+        onPlaying;
 
-video.onended =
-  onEnded;
+      video.onended =
+        onEnded;
 
-video.onerror =
-  onError;
+      video.onerror =
+        onError;
 
       await video.play();
     }
@@ -2004,6 +2000,11 @@ video.onerror =
       ) {
         return;
       }
+
+      bestiaireVideoActive =
+        false;
+
+      syncAmbientVolume();
 
       stage.classList.remove(
         'is-playing'
@@ -2074,45 +2075,44 @@ video.onerror =
   function openDossier(
     creature
   ) {
-
     if (openCreatureEntry) {
-  const video =
-    openCreatureEntry.querySelector(
-      '.creature-video'
-    );
+      const video =
+        openCreatureEntry.querySelector(
+          '.creature-video'
+        );
 
-  const stage =
-    openCreatureEntry.querySelector(
-      '.creature-media-stage'
-    );
+      const stage =
+        openCreatureEntry.querySelector(
+          '.creature-media-stage'
+        );
 
-  const replayButton =
-    openCreatureEntry.querySelector(
-      '.replay-btn'
-    );
+      const replayButton =
+        openCreatureEntry.querySelector(
+          '.replay-btn'
+        );
 
-  if (
-    video
-    && !video.paused
-  ) {
-    video.pause();
+      if (
+        video
+        && !video.paused
+      ) {
+        video.pause();
 
-    stage?.classList.remove(
-      'is-loading',
-      'is-playing'
-    );
+        stage?.classList.remove(
+          'is-loading',
+          'is-playing'
+        );
 
-    replayButton?.classList.remove(
-      'hidden'
-    );
+        replayButton?.classList.remove(
+          'hidden'
+        );
 
-    bestiaireVideoActive =
-      false;
+        bestiaireVideoActive =
+          false;
 
-    syncAmbientVolume();
-  }
-}
-    
+        syncAmbientVolume();
+      }
+    }
+
     activeDossierCreature =
       creature;
 
@@ -2919,6 +2919,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     if (
       specialAudioActive
       || bestiaireNarrationActive
+      || bestiaireVideoActive
       || Math.random()
         >= HAUNT.perClickProb
     ) {
@@ -2943,6 +2944,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           if (
             !specialAudioActive
             && !bestiaireNarrationActive
+            && !bestiaireVideoActive
             && !anyBlockingModalOpen()
             && state.value < 100
           ) {
