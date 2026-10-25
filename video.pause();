@@ -1525,6 +1525,22 @@ function syncAmbientVolume() {
     video.preload =
       'none';
 
+    video.style.objectPosition =
+  creature.videoPosition
+  || 'center center';
+
+const videoScale =
+  Number(
+    creature.videoScale
+  );
+
+video.style.transform =
+  `scale(${
+    Number.isFinite(videoScale)
+      ? videoScale
+      : 1
+  })`;
+
     video.setAttribute(
       'playsinline',
       ''
@@ -1560,6 +1576,66 @@ function syncAmbientVolume() {
     actions.className =
       'creature-actions';
 
+    const replayButton =
+  document.createElement(
+    'button'
+  );
+
+replayButton.type =
+  'button';
+
+replayButton.className =
+  'replay-btn hidden';
+
+replayButton.textContent =
+  '↻ REJOUER';
+
+replayButton.addEventListener(
+  'click',
+  async event => {
+    event.stopPropagation();
+
+    if (!creature.video) {
+      return;
+    }
+
+    replayButton
+      .classList
+      .add('hidden');
+
+    stage.classList.remove(
+      'is-playing'
+    );
+
+    stage.classList.add(
+      'is-loading'
+    );
+
+    try {
+      video.currentTime =
+        0;
+
+      await video.play();
+    }
+
+    catch (_) {
+      stage.classList.remove(
+        'is-loading',
+        'is-playing'
+      );
+
+      replayButton
+        .classList
+        .remove('hidden');
+
+      bestiaireVideoActive =
+        false;
+
+      syncAmbientVolume();
+    }
+  }
+);
+
     const dossierButton =
       document.createElement(
         'button'
@@ -1585,9 +1661,10 @@ function syncAmbientVolume() {
       }
     );
 
-    actions.appendChild(
-      dossierButton
-    );
+actions.append(
+  replayButton,
+  dossierButton
+);
 
     content.append(
       stage,
@@ -1623,7 +1700,8 @@ function syncAmbientVolume() {
             entry,
             stage,
             video,
-            loader
+            loader,
+            replayButton
           );
         }
       }
@@ -1671,6 +1749,11 @@ function syncAmbientVolume() {
     }
 
     video.pause();
+
+    bestiaireVideoActive =
+  false;
+
+syncAmbientVolume();
 
     const unload =
       () => {
@@ -1738,7 +1821,8 @@ function syncAmbientVolume() {
     entry,
     stage,
     video,
-    loader
+    loader,
+    replayButton
   ) {
     closeOpenCreature();
 
@@ -1781,20 +1865,20 @@ function syncAmbientVolume() {
       'Chargement de l’archive…';
 
     try {
-      await ensureRuntimeAsset(
-        videoUrl
-      );
+  ensureRuntimeAsset(
+    videoUrl
+  ).catch(() => {});
 
-      if (
-        token !== bestiaireMediaToken
-        || openCreatureSlug
-          !== creature.slug
-      ) {
-        return;
-      }
+  if (
+    token !== bestiaireMediaToken
+    || openCreatureSlug
+      !== creature.slug
+  ) {
+    return;
+  }
 
-      video.src =
-        videoUrl;
+  video.src =
+    videoUrl;
 
       video.currentTime =
         0;
@@ -1802,44 +1886,56 @@ function syncAmbientVolume() {
       video.load();
 
       const onPlaying =
-        () => {
-          if (
-            token !== bestiaireMediaToken
-            || openCreatureSlug
-              !== creature.slug
-          ) {
-            return;
-          }
+  () => {
+    if (
+      token !== bestiaireMediaToken
+      || openCreatureSlug
+        !== creature.slug
+    ) {
+      return;
+    }
 
-          stage.classList.remove(
-            'is-loading'
-          );
+    stage.classList.remove(
+      'is-loading'
+    );
 
-          stage.classList.add(
-            'is-playing'
-          );
-        };
+    stage.classList.add(
+      'is-playing'
+    );
 
+    replayButton
+      .classList
+      .add('hidden');
+
+    bestiaireVideoActive =
+      true;
+
+    syncAmbientVolume();
+  };
       const onEnded =
-        () => {
-          if (
-            token !== bestiaireMediaToken
-            || openCreatureSlug
-              !== creature.slug
-          ) {
-            return;
-          }
+  () => {
+    if (
+      token !== bestiaireMediaToken
+      || openCreatureSlug
+        !== creature.slug
+    ) {
+      return;
+    }
 
-          stage.classList.remove(
-            'is-loading',
-            'is-playing'
-          );
+    stage.classList.remove(
+      'is-loading',
+      'is-playing'
+    );
 
-          resetCreatureVideo(
-            entry,
-            false
-          );
-        };
+    replayButton
+      .classList
+      .remove('hidden');
+
+    bestiaireVideoActive =
+      false;
+
+    syncAmbientVolume();
+  };
 
       const onError =
         () => {
@@ -1851,6 +1947,11 @@ function syncAmbientVolume() {
             return;
           }
 
+          bestiaireVideoActive =
+  false;
+
+syncAmbientVolume();
+
           stage.classList.remove(
             'is-playing'
           );
@@ -1858,6 +1959,11 @@ function syncAmbientVolume() {
           stage.classList.add(
             'is-loading'
           );
+
+          bestiaireVideoActive =
+  false;
+
+syncAmbientVolume();
 
           loader.textContent =
             'Animation indisponible.';
@@ -1878,23 +1984,14 @@ function syncAmbientVolume() {
           );
         };
 
-      video.addEventListener(
-        'playing',
-        onPlaying,
-        { once: true }
-      );
+video.onplaying =
+  onPlaying;
 
-      video.addEventListener(
-        'ended',
-        onEnded,
-        { once: true }
-      );
+video.onended =
+  onEnded;
 
-      video.addEventListener(
-        'error',
-        onError,
-        { once: true }
-      );
+video.onerror =
+  onError;
 
       await video.play();
     }
@@ -1977,6 +2074,45 @@ function syncAmbientVolume() {
   function openDossier(
     creature
   ) {
+
+    if (openCreatureEntry) {
+  const video =
+    openCreatureEntry.querySelector(
+      '.creature-video'
+    );
+
+  const stage =
+    openCreatureEntry.querySelector(
+      '.creature-media-stage'
+    );
+
+  const replayButton =
+    openCreatureEntry.querySelector(
+      '.replay-btn'
+    );
+
+  if (
+    video
+    && !video.paused
+  ) {
+    video.pause();
+
+    stage?.classList.remove(
+      'is-loading',
+      'is-playing'
+    );
+
+    replayButton?.classList.remove(
+      'hidden'
+    );
+
+    bestiaireVideoActive =
+      false;
+
+    syncAmbientVolume();
+  }
+}
+    
     activeDossierCreature =
       creature;
 
