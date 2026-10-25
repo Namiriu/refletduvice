@@ -1,9 +1,11 @@
-const CACHE = 'instability-v39';
+const CACHE = 'instability-v40';
+const RUNTIME_CACHE = 'instability-runtime-v1';
 
 const ASSETS = [
   './',
   './index.html',
   './app.js',
+  './bestiaire-data.js',
   './manifest.webmanifest',
 
   './icons/icon-192.png',
@@ -29,6 +31,9 @@ const ASSETS = [
   './img/btn_plus15.png',
   './img/btn_moins20.png',
   './img/btn_plus20.png',
+
+  // Bestiaire — contenu indispensable hors ligne
+  './bestiaire/images/fletris-chien.png',
 
   // Ambiance
   './audio/ambient_loop.mp3',
@@ -71,7 +76,11 @@ self.addEventListener('activate', event => {
       .then(keys =>
         Promise.all(
           keys
-            .filter(key => key !== CACHE)
+            .filter(
+              key =>
+                key !== CACHE &&
+                key !== RUNTIME_CACHE
+            )
             .map(key => caches.delete(key))
         )
       )
@@ -87,60 +96,105 @@ self.addEventListener('fetch', event => {
   const range = event.request.headers.get('range');
 
   if (range) {
-    event.respondWith(handleRangeRequest(event.request, range));
+    event.respondWith(
+      handleRangeRequest(
+        event.request,
+        range
+      )
+    );
+
     return;
   }
 
   event.respondWith(
     caches
       .match(event.request)
-      .then(cachedResponse => cachedResponse || fetch(event.request))
+      .then(
+        cachedResponse =>
+          cachedResponse ||
+          fetch(event.request)
+      )
   );
 });
 
-async function handleRangeRequest(request, rangeHeader) {
-  const cachedResponse = await caches.match(request.url);
+async function handleRangeRequest(
+  request,
+  rangeHeader
+) {
+  const cachedResponse =
+    await caches.match(
+      request.url
+    );
 
   if (!cachedResponse) {
     return fetch(request);
   }
 
-  const buffer = await cachedResponse.arrayBuffer();
-  const size = buffer.byteLength;
+  const buffer =
+    await cachedResponse.arrayBuffer();
 
-  const match = /^bytes=(\d*)-(\d*)$/i.exec(rangeHeader);
+  const size =
+    buffer.byteLength;
+
+  const match =
+    /^bytes=(\d*)-(\d*)$/i.exec(
+      rangeHeader
+    );
 
   if (!match) {
-    return new Response(null, {
-      status: 416,
-      headers: {
-        'Content-Range': `bytes */${size}`
+    return new Response(
+      null,
+      {
+        status: 416,
+        headers: {
+          'Content-Range':
+            `bytes */${size}`
+        }
       }
-    });
+    );
   }
 
   let start;
   let end;
 
   if (match[1] === '') {
-    const suffixLength = Number(match[2]);
+    const suffixLength =
+      Number(match[2]);
 
     if (!suffixLength) {
-      return new Response(null, {
-        status: 416,
-        headers: {
-          'Content-Range': `bytes */${size}`
+      return new Response(
+        null,
+        {
+          status: 416,
+          headers: {
+            'Content-Range':
+              `bytes */${size}`
+          }
         }
-      });
+      );
     }
 
-    start = Math.max(0, size - suffixLength);
-    end = size - 1;
-  } else {
-    start = Number(match[1]);
-    end = match[2] === ''
-      ? size - 1
-      : Math.min(Number(match[2]), size - 1);
+    start =
+      Math.max(
+        0,
+        size - suffixLength
+      );
+
+    end =
+      size - 1;
+  }
+
+  else {
+    start =
+      Number(match[1]);
+
+    end =
+      match[2] === ''
+        ? size - 1
+        : Math.min(
+            Number(match[2]),
+            size - 1
+          );
   }
 
   if (
@@ -150,30 +204,58 @@ async function handleRangeRequest(request, rangeHeader) {
     end < start ||
     start >= size
   ) {
-    return new Response(null, {
-      status: 416,
-      headers: {
-        'Content-Range': `bytes */${size}`
+    return new Response(
+      null,
+      {
+        status: 416,
+        headers: {
+          'Content-Range':
+            `bytes */${size}`
+        }
       }
-    });
+    );
   }
 
-  const slicedBuffer = buffer.slice(start, end + 1);
+  const slicedBuffer =
+    buffer.slice(
+      start,
+      end + 1
+    );
 
-  const headers = new Headers();
+  const headers =
+    new Headers();
 
   headers.set(
     'Content-Type',
-    cachedResponse.headers.get('Content-Type') || 'application/octet-stream'
+    cachedResponse.headers.get(
+      'Content-Type'
+    ) || 'application/octet-stream'
   );
 
-  headers.set('Accept-Ranges', 'bytes');
-  headers.set('Content-Range', `bytes ${start}-${end}/${size}`);
-  headers.set('Content-Length', String(slicedBuffer.byteLength));
+  headers.set(
+    'Accept-Ranges',
+    'bytes'
+  );
 
-  return new Response(slicedBuffer, {
-    status: 206,
-    statusText: 'Partial Content',
-    headers
-  });
+  headers.set(
+    'Content-Range',
+    `bytes ${start}-${end}/${size}`
+  );
+
+  headers.set(
+    'Content-Length',
+    String(
+      slicedBuffer.byteLength
+    )
+  );
+
+  return new Response(
+    slicedBuffer,
+    {
+      status: 206,
+      statusText:
+        'Partial Content',
+      headers
+    }
+  );
 }
