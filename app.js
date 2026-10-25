@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.0 Playtest';
+  const VERSION = 'v0.9.1 Playtest';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const LSK = key => `jds_${key}`;
@@ -210,6 +210,7 @@
   let appStarted = false;
   let specialAudioActive = false;
   let bestiaireNarrationActive = false;
+  let bestiaireVideoActive = false;
   let deferredInstallPrompt = null;
 
   let maskInitialized = false;
@@ -288,13 +289,14 @@
     return `${minutes}:${String(secs).padStart(2, '0')}`;
   }
 
-  function syncAmbientVolume() {
-    els.ambient.volume =
-      specialAudioActive
-      || bestiaireNarrationActive
-        ? DUCK_VOLUME
-        : AMBIENT_VOLUME;
-  }
+function syncAmbientVolume() {
+  els.ambient.volume =
+    specialAudioActive
+    || bestiaireNarrationActive
+    || bestiaireVideoActive
+      ? DUCK_VOLUME
+      : AMBIENT_VOLUME;
+}
 
   // =========================================================
   // MASQUES
@@ -1512,7 +1514,10 @@
       'creature-video';
 
     video.muted =
-      true;
+      false;
+    
+    video.volume =
+        1;
 
     video.playsInline =
       true;
