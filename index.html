@@ -40,6 +40,8 @@
         env(safe-area-inset-left);
     }
 
+    body.dossier-open{overflow:hidden}
+
     button,input{font:inherit}
     button{touch-action:manipulation}
     .hidden{display:none!important}
@@ -105,9 +107,7 @@
     }
 
     .mask-column,
-    .instability-column{
-      min-width:0;
-    }
+    .instability-column{min-width:0}
 
     .subject-id{
       min-height:22px;
@@ -119,9 +119,7 @@
     }
 
     /* =========================================================
-       MASQUE — V0.8
-       Deux images parfaitement superposées permettent
-       un fondu sans aucun déplacement entre les états.
+       MASQUE
        ========================================================= */
 
     .mask-stage{
@@ -151,16 +149,13 @@
       backface-visibility:hidden;
     }
 
-    #maskImage{
-      opacity:1;
-    }
+    #maskImage{opacity:1}
 
     #maskImageNext{
       z-index:3;
       opacity:0;
     }
 
-    /* Fondu vers le nouvel état */
     .mask-stage.mask-transition #maskImage{
       opacity:0;
       transition:opacity .42s ease;
@@ -171,10 +166,6 @@
       transition:opacity .42s ease;
     }
 
-    /*
-      Aura derrière le masque.
-      Invisible en temps normal, pilotée par JS selon l'Instabilité.
-    */
     .mask-aura{
       position:absolute;
       z-index:0;
@@ -194,9 +185,6 @@
       transition:opacity .8s ease;
     }
 
-    /*
-      Voile très léger utilisé uniquement lors de micro-glitches.
-    */
     .mask-noise{
       position:absolute;
       z-index:4;
@@ -214,10 +202,6 @@
       mix-blend-mode:screen;
     }
 
-    /*
-      État vivant : respiration quasi imperceptible.
-      On ne l'utilisera qu'aux niveaux élevés.
-    */
     .mask-stage.mask-breathe{
       animation:mask-breathe 5.8s ease-in-out infinite;
     }
@@ -233,9 +217,6 @@
         drop-shadow(0 0 8px rgba(125,12,17,.16));
     }
 
-    /*
-      Réaction courte lorsqu'un palier visuel est franchi.
-    */
     .mask-stage.mask-evolve{
       animation:mask-evolve .52s cubic-bezier(.2,.75,.25,1);
     }
@@ -244,9 +225,6 @@
       animation:mask-major .72s cubic-bezier(.2,.8,.25,1);
     }
 
-    /*
-      Glitch rare : volontairement très court et discret.
-    */
     .mask-stage.mask-glitch .mask-image{
       animation:mask-glitch .18s steps(2,end);
     }
@@ -255,21 +233,13 @@
       animation:mask-noise .18s steps(2,end);
     }
 
-    /*
-      Effet de malaise à très forte Instabilité.
-      Pas de gros zoom : le masque doit rester visuellement stable.
-    */
     .mask-stage.mask-critical{
       filter:saturate(1.06) contrast(1.04);
     }
 
     @keyframes mask-breathe{
-      0%,100%{
-        transform:scale(1);
-      }
-      50%{
-        transform:scale(1.007);
-      }
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.007)}
     }
 
     @keyframes mask-aura-pulse{
@@ -318,9 +288,7 @@
           drop-shadow(-2px 0 rgba(180,180,180,.1))
           contrast(.96);
       }
-      100%{
-        transform:translate(0);
-      }
+      100%{transform:translate(0)}
     }
 
     @keyframes mask-noise{
@@ -329,10 +297,6 @@
       65%{opacity:.12}
     }
 
-    /*
-      Petite réserve volontaire sous le masque :
-      on conserve l'espace pour de futurs éléments.
-    */
     .mask-reserve{height:14px}
 
     /* =========================================================
@@ -422,9 +386,7 @@
       white-space:normal;
     }
 
-    .utility-btn:active{
-      transform:translateY(1px);
-    }
+    .utility-btn:active{transform:translateY(1px)}
 
     .utility-btn[aria-pressed="true"]{
       border-color:#55555c;
@@ -451,9 +413,7 @@
       border-bottom:1px solid var(--border-soft);
     }
 
-    .action-block:last-of-type{
-      border-bottom:0;
-    }
+    .action-block:last-of-type{border-bottom:0}
 
     .action-header{
       display:flex;
@@ -537,7 +497,450 @@
     }
 
     /* =========================================================
-       PLACEHOLDERS
+       BESTIAIRE
+       ========================================================= */
+
+    .bestiaire-card{
+      padding:14px;
+      overflow:hidden;
+    }
+
+    .bestiaire-header{
+      margin-bottom:13px;
+      text-align:center;
+    }
+
+    .bestiaire-title{
+      margin:0;
+      font-family:var(--font-ui);
+      font-size:20px;
+      letter-spacing:1px;
+    }
+
+    .bestiaire-subtitle{
+      margin:6px 0 0;
+      color:#8e8e94;
+      font-size:14px;
+      line-height:1.3;
+    }
+
+    .bestiaire-search-wrap{
+      position:relative;
+      margin-bottom:9px;
+    }
+
+    .bestiaire-search{
+      width:100%;
+      min-height:46px;
+      padding:10px 38px 10px 12px;
+      border:1px solid #38383d;
+      border-radius:10px;
+      outline:none;
+      background:rgba(10,10,12,.88);
+      color:#ededed;
+      font-family:var(--font-body);
+      font-size:16px;
+    }
+
+    .bestiaire-search::placeholder{
+      color:#77777d;
+    }
+
+    .bestiaire-search:focus{
+      border-color:#595960;
+      box-shadow:0 0 0 2px rgba(255,255,255,.035);
+    }
+
+    .bestiaire-search-icon{
+      position:absolute;
+      top:50%;
+      right:12px;
+      transform:translateY(-50%);
+      color:#727278;
+      font-size:17px;
+      pointer-events:none;
+    }
+
+    .bestiaire-meta{
+      min-height:19px;
+      margin:0 2px 10px;
+      color:#77777d;
+      font-size:13px;
+      text-align:right;
+    }
+
+    .bestiaire-list{
+      display:grid;
+      gap:7px;
+    }
+
+    .bestiaire-empty{
+      padding:24px 10px;
+      color:#86868c;
+      text-align:center;
+      font-style:italic;
+    }
+
+    /* Entrée repliée */
+    .creature-entry{
+      overflow:hidden;
+      border:1px solid #303035;
+      border-radius:11px;
+      background:rgba(17,17,19,.92);
+      transition:
+        border-color .25s ease,
+        background .25s ease;
+    }
+
+    .creature-entry.open{
+      border-color:#48484e;
+      background:rgba(14,14,16,.97);
+    }
+
+    .creature-toggle{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      width:100%;
+      min-height:49px;
+      padding:11px 13px;
+      border:0;
+      background:transparent;
+      color:#e8e8ea;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .creature-name{
+      min-width:0;
+      font-family:var(--font-ui);
+      font-size:14px;
+      letter-spacing:.25px;
+    }
+
+    .creature-chevron{
+      flex:0 0 auto;
+      color:#808086;
+      font-size:18px;
+      line-height:1;
+      transform:rotate(0deg);
+      transition:transform .28s ease;
+    }
+
+    .creature-entry.open .creature-chevron{
+      transform:rotate(90deg);
+    }
+
+    /* Contenu déroulant */
+    .creature-panel{
+      display:grid;
+      grid-template-rows:0fr;
+      opacity:0;
+      transition:
+        grid-template-rows .34s ease,
+        opacity .28s ease;
+    }
+
+    .creature-entry.open .creature-panel{
+      grid-template-rows:1fr;
+      opacity:1;
+    }
+
+    .creature-panel-inner{
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .creature-content{
+      padding:0 10px 12px;
+      border-top:1px solid #29292e;
+    }
+
+    /*
+      La hauteur réelle pourra être adaptée par JS aux proportions
+      de chaque illustration. 4/5 est seulement le fallback.
+    */
+    .creature-media-stage{
+      --media-ratio:4/5;
+      position:relative;
+      width:100%;
+      aspect-ratio:var(--media-ratio);
+      margin:10px auto 0;
+      overflow:hidden;
+      border-radius:8px;
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(35,27,28,.52) 0%,
+          rgba(8,8,9,.72) 67%,
+          rgba(4,4,5,.94) 100%
+        );
+      isolation:isolate;
+    }
+
+    .creature-static,
+    .creature-video{
+      position:absolute;
+      inset:0;
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      object-position:center;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+
+    /*
+      L'image fixe est toujours présente derrière la vidéo.
+      Si la vidéo échoue, on ne voit donc jamais un cadre vide.
+    */
+    .creature-static{
+      z-index:1;
+      opacity:1;
+      transition:opacity .75s ease;
+    }
+
+    .creature-video{
+      z-index:2;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .6s ease;
+      background:transparent;
+    }
+
+    /*
+      À l'ouverture, JS active cet état lorsque la vidéo
+      commence réellement à jouer.
+    */
+    .creature-media-stage.is-playing .creature-video{
+      opacity:1;
+    }
+
+    .creature-media-stage.is-playing .creature-static{
+      opacity:0;
+    }
+
+    /*
+      À la fin de la vidéo, on retire is-playing :
+      la vidéo disparaît doucement et révèle l'image fixe.
+    */
+
+    .creature-loader{
+      position:absolute;
+      z-index:3;
+      inset:auto 0 10px;
+      color:#85858a;
+      font-family:var(--font-ui);
+      font-size:10px;
+      letter-spacing:.4px;
+      text-align:center;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .2s ease;
+    }
+
+    .creature-media-stage.is-loading .creature-loader{
+      opacity:1;
+    }
+
+    .creature-actions{
+      display:flex;
+      justify-content:center;
+      margin-top:11px;
+    }
+
+    .dossier-btn{
+      min-width:128px;
+      min-height:41px;
+      padding:8px 16px;
+      border:1px solid #4a3b3e;
+      border-radius:9px;
+      background:rgba(31,24,26,.92);
+      color:#e1d1d3;
+      font-family:var(--font-ui);
+      font-size:12px;
+      letter-spacing:.55px;
+      cursor:pointer;
+    }
+
+    .dossier-btn:active{
+      transform:translateY(1px);
+    }
+
+    /* =========================================================
+       DOSSIER / LORE
+       ========================================================= */
+
+    .dossier-modal{
+      position:fixed;
+      inset:0;
+      z-index:10070;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:
+        max(18px,env(safe-area-inset-top))
+        16px
+        max(18px,env(safe-area-inset-bottom));
+      background:rgba(0,0,0,.46);
+      backdrop-filter:blur(2px);
+      -webkit-backdrop-filter:blur(2px);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:
+        opacity .3s ease,
+        visibility .3s ease;
+    }
+
+    .dossier-modal.show{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+    }
+
+    .dossier-panel{
+      position:relative;
+      width:min(100%,540px);
+      max-height:min(84vh,760px);
+      overflow:auto;
+      padding:20px 18px 17px;
+      border:1px solid rgba(112,96,98,.5);
+      border-radius:14px;
+      background:rgba(14,14,16,.84);
+      box-shadow:
+        0 18px 55px rgba(0,0,0,.62),
+        inset 0 0 35px rgba(80,15,20,.035);
+      backdrop-filter:blur(7px);
+      -webkit-backdrop-filter:blur(7px);
+      transform:translateY(12px) scale(.985);
+      transition:transform .32s ease;
+    }
+
+    .dossier-modal.show .dossier-panel{
+      transform:translateY(0) scale(1);
+    }
+
+    .dossier-label{
+      margin-bottom:5px;
+      color:#77777d;
+      font-family:var(--font-ui);
+      font-size:10px;
+      letter-spacing:1.6px;
+      text-align:center;
+    }
+
+    .dossier-title{
+      margin:0 0 14px;
+      color:#efeaeb;
+      font-family:var(--font-ui);
+      font-size:20px;
+      line-height:1.2;
+      text-align:center;
+    }
+
+    .dossier-rule{
+      width:62%;
+      height:1px;
+      margin:0 auto 16px;
+      background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(138,75,79,.65),
+        transparent
+      );
+    }
+
+    .dossier-lore{
+      color:#e0dcdd;
+      font-size:17px;
+      line-height:1.55;
+      white-space:pre-line;
+      text-wrap:pretty;
+    }
+
+    /*
+      Zone narration masquée automatiquement par JS
+      lorsqu'une créature ne possède pas encore d'audio.
+    */
+    .dossier-audio{
+      margin-top:18px;
+      padding:12px;
+      border:1px solid rgba(71,71,77,.85);
+      border-radius:10px;
+      background:rgba(8,8,10,.48);
+    }
+
+    .dossier-audio-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      width:100%;
+      min-height:42px;
+      border:1px solid #4b3d40;
+      border-radius:8px;
+      background:rgba(35,27,29,.9);
+      color:#e5d9da;
+      font-family:var(--font-ui);
+      font-size:12px;
+      letter-spacing:.35px;
+      cursor:pointer;
+    }
+
+    .dossier-audio-btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .dossier-audio-progress{
+      position:relative;
+      height:4px;
+      margin-top:11px;
+      overflow:hidden;
+      border-radius:999px;
+      background:#323237;
+    }
+
+    .dossier-audio-progress-fill{
+      width:0%;
+      height:100%;
+      border-radius:inherit;
+      background:#8e3a40;
+      transition:width .12s linear;
+    }
+
+    .dossier-audio-time{
+      margin-top:6px;
+      color:#737379;
+      font-size:12px;
+      text-align:right;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .dossier-actions{
+      display:flex;
+      justify-content:center;
+      margin-top:18px;
+    }
+
+    .dossier-close{
+      min-width:115px;
+      min-height:41px;
+      padding:8px 15px;
+      border:1px solid #444449;
+      border-radius:9px;
+      background:rgba(31,31,34,.88);
+      color:#e1e1e3;
+      font-family:var(--font-ui);
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    /* =========================================================
+       PLACEHOLDER AIDE
        ========================================================= */
 
     .placeholder-card{
@@ -641,9 +1044,7 @@
       text-shadow:0 0 24px rgba(255,255,255,.45);
     }
 
-    .fx-blur{
-      filter:blur(1px);
-    }
+    .fx-blur{filter:blur(1px)}
 
     @keyframes subtle-shake{
       0%,100%{transform:translate(0)}
@@ -825,9 +1226,7 @@
       background:#151517;
     }
 
-    .install-banner.show{
-      display:flex;
-    }
+    .install-banner.show{display:flex}
 
     .install-actions{
       display:flex;
@@ -852,7 +1251,8 @@
       main{padding:8px}
 
       .instability-card,
-      .actions-card{
+      .actions-card,
+      .bestiaire-card{
         padding:11px;
       }
 
@@ -868,7 +1268,6 @@
       }
 
       .percent{margin-bottom:8px}
-
       .instability-buttons{gap:5px}
       .utility-controls{gap:5px}
 
@@ -886,6 +1285,37 @@
       .action-status{
         text-align:center;
         font-size:13px;
+      }
+
+      .bestiaire-title{font-size:18px}
+
+      .creature-name{
+        font-size:13px;
+      }
+
+      .creature-content{
+        padding-left:7px;
+        padding-right:7px;
+      }
+
+      .dossier-modal{
+        align-items:flex-end;
+        padding:
+          14px
+          8px
+          max(8px,env(safe-area-inset-bottom));
+      }
+
+      .dossier-panel{
+        width:100%;
+        max-height:86vh;
+        padding:18px 16px 16px;
+        border-radius:16px 16px 10px 10px;
+      }
+
+      .dossier-lore{
+        font-size:16.5px;
+        line-height:1.52;
       }
     }
 
@@ -960,23 +1390,18 @@
       <section class="card instability-card">
         <div class="instability-layout">
 
-          <!-- Colonne masque -->
           <div class="mask-column">
             <div id="subjectId" class="subject-id">SUJET #01</div>
 
             <div id="maskContainer" class="mask-stage">
-
-              <!-- Aura pilotée selon l'Instabilité -->
               <div id="maskAura" class="mask-aura" aria-hidden="true"></div>
 
-              <!-- Masque actuellement affiché -->
               <img
                 id="maskImage"
                 class="mask-image"
                 src="img/masque0.png"
                 alt="État mental du sujet">
 
-              <!-- Calque utilisé pour les transitions -->
               <img
                 id="maskImageNext"
                 class="mask-image"
@@ -984,15 +1409,12 @@
                 alt=""
                 aria-hidden="true">
 
-              <!-- Bruit visuel très ponctuel -->
               <div id="maskNoise" class="mask-noise" aria-hidden="true"></div>
-
             </div>
 
             <div class="mask-reserve" aria-hidden="true"></div>
           </div>
 
-          <!-- Colonne jauge -->
           <div class="instability-column">
             <div class="instability-title">INSTABILITÉ MENTALE</div>
             <div id="percent" class="percent">0%</div>
@@ -1029,11 +1451,9 @@
         </div>
       </section>
 
-      <!-- Actions spéciales -->
       <section class="card actions-card">
         <h2 class="actions-title">ACTIONS SPÉCIALES</h2>
 
-        <!-- Profanation -->
         <div class="action-block">
           <div class="action-header">
             <span class="action-name">Profanation de la chair</span>
@@ -1062,7 +1482,6 @@
           </div>
         </div>
 
-        <!-- Camp -->
         <div class="action-block">
           <div class="action-header">
             <span class="action-name">Camp de fortune</span>
@@ -1102,13 +1521,50 @@
     <!-- ==================== BESTIAIRE ==================== -->
 
     <section id="tab-bestiaire" class="tab-panel" role="tabpanel">
-      <div class="card placeholder-card">
-        <h2 class="placeholder-title">BESTIAIRE</h2>
 
-        <p class="placeholder-text">
-          Les données du Bestiaire seront intégrées dans une prochaine mise à jour.
-        </p>
-      </div>
+      <section class="card bestiaire-card">
+
+        <header class="bestiaire-header">
+          <h2 class="bestiaire-title">BESTIAIRE</h2>
+
+          <p class="bestiaire-subtitle">
+            Archives des entités recensées.
+          </p>
+        </header>
+
+        <div class="bestiaire-search-wrap">
+          <input
+            id="bestiaireSearch"
+            class="bestiaire-search"
+            type="search"
+            placeholder="Rechercher une créature…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Rechercher une créature">
+
+          <span class="bestiaire-search-icon" aria-hidden="true">
+            ⌕
+          </span>
+        </div>
+
+        <div
+          id="bestiaireMeta"
+          class="bestiaire-meta"
+          aria-live="polite">
+        </div>
+
+        <!--
+          Les créatures seront générées automatiquement
+          depuis bestiaire-data.js par app.js.
+        -->
+        <div id="bestiaireList" class="bestiaire-list"></div>
+
+        <div id="bestiaireEmpty" class="bestiaire-empty hidden">
+          Aucune créature ne correspond à votre recherche.
+        </div>
+
+      </section>
+
     </section>
 
     <!-- ==================== AIDE ==================== -->
@@ -1123,8 +1579,76 @@
       </div>
     </section>
 
-    <div id="version">v0.8.0 Playtest</div>
+    <div id="version">v0.9.0 Playtest</div>
   </main>
+
+  <!-- ==================== DOSSIER BESTIAIRE ==================== -->
+
+  <div
+    id="dossierModal"
+    class="dossier-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="dossierTitle"
+    aria-hidden="true">
+
+    <div class="dossier-panel">
+
+      <div class="dossier-label">
+        ARCHIVES DU REFLET
+      </div>
+
+      <h2 id="dossierTitle" class="dossier-title"></h2>
+
+      <div class="dossier-rule" aria-hidden="true"></div>
+
+      <div id="dossierLore" class="dossier-lore"></div>
+
+      <!--
+        Caché automatiquement lorsque la créature
+        n'a pas encore de narration.
+      -->
+      <div id="dossierAudio" class="dossier-audio">
+
+        <button
+          id="dossierAudioBtn"
+          class="dossier-audio-btn"
+          type="button">
+
+          <span id="dossierAudioIcon" aria-hidden="true">▶</span>
+          <span id="dossierAudioLabel">ÉCOUTER LE DOSSIER</span>
+        </button>
+
+        <div
+          class="dossier-audio-progress"
+          aria-hidden="true">
+
+          <div
+            id="dossierAudioProgressFill"
+            class="dossier-audio-progress-fill">
+          </div>
+        </div>
+
+        <div id="dossierAudioTime" class="dossier-audio-time">
+          0:00 / 0:00
+        </div>
+
+      </div>
+
+      <div class="dossier-actions">
+        <button
+          id="dossierClose"
+          class="dossier-close"
+          type="button">
+          FERMER
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Narration dynamique du Bestiaire -->
+  <audio id="bestiaireNarration" preload="metadata"></audio>
 
   <!-- ==================== JOURNAL ==================== -->
 
@@ -1306,6 +1830,11 @@
     preload="auto">
   </audio>
 
+  <!--
+    Les données doivent impérativement être chargées
+    avant la logique principale.
+  -->
+  <script src="bestiaire-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
