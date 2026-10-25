@@ -679,18 +679,27 @@
       isolation:isolate;
     }
 
-    .creature-static,
-    .creature-video{
-      position:absolute;
-      inset:0;
-      display:block;
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      object-position:center;
-      user-select:none;
-      -webkit-user-drag:none;
-    }
+.creature-static,
+.creature-video{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+
+.creature-static{
+  object-fit:contain;
+  object-position:center;
+}
+
+.creature-video{
+  object-fit:cover;
+  object-position:center;
+  transform-origin:center;
+}
 
     /*
       L'image fixe est toujours présente derrière la vidéo.
@@ -701,6 +710,10 @@
       opacity:1;
       transition:opacity .75s ease;
     }
+
+    .creature-media-stage.is-loading .creature-static{
+  opacity:0;
+}
 
     .creature-video{
       z-index:2;
@@ -745,29 +758,42 @@
       opacity:1;
     }
 
-    .creature-actions{
-      display:flex;
-      justify-content:center;
-      margin-top:11px;
-    }
+.creature-actions{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:11px;
+  flex-wrap:wrap;
+}
 
-    .dossier-btn{
-      min-width:128px;
-      min-height:41px;
-      padding:8px 16px;
-      border:1px solid #4a3b3e;
-      border-radius:9px;
-      background:rgba(31,24,26,.92);
-      color:#e1d1d3;
-      font-family:var(--font-ui);
-      font-size:12px;
-      letter-spacing:.55px;
-      cursor:pointer;
-    }
+.dossier-btn,
+.replay-btn{
+  min-width:128px;
+  min-height:41px;
+  padding:8px 16px;
+  border-radius:9px;
+  font-family:var(--font-ui);
+  font-size:12px;
+  letter-spacing:.55px;
+  cursor:pointer;
+}
 
-    .dossier-btn:active{
-      transform:translateY(1px);
-    }
+.dossier-btn{
+  border:1px solid #4a3b3e;
+  background:rgba(31,24,26,.92);
+  color:#e1d1d3;
+}
+
+.replay-btn{
+  border:1px solid #3e4146;
+  background:rgba(25,26,29,.92);
+  color:#d8d8dc;
+}
+
+.dossier-btn:active,
+.replay-btn:active{
+  transform:translateY(1px);
+}
 
     /* =========================================================
        DOSSIER / LORE
