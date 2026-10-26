@@ -699,6 +699,7 @@
   object-fit:cover;
   object-position:center;
   transform-origin:center;
+  scale:1;
 }
 
     /*
@@ -734,6 +735,23 @@
     .creature-media-stage.is-playing .creature-static{
       opacity:0;
     }
+
+    /* Transition finale : l'illustration retourne progressivement dans sa carte */
+.creature-media-stage.is-ending .creature-static{
+  opacity:1;
+  transition-duration:1.3s;
+  transition-timing-function:ease-in-out;
+}
+
+.creature-media-stage.is-ending .creature-video{
+  opacity:0;
+  scale:.96;
+  filter:brightness(.78);
+  transition:
+    opacity 1.3s ease-in-out,
+    scale 1.35s cubic-bezier(.22,.61,.36,1),
+    filter 1.3s ease-in-out;
+}
 
     /*
       À la fin de la vidéo, on retire is-playing :
