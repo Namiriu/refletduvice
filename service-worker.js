@@ -34,6 +34,7 @@ const ASSETS = [
 
   // Bestiaire — contenu indispensable hors ligne
   './bestiaire/images/fletris-chien.png',
+  './bestiaire/images/mannequin-desarticule.png',
 
   // Ambiance
   './audio/ambient_loop.mp3',
