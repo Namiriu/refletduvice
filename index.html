@@ -696,10 +696,14 @@
 }
 
 .creature-video{
-  object-fit:cover;
+  inset:auto;
+  left:0;
+  top:.577%;
+  width:100%;
+  height:98.845%;
+  object-fit:fill;
   object-position:center;
   transform-origin:center;
-  scale:1;
 }
 
     /*
@@ -745,11 +749,9 @@
 
 .creature-media-stage.is-ending .creature-video{
   opacity:0;
-  scale:.96;
   filter:brightness(.78);
   transition:
     opacity 1.3s ease-in-out,
-    scale 1.35s cubic-bezier(.22,.61,.36,1),
     filter 1.3s ease-in-out;
 }
 
