@@ -1603,20 +1603,24 @@
           .classList
           .add('hidden');
 
-        stage.classList.remove(
-          'is-playing'
-        );
+       stage.classList.remove(
+  'is-playing',
+  'is-ending'
+);
 
-        stage.classList.add(
-          'is-loading'
-        );
+stage.classList.add(
+  'is-loading'
+);
 
-        try {
-          video.currentTime =
-            0;
+try {
+  video.playbackRate =
+    1;
 
-          await video.play();
-        }
+  video.currentTime =
+    0;
+
+  await video.play();
+}
 
         catch (_) {
           stage.classList.remove(
@@ -1740,7 +1744,8 @@
 
     stage.classList.remove(
       'is-loading',
-      'is-playing'
+      'is-playing',
+      'is-ending'
     );
 
     if (loader) {
@@ -1877,15 +1882,22 @@
         return;
       }
 
-      video.src =
-        videoUrl;
+     video.src =
+  videoUrl;
 
-      video.currentTime =
-        0;
+stage.classList.remove(
+  'is-ending'
+);
 
-      video.load();
+video.playbackRate =
+  1;
 
-      const onPlaying =
+video.currentTime =
+  0;
+
+video.load();
+
+const onPlaying =
         () => {
           if (
             token !== bestiaireMediaToken
@@ -1912,6 +1924,39 @@
 
           syncAmbientVolume();
         };
+
+      const onTimeUpdate =
+  () => {
+    if (
+      token !== bestiaireMediaToken
+      || openCreatureSlug
+        !== creature.slug
+      || !Number.isFinite(
+        video.duration
+      )
+    ) {
+      return;
+    }
+
+    const remaining =
+      video.duration
+      - video.currentTime;
+
+    if (
+      remaining > 0
+      && remaining <= 0.9
+      && !stage.classList
+        .contains('is-ending')
+    ) {
+      stage.classList.add(
+        'is-ending'
+      );
+
+      video.playbackRate =
+        0.75;
+    }
+  };
+
 
       const onEnded =
         () => {
@@ -1980,15 +2025,17 @@
           );
         };
 
-      video.onplaying =
-        onPlaying;
+     video.onplaying =
+  onPlaying;
 
-      video.onended =
-        onEnded;
+video.ontimeupdate =
+  onTimeUpdate;
 
-      video.onerror =
-        onError;
+video.onended =
+  onEnded;
 
+video.onerror =
+  onError;
       await video.play();
     }
 
