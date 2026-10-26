@@ -1834,37 +1834,39 @@ try {
     openCreatureSlug =
       creature.slug;
 
-    openCreatureEntry =
-      entry;
+openCreatureEntry =
+  entry;
 
-    entry.classList.add(
-      'open'
-    );
+if (creature.video) {
+  stage.classList.add(
+    'is-loading'
+  );
+}
 
-    entry.querySelector(
-      '.creature-toggle'
-    )
-      ?.setAttribute(
-        'aria-expanded',
-        'true'
-      );
+entry.classList.add(
+  'open'
+);
 
-    if (!creature.video) {
-      return;
-    }
+entry.querySelector(
+  '.creature-toggle'
+)
+  ?.setAttribute(
+    'aria-expanded',
+    'true'
+  );
 
-    const token =
-      ++bestiaireMediaToken;
+if (!creature.video) {
+  return;
+}
 
-    const videoUrl =
-      bestiaireAsset(
-        'video',
-        creature.video
-      );
+const token =
+  ++bestiaireMediaToken;
 
-    stage.classList.add(
-      'is-loading'
-    );
+const videoUrl =
+  bestiaireAsset(
+    'video',
+    creature.video
+  );
 
     loader.textContent =
       'Chargement de l’archive…';
