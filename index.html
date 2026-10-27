@@ -110,13 +110,14 @@
     .instability-column{min-width:0}
 
     .subject-id{
-      min-height:22px;
-      color:#b5b5ba;
-      font-family:var(--font-ui);
-      font-size:13px;
-      letter-spacing:.8px;
-      white-space:nowrap;
-    }
+  min-height:22px;
+  color:#b5b5ba;
+  font-family:var(--font-ui);
+  font-size:clamp(13px,3.2vw,17px);
+  letter-spacing:.05px;
+  text-align:center;
+  white-space:nowrap;
+}
 
     /* =========================================================
        MASQUE
@@ -126,7 +127,7 @@
       position:relative;
       width:min(100%,225px);
       aspect-ratio:2/3;
-      margin:4px auto 0;
+      margin:88px auto 0;
       overflow:visible;
       isolation:isolate;
       transform-origin:center;
@@ -1306,8 +1307,6 @@
         grid-template-columns:minmax(0,41%) minmax(0,59%);
         gap:8px;
       }
-
-      .subject-id{font-size:11px}
 
       .instability-title{
         font-size:clamp(11px,3.15vw,14px);
