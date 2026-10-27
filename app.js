@@ -14,7 +14,7 @@
   const BESTIAIRE_VIDEO_VOLUME = 0.18;
   const BESTIAIRE_NARRATION_VOLUME = 0.28;
   const AUDIO_FADE_MS = 900;
-  const AUDIO_SWITCH_FADE_MS = 800;
+  const AUDIO_SWITCH_FADE_MS = 400;
   const LSK = key => `jds_${key}`;
   const REDUCED_MOTION = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
