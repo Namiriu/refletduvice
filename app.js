@@ -13,6 +13,8 @@
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
   const BESTIAIRE_VIDEO_VOLUME = 0.18;
   const BESTIAIRE_NARRATION_VOLUME = 0.28;
+  const AUDIO_FADE_MS = 360;
+  const AUDIO_SWITCH_FADE_MS = 220;
   const LSK = key => `jds_${key}`;
   const REDUCED_MOTION = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
@@ -293,27 +295,139 @@ campAudio: $('campAudio'),
     return `${minutes}:${String(secs).padStart(2, '0')}`;
   }
 
+const audioFadeStates =
+  new WeakMap();
+
+function fadeAudioVolume(
+  audio,
+  targetVolume,
+  duration = AUDIO_FADE_MS
+) {
+  if (!audio) {
+    return Promise.resolve();
+  }
+
+  const target =
+    Math.max(
+      0,
+      Math.min(1, targetVolume)
+    );
+
+  const previous =
+    audioFadeStates.get(audio);
+
+  if (previous) {
+    cancelAnimationFrame(
+      previous.frame
+    );
+
+    previous.resolve();
+
+    audioFadeStates.delete(
+      audio
+    );
+  }
+
+  const startVolume =
+    audio.volume;
+
+  if (
+    duration <= 0
+    || Math.abs(
+      startVolume - target
+    ) < 0.001
+  ) {
+    audio.volume =
+      target;
+
+    return Promise.resolve();
+  }
+
+  return new Promise(
+    resolve => {
+      const startedAt =
+        performance.now();
+
+      const fadeState = {
+        frame: 0,
+        resolve
+      };
+
+      const step =
+        now => {
+          const progress =
+            Math.min(
+              1,
+              (
+                now - startedAt
+              ) / duration
+            );
+
+          audio.volume =
+            startVolume
+            + (
+              target
+              - startVolume
+            ) * progress;
+
+          if (
+            progress >= 1
+          ) {
+            audio.volume =
+              target;
+
+            audioFadeStates.delete(
+              audio
+            );
+
+            resolve();
+
+            return;
+          }
+
+          fadeState.frame =
+            requestAnimationFrame(
+              step
+            );
+        };
+
+      fadeState.frame =
+        requestAnimationFrame(
+          step
+        );
+
+      audioFadeStates.set(
+        audio,
+        fadeState
+      );
+    }
+  );
+}
+
+function getBestiaireAmbientTargetVolume() {
+  if (bestiaireNarrationActive) {
+    return BESTIAIRE_NARRATION_VOLUME;
+  }
+
+  if (bestiaireVideoActive) {
+    return BESTIAIRE_VIDEO_VOLUME;
+  }
+
+  return BESTIAIRE_AMBIENT_VOLUME;
+}
+
 function syncAmbientVolume() {
-  els.ambient.volume =
+  fadeAudioVolume(
+    els.ambient,
     specialAudioActive
       ? DUCK_VOLUME
-      : AMBIENT_VOLUME;
+      : AMBIENT_VOLUME
+  );
 
-  let bestiaireVolume =
-    BESTIAIRE_AMBIENT_VOLUME;
-
-  if (bestiaireNarrationActive) {
-    bestiaireVolume =
-      BESTIAIRE_NARRATION_VOLUME;
-  }
-
-  else if (bestiaireVideoActive) {
-    bestiaireVolume =
-      BESTIAIRE_VIDEO_VOLUME;
-  }
-
-  els.bestiaireAmbient.volume =
-    bestiaireVolume;
+  fadeAudioVolume(
+    els.bestiaireAmbient,
+    getBestiaireAmbientTargetVolume()
+  );
 }
 
   // =========================================================
@@ -2871,11 +2985,24 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   }
 
 async function syncMusicForActiveTab() {
-  syncAmbientVolume();
-
   if (!state.musicOn) {
+    await Promise.all([
+      fadeAudioVolume(
+        els.ambient,
+        0,
+        AUDIO_SWITCH_FADE_MS
+      ),
+
+      fadeAudioVolume(
+        els.bestiaireAmbient,
+        0,
+        AUDIO_SWITCH_FADE_MS
+      )
+    ]);
+
     els.ambient.pause();
     els.bestiaireAmbient.pause();
+
     return;
   }
 
@@ -2892,10 +3019,44 @@ async function syncMusicForActiveTab() {
       ? els.ambient
       : els.bestiaireAmbient;
 
-  inactiveAudio.pause();
+  const activeTarget =
+    bestiaireActive
+      ? getBestiaireAmbientTargetVolume()
+      : (
+          specialAudioActive
+            ? DUCK_VOLUME
+            : AMBIENT_VOLUME
+        );
+
+  if (!inactiveAudio.paused) {
+    await fadeAudioVolume(
+      inactiveAudio,
+      0,
+      AUDIO_SWITCH_FADE_MS
+    );
+
+    inactiveAudio.pause();
+  }
+
+  if (!activeAudio.paused) {
+    fadeAudioVolume(
+      activeAudio,
+      activeTarget
+    );
+
+    return;
+  }
+
+  activeAudio.volume =
+    0;
 
   try {
     await activeAudio.play();
+
+    await fadeAudioVolume(
+      activeAudio,
+      activeTarget
+    );
   }
 
   catch (_) {}
