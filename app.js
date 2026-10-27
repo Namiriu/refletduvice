@@ -2965,15 +2965,16 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   }
 
   function maybeHaunt() {
-    if (
-      specialAudioActive
-      || bestiaireNarrationActive
-      || bestiaireVideoActive
-      || Math.random()
-        >= HAUNT.perClickProb
-    ) {
-      return;
-    }
+  if (
+    !isPartieTabActive()
+    || specialAudioActive
+    || bestiaireNarrationActive
+    || bestiaireVideoActive
+    || Math.random()
+      >= HAUNT.perClickProb
+  ) {
+    return;
+  }
 
     hauntVisual();
 
@@ -2991,12 +2992,13 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       setTimeout(
         () => {
           if (
-            !specialAudioActive
-            && !bestiaireNarrationActive
-            && !bestiaireVideoActive
-            && !anyBlockingModalOpen()
-            && state.value < 100
-          ) {
+  isPartieTabActive()
+  && !specialAudioActive
+  && !bestiaireNarrationActive
+  && !bestiaireVideoActive
+  && !anyBlockingModalOpen()
+  && state.value < 100
+) {
             if (
               Math.random()
               < 0.60
