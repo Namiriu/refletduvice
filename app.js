@@ -89,11 +89,12 @@
     historyList: $('historyList'),
     journalClose: $('journalClose'),
 
-    audioToggle: $('audioToggle'),
-    fsToggle: $('fsToggle'),
-    ambient: $('ambient'),
-    ritualAudio: $('ritualAudio'),
-    campAudio: $('campAudio'),
+   audioToggle: $('audioToggle'),
+fsToggle: $('fsToggle'),
+ambient: $('ambient'),
+bestiaireAmbient: $('bestiaireAmbient'),
+ritualAudio: $('ritualAudio'),
+campAudio: $('campAudio'),
 
     btnRitual: $('btnRitual'),
     btnRitualHelp: $('btnRitualHelp'),
