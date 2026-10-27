@@ -10,6 +10,9 @@
   const VERSION = 'v0.9.1 Playtest';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
+  const BESTIAIRE_AMBIENT_VOLUME = 0.30;
+  const BESTIAIRE_VIDEO_VOLUME = 0.18;
+  const BESTIAIRE_NARRATION_VOLUME = 0.10;
   const LSK = key => `jds_${key}`;
   const REDUCED_MOTION = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
@@ -290,14 +293,28 @@ campAudio: $('campAudio'),
     return `${minutes}:${String(secs).padStart(2, '0')}`;
   }
 
-  function syncAmbientVolume() {
-    els.ambient.volume =
-      specialAudioActive
-      || bestiaireNarrationActive
-      || bestiaireVideoActive
-        ? DUCK_VOLUME
-        : AMBIENT_VOLUME;
+function syncAmbientVolume() {
+  els.ambient.volume =
+    specialAudioActive
+      ? DUCK_VOLUME
+      : AMBIENT_VOLUME;
+
+  let bestiaireVolume =
+    BESTIAIRE_AMBIENT_VOLUME;
+
+  if (bestiaireNarrationActive) {
+    bestiaireVolume =
+      BESTIAIRE_NARRATION_VOLUME;
   }
+
+  else if (bestiaireVideoActive) {
+    bestiaireVolume =
+      BESTIAIRE_VIDEO_VOLUME;
+  }
+
+  els.bestiaireAmbient.volume =
+    bestiaireVolume;
+}
 
   // =========================================================
   // MASQUES
@@ -2853,43 +2870,55 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
       );
   }
 
-  async function setMusic(
-    on
-  ) {
-    state.musicOn =
-      on;
+async function syncMusicForActiveTab() {
+  syncAmbientVolume();
 
-    save();
-
-    syncAmbientVolume();
-
-    if (on) {
-      try {
-        await els.ambient.play();
-      }
-
-      catch (_) {}
-    }
-
-    else {
-      els.ambient.pause();
-    }
-
-    render();
+  if (!state.musicOn) {
+    els.ambient.pause();
+    els.bestiaireAmbient.pause();
+    return;
   }
 
-  function unlockAmbientOnce() {
-    if (
-      state.musicOn
-      && els.ambient.paused
-    ) {
-      syncAmbientVolume();
+  const bestiaireActive =
+    isBestiaireTabActive();
 
-      els.ambient
-        .play()
-        .catch(() => {});
-    }
+  const activeAudio =
+    bestiaireActive
+      ? els.bestiaireAmbient
+      : els.ambient;
+
+  const inactiveAudio =
+    bestiaireActive
+      ? els.ambient
+      : els.bestiaireAmbient;
+
+  inactiveAudio.pause();
+
+  try {
+    await activeAudio.play();
   }
+
+  catch (_) {}
+}
+
+async function setMusic(
+  on
+) {
+  state.musicOn =
+    on;
+
+  save();
+
+  await syncMusicForActiveTab();
+
+  render();
+}
+
+function unlockAmbientOnce() {
+  if (state.musicOn) {
+    syncMusicForActiveTab();
+  }
+}
 
   // =========================================================
   // EFFETS HANTÉS
@@ -3170,6 +3199,18 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     );
   }
 
+  function isBestiaireTabActive() {
+  return (
+    document
+      .getElementById(
+        'tab-bestiaire'
+      )
+      ?.classList
+      .contains('active')
+    ?? false
+  );
+}
+
   function setupTabs() {
     const buttons =
       [
@@ -3224,15 +3265,17 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
           }
 
           for (
-            const panel
-            of panels
-          ) {
-            panel.classList.toggle(
-              'active',
-              panel.id
-                === `tab-${target}`
-            );
-          }
+  const panel
+  of panels
+) {
+  panel.classList.toggle(
+    'active',
+    panel.id
+      === `tab-${target}`
+  );
+}
+
+syncMusicForActiveTab();
         }
       );
     }
