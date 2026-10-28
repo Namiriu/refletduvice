@@ -2463,25 +2463,30 @@ async function toggleBestiaireNarration(
         creature.narration
       );
 
-    if (
-      narrationLoadedUrl === audioUrl
-      && !audio.paused
-    ) {
-      audio.pause();
+   if (
+  narrationLoadedUrl === audioUrl
+  && !audio.paused
+) {
+  audio.pause();
 
-      bestiaireNarrationActive =
-        false;
+  bestiaireNarrationActive =
+    false;
 
-      els.dossierAudioIcon.textContent =
-        '▶';
+  els.dossierAudioIcon.textContent =
+    '▶';
 
-      els.dossierAudioLabel.textContent =
-        'REPRENDRE';
+  els.dossierAudioLabel.textContent =
+    'REPRENDRE';
 
-      syncAmbientVolume();
+  if (activeStoryButton) {
+    activeStoryButton.textContent =
+      'REPRENDRE';
+  }
 
-      return;
-    }
+  syncAmbientVolume();
+
+  return;
+}
 
     try {
       if (
@@ -2501,12 +2506,12 @@ async function toggleBestiaireNarration(
           audioUrl
         );
 
-        if (
-          activeDossierCreature
-          !== creature
-        ) {
-          return;
-        }
+       if (
+  activeNarrationCreature
+  !== creature
+) {
+  return;
+}
 
         narrationLoadedUrl =
           audioUrl;
@@ -2562,23 +2567,31 @@ async function toggleBestiaireNarration(
       await audio.play();
     }
 
-    catch (_) {
-      bestiaireNarrationActive =
-        false;
+catch (_) {
+  bestiaireNarrationActive =
+    false;
 
-      els.dossierAudioBtn.disabled =
-        false;
+  els.dossierAudioBtn.disabled =
+    false;
 
-      els.dossierAudioIcon.textContent =
-        '▶';
+  els.dossierAudioIcon.textContent =
+    '▶';
 
-      els.dossierAudioLabel.textContent =
-        navigator.onLine
-          ? 'RÉESSAYER'
-          : 'INDISPONIBLE HORS LIGNE';
+  els.dossierAudioLabel.textContent =
+    navigator.onLine
+      ? 'RÉESSAYER'
+      : 'INDISPONIBLE HORS LIGNE';
 
-      syncAmbientVolume();
-    }
+  if (activeStoryButton) {
+    activeStoryButton.textContent =
+      'RÉESSAYER';
+
+    activeStoryButton.disabled =
+      false;
+  }
+
+  syncAmbientVolume();
+}
   }
 
   function updateNarrationProgress() {
