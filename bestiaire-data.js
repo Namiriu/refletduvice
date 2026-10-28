@@ -428,6 +428,7 @@ Depuis, la bête ne se cache plus. Elle se traîne hors de l’eau, le ventre go
     narration: 'gardienne-du-vice.mp3',
 
     dossierSubject: 1,
+    autoNarrationAfterVideo: true,
 
     lore: `Ossara vel naëm. Ossara vel oth. En varassa, en morva, en tharel ossaï. Nemer oth varessa ; nemer oth sal. Ish velen ara, ish velen oratha, ish velen saëm. Oth mara esh, oth mara esh, oth mara vel naëm. Sovaï neth arassa. Vareth il ossara, vareth il morva, vareth il tharel an. Na esh koravel. Na esh sovaï. Na esh nemer oth. Ar velassa thoren, ar velassa maër, ar velassa ith ora. Esh mara… esh mara… Ossara ven oth sal. Il naëm varoth, il naëm varassa. Tharel ossaï nemer, tharel ossaï ven. Oth mara vel naëm. Ossara vel naëm. Ossara vel oth.`
   },
