@@ -1,4 +1,4 @@
-const CACHE = 'instability-v57';
+const CACHE = 'instability-v58';
 const RUNTIME_CACHE = 'instability-runtime-v1';
 
 const ASSETS = [
@@ -32,9 +32,42 @@ const ASSETS = [
   './img/btn_moins20.png',
   './img/btn_plus20.png',
 
-  // Bestiaire — contenu indispensable hors ligne
-  './bestiaire/images/fletris-chien.png',
-  './bestiaire/images/mannequin-desarticule.png',
+// Bestiaire — 35 cartes fixes disponibles hors ligne
+'./bestiaire/images/fletris-chien.png',
+'./bestiaire/images/mannequin-desarticule.png',
+'./bestiaire/images/enfant-grotesque.png',
+'./bestiaire/images/fillette-sans-paupieres.png',
+'./bestiaire/images/ventriloque-muet.png',
+'./bestiaire/images/infirmier-trepane.png',
+'./bestiaire/images/educatrice-figee.png',
+'./bestiaire/images/porte-reserve.png',
+'./bestiaire/images/publicite-vivante.png',
+'./bestiaire/images/presence-assise.png',
+'./bestiaire/images/chambre-inversee.png',
+'./bestiaire/images/maria-la-couturiere-suspendue.png',
+'./bestiaire/images/repetition.png',
+'./bestiaire/images/suspendu.png',
+'./bestiaire/images/nuee.png',
+'./bestiaire/images/restes-dexpedition.png',
+'./bestiaire/images/marinade.png',
+'./bestiaire/images/croque-vase.png',
+'./bestiaire/images/rampemort.png',
+'./bestiaire/images/trancherelle.png',
+'./bestiaire/images/echo-de-lheure-de-pointe.png',
+'./bestiaire/images/code-13.png',
+'./bestiaire/images/moniteur-dordre.png',
+'./bestiaire/images/protocole.png',
+'./bestiaire/images/declasse.png',
+'./bestiaire/images/madame-registre.png',
+'./bestiaire/images/densite-amnesique.png',
+'./bestiaire/images/assemblage-visceral.png',
+'./bestiaire/images/employe-surgele.png',
+'./bestiaire/images/attroupement-necrose.png',
+'./bestiaire/images/gardienne-du-vice.png',
+'./bestiaire/images/tour-controle-ferroviaire.png',
+'./bestiaire/images/siffle-circuit.png',
+'./bestiaire/images/recuperateur-voile.png',
+'./bestiaire/images/fetard-en-retard.png',
 
   // Ambiance
   './audio/ambient_loop.mp3',
