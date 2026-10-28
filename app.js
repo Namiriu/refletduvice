@@ -1797,10 +1797,25 @@ try {
       }
     );
 
+    const storyButton =
+  document.createElement(
+    'button'
+  );
+
+storyButton.type =
+  'button';
+
+storyButton.className =
+  'story-btn';
+
+storyButton.textContent =
+  'ÉCOUTER SON HISTOIRE';
+    
     actions.append(
-      replayButton,
-      dossierButton
-    );
+  replayButton,
+  dossierButton,
+  storyButton
+);
 
     content.append(
       stage,
