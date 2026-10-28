@@ -821,6 +821,42 @@
   color:#e1d1d3;
 }
 
+.story-btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.story-progress-wrap{
+  flex-basis:100%;
+  width:100%;
+  margin-top:-2px;
+  padding:0 3px;
+}
+
+.story-progress{
+  position:relative;
+  height:4px;
+  overflow:hidden;
+  border-radius:999px;
+  background:#323237;
+}
+
+.story-progress-fill{
+  width:0%;
+  height:100%;
+  border-radius:inherit;
+  background:#8e3a40;
+  transition:width .12s linear;
+}
+
+.story-time{
+  margin-top:5px;
+  color:#737379;
+  font-size:11px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+
 .dossier-btn:active,
 .replay-btn:active,
 .story-btn:active{
@@ -917,65 +953,6 @@
       line-height:1.55;
       white-space:pre-line;
       text-wrap:pretty;
-    }
-
-    /*
-      Zone narration masquée automatiquement par JS
-      lorsqu'une créature ne possède pas encore d'audio.
-    */
-    .dossier-audio{
-      margin-top:18px;
-      padding:12px;
-      border:1px solid rgba(71,71,77,.85);
-      border-radius:10px;
-      background:rgba(8,8,10,.48);
-    }
-
-    .dossier-audio-btn{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      width:100%;
-      min-height:42px;
-      border:1px solid #4b3d40;
-      border-radius:8px;
-      background:rgba(35,27,29,.9);
-      color:#e5d9da;
-      font-family:var(--font-ui);
-      font-size:12px;
-      letter-spacing:.35px;
-      cursor:pointer;
-    }
-
-    .dossier-audio-btn:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-    }
-
-    .dossier-audio-progress{
-      position:relative;
-      height:4px;
-      margin-top:11px;
-      overflow:hidden;
-      border-radius:999px;
-      background:#323237;
-    }
-
-    .dossier-audio-progress-fill{
-      width:0%;
-      height:100%;
-      border-radius:inherit;
-      background:#8e3a40;
-      transition:width .12s linear;
-    }
-
-    .dossier-audio-time{
-      margin-top:6px;
-      color:#737379;
-      font-size:12px;
-      text-align:right;
-      font-variant-numeric:tabular-nums;
     }
 
     .dossier-actions{
@@ -1658,40 +1635,9 @@
 
       <div class="dossier-rule" aria-hidden="true"></div>
 
-      <div id="dossierLore" class="dossier-lore"></div>
+     <div id="dossierLore" class="dossier-lore"></div>
 
-      <!--
-        Caché automatiquement lorsque la créature
-        n'a pas encore de narration.
-      -->
-      <div id="dossierAudio" class="dossier-audio">
-
-        <button
-          id="dossierAudioBtn"
-          class="dossier-audio-btn"
-          type="button">
-
-          <span id="dossierAudioIcon" aria-hidden="true">▶</span>
-          <span id="dossierAudioLabel">ÉCOUTER LE DOSSIER</span>
-        </button>
-
-        <div
-          class="dossier-audio-progress"
-          aria-hidden="true">
-
-          <div
-            id="dossierAudioProgressFill"
-            class="dossier-audio-progress-fill">
-          </div>
-        </div>
-
-        <div id="dossierAudioTime" class="dossier-audio-time">
-          0:00 / 0:00
-        </div>
-
-      </div>
-
-      <div class="dossier-actions">
+<div class="dossier-actions">
         <button
           id="dossierClose"
           class="dossier-close"
