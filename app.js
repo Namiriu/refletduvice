@@ -211,6 +211,7 @@ bestiaireNarration: $('bestiaireNarration'),
   let specialAudioActive = false;
   let bestiaireNarrationActive = false;
   let bestiaireVideoActive = false;
+  let musicSyncToken = 0;
   let deferredInstallPrompt = null;
 
   let maskInitialized = false;
@@ -3392,6 +3393,13 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
   }
 
 async function syncMusicForActiveTab() {
+  const token =
+    ++musicSyncToken;
+
+  const isCurrent =
+    () =>
+      token === musicSyncToken;
+
   if (!state.musicOn) {
     await Promise.all([
       fadeAudioVolume(
@@ -3406,6 +3414,15 @@ async function syncMusicForActiveTab() {
         AUDIO_SWITCH_FADE_MS
       )
     ]);
+
+    /*
+     * Une autre synchronisation
+     * plus récente a peut-être
+     * commencé pendant le fondu.
+     */
+    if (!isCurrent()) {
+      return;
+    }
 
     els.ambient.pause();
     els.bestiaireAmbient.pause();
@@ -3449,7 +3466,29 @@ async function syncMusicForActiveTab() {
       AUDIO_SWITCH_FADE_MS
     );
 
+    /*
+     * IMPORTANT :
+     * si un nouveau changement
+     * d'onglet / réseau a eu lieu,
+     * l'ancienne synchro n'a plus
+     * le droit de mettre quoi que
+     * ce soit en pause.
+     */
+    if (
+      !isCurrent()
+      || !state.musicOn
+    ) {
+      return;
+    }
+
     inactiveAudio.pause();
+  }
+
+  if (
+    !isCurrent()
+    || !state.musicOn
+  ) {
+    return;
   }
 
   if (!activeAudio.paused) {
@@ -3466,6 +3505,13 @@ async function syncMusicForActiveTab() {
 
   try {
     await activeAudio.play();
+
+    if (
+      !isCurrent()
+      || !state.musicOn
+    ) {
+      return;
+    }
 
     await fadeAudioVolume(
       activeAudio,
