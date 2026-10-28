@@ -2103,6 +2103,130 @@ actions.append(
       null;
   }
 
+function scrollExpandedCreatureIntoView(
+  entry
+) {
+  if (!entry) {
+    return;
+  }
+
+  /*
+   * On attend que l'animation
+   * de déploiement du panneau
+   * soit réellement terminée.
+   */
+  setTimeout(
+    () => {
+      if (
+        openCreatureEntry !== entry
+        || !entry.classList
+          .contains('open')
+      ) {
+        return;
+      }
+
+      const viewport =
+        window.visualViewport;
+
+      const viewportTop =
+        viewport
+          ? viewport.offsetTop
+          : 0;
+
+      const viewportBottom =
+        viewport
+          ? viewport.offsetTop
+            + viewport.height
+          : window.innerHeight;
+
+      const margin =
+        14;
+
+      const rect =
+        entry.getBoundingClientRect();
+
+      const usableHeight =
+        viewportBottom
+        - viewportTop
+        - margin * 2;
+
+      let scrollAmount =
+        0;
+
+      /*
+       * Si toute l'entrée peut tenir
+       * dans l'écran, on déplace
+       * uniquement ce qui dépasse.
+       */
+      if (
+        rect.height
+        <= usableHeight
+      ) {
+        if (
+          rect.bottom
+          > viewportBottom
+            - margin
+        ) {
+          scrollAmount =
+            rect.bottom
+            - (
+              viewportBottom
+              - margin
+            );
+        }
+
+        else if (
+          rect.top
+          < viewportTop
+            + margin
+        ) {
+          scrollAmount =
+            rect.top
+            - (
+              viewportTop
+              + margin
+            );
+        }
+      }
+
+      /*
+       * Si l'entrée est physiquement
+       * plus haute que l'écran,
+       * on place son début proprement
+       * en haut du viewport.
+       */
+      else {
+        scrollAmount =
+          rect.top
+          - (
+            viewportTop
+            + margin
+          );
+      }
+
+      if (
+        Math.abs(
+          scrollAmount
+        ) > 1
+      ) {
+        window.scrollBy({
+          top:
+            scrollAmount,
+
+          behavior:
+            'smooth'
+        });
+      }
+    },
+
+    /*
+     * Ton panneau se déploie en .34 s.
+     * On mesure juste après.
+     */
+    380
+  );
+}
+  
   async function openCreature(
     creature,
     entry,
@@ -2129,17 +2253,21 @@ actions.append(
       'open'
     );
 
-    entry.querySelector(
-      '.creature-toggle'
-    )
-      ?.setAttribute(
-        'aria-expanded',
-        'true'
-      );
+   entry.querySelector(
+  '.creature-toggle'
+)
+  ?.setAttribute(
+    'aria-expanded',
+    'true'
+  );
 
-    if (!creature.video) {
-      return;
-    }
+scrollExpandedCreatureIntoView(
+  entry
+);
+
+if (!creature.video) {
+  return;
+}
 
     const token =
       ++bestiaireMediaToken;
