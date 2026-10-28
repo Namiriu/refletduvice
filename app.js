@@ -413,7 +413,52 @@ function getBestiaireAmbientTargetVolume() {
   return BESTIAIRE_AMBIENT_VOLUME;
 }
 
+function useOfflineBestiaireMusicFallback() {
+  return (
+    isBestiaireTabActive()
+    && navigator.onLine === false
+  );
+}
+
 function syncAmbientVolume() {
+  const bestiaireActive =
+    isBestiaireTabActive();
+
+  const offlineFallback =
+    useOfflineBestiaireMusicFallback();
+
+  /*
+   * BESTIAIRE
+   *
+   * En ligne :
+   *   musique Bestiaire normale.
+   *
+   * Hors ligne :
+   *   ambient_loop.mp3 prend le relais,
+   *   avec exactement les mêmes volumes
+   *   et le même ducking vidéo/narration.
+   */
+  if (bestiaireActive) {
+    fadeAudioVolume(
+      els.ambient,
+      offlineFallback
+        ? getBestiaireAmbientTargetVolume()
+        : 0
+    );
+
+    fadeAudioVolume(
+      els.bestiaireAmbient,
+      offlineFallback
+        ? 0
+        : getBestiaireAmbientTargetVolume()
+    );
+
+    return;
+  }
+
+  /*
+   * PARTIE / autres onglets
+   */
   fadeAudioVolume(
     els.ambient,
     specialAudioActive
@@ -423,7 +468,7 @@ function syncAmbientVolume() {
 
   fadeAudioVolume(
     els.bestiaireAmbient,
-    getBestiaireAmbientTargetVolume()
+    0
   );
 }
 
@@ -3371,15 +3416,22 @@ async function syncMusicForActiveTab() {
   const bestiaireActive =
     isBestiaireTabActive();
 
+  const offlineFallback =
+    useOfflineBestiaireMusicFallback();
+
   const activeAudio =
     bestiaireActive
-      ? els.bestiaireAmbient
+      ? (
+          offlineFallback
+            ? els.ambient
+            : els.bestiaireAmbient
+        )
       : els.ambient;
 
   const inactiveAudio =
-    bestiaireActive
-      ? els.ambient
-      : els.bestiaireAmbient;
+    activeAudio === els.ambient
+      ? els.bestiaireAmbient
+      : els.ambient;
 
   const activeTarget =
     bestiaireActive
@@ -3442,6 +3494,24 @@ function unlockAmbientOnce() {
     syncMusicForActiveTab();
   }
 }
+
+window.addEventListener(
+  'offline',
+  () => {
+    if (appStarted) {
+      syncMusicForActiveTab();
+    }
+  }
+);
+
+window.addEventListener(
+  'online',
+  () => {
+    if (appStarted) {
+      syncMusicForActiveTab();
+    }
+  }
+);
 
   // =========================================================
   // EFFETS HANTÉS
