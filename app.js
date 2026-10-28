@@ -1508,7 +1508,7 @@ function syncAmbientVolume() {
     }
   }
 
-  function buildCreatureEntry(
+    function buildCreatureEntry(
     creature
   ) {
     const entry =
@@ -1734,28 +1734,38 @@ function syncAmbientVolume() {
           return;
         }
 
+        /*
+         * Si une narration est en cours
+         * ou simplement chargée,
+         * on l'arrête avant de rejouer
+         * le WebM.
+         */
+        if (narrationLoadedUrl) {
+          resetNarrationUI();
+        }
+
         replayButton
           .classList
           .add('hidden');
 
-       stage.classList.remove(
-  'is-playing',
-  'is-ending'
-);
+        stage.classList.remove(
+          'is-playing',
+          'is-ending'
+        );
 
-stage.classList.add(
-  'is-loading'
-);
+        stage.classList.add(
+          'is-loading'
+        );
 
-try {
-  video.playbackRate =
-    1;
+        try {
+          video.playbackRate =
+            1;
 
-  video.currentTime =
-    0;
+          video.currentTime =
+            0;
 
-  await video.play();
-}
+          await video.play();
+        }
 
         catch (_) {
           stage.classList.remove(
@@ -1801,81 +1811,91 @@ try {
     );
 
     const storyButton =
-  document.createElement(
-    'button'
-  );
-
-storyButton.type =
-  'button';
-
-storyButton.className =
-  'story-btn';
-
-storyButton.textContent =
-  'ÉCOUTER SON HISTOIRE';
-
-storyButton.addEventListener(
-  'click',
-  async event => {
-    event.stopPropagation();
-
-    if (!creature.narration) {
-      return;
-    }
-
-    if (
-      video
-      && !video.paused
-    ) {
-      video.pause();
-
-      stage.classList.remove(
-        'is-loading',
-        'is-playing',
-        'is-ending'
+      document.createElement(
+        'button'
       );
 
-      replayButton.classList.remove(
-        'hidden'
-      );
+    storyButton.type =
+      'button';
 
-      bestiaireVideoActive =
-        false;
+    storyButton.className =
+      'story-btn';
 
-      syncAmbientVolume();
-    }
+    storyButton.textContent =
+      'ÉCOUTER SON HISTOIRE';
 
-    const audioUrl =
-      bestiaireAsset(
-        'audio',
-        creature.narration
-      );
+    storyButton.addEventListener(
+      'click',
+      async event => {
+        event.stopPropagation();
 
-    if (
-      activeNarrationCreature
-      && narrationLoadedUrl
-        !== audioUrl
-    ) {
-      resetNarrationUI();
-    }
+        if (!creature.narration) {
+          return;
+        }
 
-    activeNarrationCreature =
-      creature;
+        /*
+         * Si le WebM joue encore,
+         * on l'arrête et on revient
+         * sur la carte fixe.
+         */
+        if (
+          video
+          && !video.paused
+        ) {
+          video.pause();
 
-    activeStoryButton =
-      storyButton;
+          stage.classList.remove(
+            'is-loading',
+            'is-playing',
+            'is-ending'
+          );
 
-    await toggleBestiaireNarration(
-      creature
+          replayButton
+            .classList
+            .remove('hidden');
+
+          bestiaireVideoActive =
+            false;
+
+          syncAmbientVolume();
+        }
+
+        const audioUrl =
+          bestiaireAsset(
+            'audio',
+            creature.narration
+          );
+
+        /*
+         * Si une autre narration était
+         * précédemment chargée,
+         * on la nettoie complètement.
+         */
+        if (
+          activeNarrationCreature
+          && narrationLoadedUrl
+            !== audioUrl
+        ) {
+          resetNarrationUI();
+        }
+
+        activeNarrationCreature =
+          creature;
+
+        activeStoryButton =
+          storyButton;
+
+        await toggleBestiaireNarration(
+          creature
+        );
+      }
     );
-  }
-);
-    
+
     actions.append(
-  replayButton,
-  dossierButton,
-  storyButton
-);
+      replayButton,
+      dossierButton,
+      storyButton
+    );
 
     content.append(
       stage,
@@ -1925,7 +1945,9 @@ storyButton.addEventListener(
     entry,
     immediate = true
   ) {
-    if (!entry) return;
+    if (!entry) {
+      return;
+    }
 
     const stage =
       entry.querySelector(
@@ -1996,6 +2018,19 @@ storyButton.addEventListener(
     bestiaireMediaToken +=
       1;
 
+    /*
+     * Si la narration appartient
+     * à la créature qu'on ferme,
+     * elle s'arrête également.
+     */
+    if (
+      activeNarrationCreature
+      && activeNarrationCreature.slug
+        === openCreatureSlug
+    ) {
+      resetNarrationUI();
+    }
+
     if (!openCreatureEntry) {
       openCreatureSlug =
         null;
@@ -2041,39 +2076,39 @@ storyButton.addEventListener(
     openCreatureSlug =
       creature.slug;
 
-openCreatureEntry =
-  entry;
+    openCreatureEntry =
+      entry;
 
-if (creature.video) {
-  stage.classList.add(
-    'is-loading'
-  );
-}
+    if (creature.video) {
+      stage.classList.add(
+        'is-loading'
+      );
+    }
 
-entry.classList.add(
-  'open'
-);
+    entry.classList.add(
+      'open'
+    );
 
-entry.querySelector(
-  '.creature-toggle'
-)
-  ?.setAttribute(
-    'aria-expanded',
-    'true'
-  );
+    entry.querySelector(
+      '.creature-toggle'
+    )
+      ?.setAttribute(
+        'aria-expanded',
+        'true'
+      );
 
-if (!creature.video) {
-  return;
-}
+    if (!creature.video) {
+      return;
+    }
 
-const token =
-  ++bestiaireMediaToken;
+    const token =
+      ++bestiaireMediaToken;
 
-const videoUrl =
-  bestiaireAsset(
-    'video',
-    creature.video
-  );
+    const videoUrl =
+      bestiaireAsset(
+        'video',
+        creature.video
+      );
 
     loader.textContent =
       'Chargement de l’archive…';
@@ -2091,22 +2126,22 @@ const videoUrl =
         return;
       }
 
-     video.src =
-  videoUrl;
+      video.src =
+        videoUrl;
 
-stage.classList.remove(
-  'is-ending'
-);
+      stage.classList.remove(
+        'is-ending'
+      );
 
-video.playbackRate =
-  1;
+      video.playbackRate =
+        1;
 
-video.currentTime =
-  0;
+      video.currentTime =
+        0;
 
-video.load();
+      video.load();
 
-const onPlaying =
+      const onPlaying =
         () => {
           if (
             token !== bestiaireMediaToken
@@ -2135,37 +2170,41 @@ const onPlaying =
         };
 
       const onTimeUpdate =
-  () => {
-    if (
-      token !== bestiaireMediaToken
-      || openCreatureSlug
-        !== creature.slug
-      || !Number.isFinite(
-        video.duration
-      )
-    ) {
-      return;
-    }
+        () => {
+          if (
+            token !== bestiaireMediaToken
+            || openCreatureSlug
+              !== creature.slug
+            || !Number.isFinite(
+              video.duration
+            )
+          ) {
+            return;
+          }
 
-    const remaining =
-      video.duration
-      - video.currentTime;
+          const remaining =
+            video.duration
+            - video.currentTime;
 
-    if (
-      remaining > 0
-      && remaining <= 0.9
-      && !stage.classList
-        .contains('is-ending')
-    ) {
-      stage.classList.add(
-        'is-ending'
-      );
+          /*
+           * Fin déjà calibrée :
+           * ralentissement + fondu
+           * dans la dernière seconde.
+           */
+          if (
+            remaining > 0
+            && remaining <= 0.9
+            && !stage.classList
+              .contains('is-ending')
+          ) {
+            stage.classList.add(
+              'is-ending'
+            );
 
-      video.playbackRate =
-        0.75;
-    }
-  };
-
+            video.playbackRate =
+              0.75;
+          }
+        };
 
       const onEnded =
         () => {
@@ -2234,17 +2273,18 @@ const onPlaying =
           );
         };
 
-     video.onplaying =
-  onPlaying;
+      video.onplaying =
+        onPlaying;
 
-video.ontimeupdate =
-  onTimeUpdate;
+      video.ontimeupdate =
+        onTimeUpdate;
 
-video.onended =
-  onEnded;
+      video.onended =
+        onEnded;
 
-video.onerror =
-  onError;
+      video.onerror =
+        onError;
+
       await video.play();
     }
 
@@ -2296,19 +2336,24 @@ video.onerror =
     bestiaireNarrationActive =
       false;
 
-      activeNarrationCreature =
-    null;
-
-  if (activeStoryButton) {
-    activeStoryButton.textContent =
-      'ÉCOUTER SON HISTOIRE';
-
-    activeStoryButton.disabled =
-      false;
-
-    activeStoryButton =
+    activeNarrationCreature =
       null;
-  }
+
+    /*
+     * On remet le bouton de la carte
+     * dans son état initial AVANT
+     * de provoquer l'événement pause.
+     */
+    if (activeStoryButton) {
+      activeStoryButton.textContent =
+        'ÉCOUTER SON HISTOIRE';
+
+      activeStoryButton.disabled =
+        false;
+
+      activeStoryButton =
+        null;
+    }
 
     narrationLoadedUrl =
       null;
@@ -2330,8 +2375,9 @@ video.onerror =
     els.dossierAudioLabel.textContent =
       'ÉCOUTER LE DOSSIER';
 
-    els.dossierAudioProgressFill.style.width =
-      '0%';
+    els.dossierAudioProgressFill
+      .style.width =
+        '0%';
 
     els.dossierAudioTime.textContent =
       '0:00 / --:--';
@@ -2347,19 +2393,22 @@ video.onerror =
   ) {
     if (openCreatureEntry) {
       const video =
-        openCreatureEntry.querySelector(
-          '.creature-video'
-        );
+        openCreatureEntry
+          .querySelector(
+            '.creature-video'
+          );
 
       const stage =
-        openCreatureEntry.querySelector(
-          '.creature-media-stage'
-        );
+        openCreatureEntry
+          .querySelector(
+            '.creature-media-stage'
+          );
 
       const replayButton =
-        openCreatureEntry.querySelector(
-          '.replay-btn'
-        );
+        openCreatureEntry
+          .querySelector(
+            '.replay-btn'
+          );
 
       if (
         video
@@ -2372,9 +2421,9 @@ video.onerror =
           'is-playing'
         );
 
-        replayButton?.classList.remove(
-          'hidden'
-        );
+        replayButton
+          ?.classList
+          .remove('hidden');
 
         bestiaireVideoActive =
           false;
@@ -2386,6 +2435,11 @@ video.onerror =
     activeDossierCreature =
       creature;
 
+    /*
+     * Une narration lancée depuis
+     * la carte est arrêtée lorsqu'on
+     * ouvre le dossier.
+     */
     resetNarrationUI();
 
     els.dossierTitle.textContent =
@@ -2444,15 +2498,15 @@ video.onerror =
       .remove('dossier-open');
   }
 
-async function toggleBestiaireNarration(
-  creature = activeDossierCreature
-) {
-  activeNarrationCreature =
-    creature;
-
+  async function toggleBestiaireNarration(
+    creature = activeDossierCreature
+  ) {
     if (!creature?.narration) {
       return;
     }
+
+    activeNarrationCreature =
+      creature;
 
     const audio =
       els.bestiaireNarration;
@@ -2463,32 +2517,46 @@ async function toggleBestiaireNarration(
         creature.narration
       );
 
-   if (
-  narrationLoadedUrl === audioUrl
-  && !audio.paused
-) {
-  audio.pause();
+    /*
+     * Même narration déjà en cours :
+     * un clic = PAUSE.
+     */
+    if (
+      narrationLoadedUrl === audioUrl
+      && !audio.paused
+    ) {
+      audio.pause();
 
-  bestiaireNarrationActive =
-    false;
+      bestiaireNarrationActive =
+        false;
 
-  els.dossierAudioIcon.textContent =
-    '▶';
+      els.dossierAudioIcon
+        .textContent =
+          '▶';
 
-  els.dossierAudioLabel.textContent =
-    'REPRENDRE';
+      els.dossierAudioLabel
+        .textContent =
+          'REPRENDRE';
 
-  if (activeStoryButton) {
-    activeStoryButton.textContent =
-      'REPRENDRE';
-  }
+      if (activeStoryButton) {
+        activeStoryButton.textContent =
+          'REPRENDRE';
 
-  syncAmbientVolume();
+        activeStoryButton.disabled =
+          false;
+      }
 
-  return;
-}
+      syncAmbientVolume();
+
+      return;
+    }
 
     try {
+      /*
+       * Nouvelle narration :
+       * téléchargement/cache puis
+       * chargement dans le lecteur.
+       */
       if (
         narrationLoadedUrl
         !== audioUrl
@@ -2496,30 +2564,37 @@ async function toggleBestiaireNarration(
         els.dossierAudioBtn.disabled =
           true;
 
-        els.dossierAudioIcon.textContent =
-          '…';
+        els.dossierAudioIcon
+          .textContent =
+            '…';
 
-els.dossierAudioLabel.textContent =
-  'CHARGEMENT…';
+        els.dossierAudioLabel
+          .textContent =
+            'CHARGEMENT…';
 
-if (activeStoryButton) {
-  activeStoryButton.textContent =
-    'CHARGEMENT…';
+        if (activeStoryButton) {
+          activeStoryButton.textContent =
+            'CHARGEMENT…';
 
-  activeStoryButton.disabled =
-    true;
-}
+          activeStoryButton.disabled =
+            true;
+        }
 
-await ensureRuntimeAsset(
-  audioUrl
-);
+        await ensureRuntimeAsset(
+          audioUrl
+        );
 
-       if (
-  activeNarrationCreature
-  !== creature
-) {
-  return;
-}
+        /*
+         * Pendant le chargement,
+         * l'utilisateur a peut-être
+         * fermé/changé de créature.
+         */
+        if (
+          activeNarrationCreature
+          !== creature
+        ) {
+          return;
+        }
 
         narrationLoadedUrl =
           audioUrl;
@@ -2533,6 +2608,10 @@ await ensureRuntimeAsset(
         audio.load();
       }
 
+      /*
+       * Aucun autre son spécial
+       * ne doit se superposer.
+       */
       stopSpecialAudio(
         els.ritualAudio
       );
@@ -2544,6 +2623,10 @@ await ensureRuntimeAsset(
       specialAudioActive =
         false;
 
+      /*
+       * Après une narration terminée,
+       * un nouveau clic repart de zéro.
+       */
       if (
         audio.ended
         || (
@@ -2564,50 +2647,54 @@ await ensureRuntimeAsset(
       els.dossierAudioBtn.disabled =
         false;
 
-      els.dossierAudioIcon.textContent =
-        '⏸';
+      els.dossierAudioIcon
+        .textContent =
+          '⏸';
 
-els.dossierAudioLabel.textContent =
-  'PAUSE';
+      els.dossierAudioLabel
+        .textContent =
+          'PAUSE';
 
-if (activeStoryButton) {
-  activeStoryButton.textContent =
-    'PAUSE';
+      if (activeStoryButton) {
+        activeStoryButton.textContent =
+          'PAUSE';
 
-  activeStoryButton.disabled =
-    false;
-}
+        activeStoryButton.disabled =
+          false;
+      }
 
-syncAmbientVolume();
+      syncAmbientVolume();
 
-await audio.play();
+      await audio.play();
     }
 
-catch (_) {
-  bestiaireNarrationActive =
-    false;
+    catch (_) {
+      bestiaireNarrationActive =
+        false;
 
-  els.dossierAudioBtn.disabled =
-    false;
+      els.dossierAudioBtn.disabled =
+        false;
 
-  els.dossierAudioIcon.textContent =
-    '▶';
+      els.dossierAudioIcon
+        .textContent =
+          '▶';
 
-  els.dossierAudioLabel.textContent =
-    navigator.onLine
-      ? 'RÉESSAYER'
-      : 'INDISPONIBLE HORS LIGNE';
+      els.dossierAudioLabel
+        .textContent =
+          navigator.onLine
+            ? 'RÉESSAYER'
+            : 'INDISPONIBLE HORS LIGNE';
 
-  if (activeStoryButton) {
-    activeStoryButton.textContent =
-      'RÉESSAYER';
+      if (activeStoryButton) {
+        activeStoryButton.textContent =
+          'RÉESSAYER';
 
-    activeStoryButton.disabled =
-      false;
-  }
+        activeStoryButton.disabled =
+          false;
+      }
 
-  syncAmbientVolume();
-}
+      syncAmbientVolume();
+    }
   }
 
   function updateNarrationProgress() {
@@ -2637,8 +2724,9 @@ catch (_) {
           )
         : 0;
 
-    els.dossierAudioProgressFill.style.width =
-      `${progress}%`;
+    els.dossierAudioProgressFill
+      .style.width =
+        `${progress}%`;
 
     els.dossierAudioTime.textContent =
       `${formatTime(current)} / ${
@@ -2687,13 +2775,19 @@ catch (_) {
         }
       );
 
-   els.dossierAudioBtn
-  .addEventListener(
-    'click',
-    () => {
-      toggleBestiaireNarration();
-    }
-  );
+    /*
+     * IMPORTANT :
+     * on utilise une fonction intermédiaire
+     * pour éviter que l'événement click
+     * soit interprété comme une créature.
+     */
+    els.dossierAudioBtn
+      .addEventListener(
+        'click',
+        () => {
+          toggleBestiaireNarration();
+        }
+      );
 
     els.bestiaireNarration
       .addEventListener(
@@ -2720,18 +2814,24 @@ catch (_) {
           bestiaireNarrationActive =
             true;
 
-          els.dossierAudioIcon.textContent =
-            '⏸';
+          els.dossierAudioIcon
+            .textContent =
+              '⏸';
 
-els.dossierAudioLabel.textContent =
-  'PAUSE';
+          els.dossierAudioLabel
+            .textContent =
+              'PAUSE';
 
-if (activeStoryButton) {
-  activeStoryButton.textContent =
-    'PAUSE';
-}
+          if (activeStoryButton) {
+            activeStoryButton
+              .textContent =
+                'PAUSE';
 
-syncAmbientVolume();
+            activeStoryButton.disabled =
+              false;
+          }
+
+          syncAmbientVolume();
         }
       );
 
@@ -2739,21 +2839,31 @@ syncAmbientVolume();
       .addEventListener(
         'pause',
         () => {
+          /*
+           * Si le fichier est arrivé
+           * naturellement à sa fin,
+           * l'événement ended s'en charge.
+           */
           if (
-            els.bestiaireNarration.ended
+            els.bestiaireNarration
+              .ended
           ) {
             return;
           }
 
           bestiaireNarrationActive =
-  false;
+            false;
 
-if (activeStoryButton) {
-  activeStoryButton.textContent =
-    'REPRENDRE';
-}
+          if (activeStoryButton) {
+            activeStoryButton
+              .textContent =
+                'REPRENDRE';
 
-syncAmbientVolume();
+            activeStoryButton.disabled =
+              false;
+          }
+
+          syncAmbientVolume();
         }
       );
 
@@ -2764,18 +2874,24 @@ syncAmbientVolume();
           bestiaireNarrationActive =
             false;
 
-          els.dossierAudioIcon.textContent =
-            '↻';
+          els.dossierAudioIcon
+            .textContent =
+              '↻';
 
-els.dossierAudioLabel.textContent =
-  'RÉÉCOUTER';
+          els.dossierAudioLabel
+            .textContent =
+              'RÉÉCOUTER';
 
-if (activeStoryButton) {
-  activeStoryButton.textContent =
-    'RÉÉCOUTER';
-}
+          if (activeStoryButton) {
+            activeStoryButton
+              .textContent =
+                'RÉÉCOUTER';
 
-syncAmbientVolume();
+            activeStoryButton.disabled =
+              false;
+          }
+
+          syncAmbientVolume();
 
           updateNarrationProgress();
         }
@@ -2791,17 +2907,27 @@ syncAmbientVolume();
           els.dossierAudioBtn.disabled =
             false;
 
-          els.dossierAudioIcon.textContent =
-            '▶';
+          els.dossierAudioIcon
+            .textContent =
+              '▶';
 
-          els.dossierAudioLabel.textContent =
-            'RÉESSAYER';
+          els.dossierAudioLabel
+            .textContent =
+              'RÉESSAYER';
+
+          if (activeStoryButton) {
+            activeStoryButton
+              .textContent =
+                'RÉESSAYER';
+
+            activeStoryButton.disabled =
+              false;
+          }
 
           syncAmbientVolume();
         }
       );
   }
-
   // =========================================================
   // PROFANATION / CAMP / NOUVELLE PARTIE
   // =========================================================
