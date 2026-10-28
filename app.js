@@ -2499,12 +2499,20 @@ async function toggleBestiaireNarration(
         els.dossierAudioIcon.textContent =
           '…';
 
-        els.dossierAudioLabel.textContent =
-          'CHARGEMENT…';
+els.dossierAudioLabel.textContent =
+  'CHARGEMENT…';
 
-        await ensureRuntimeAsset(
-          audioUrl
-        );
+if (activeStoryButton) {
+  activeStoryButton.textContent =
+    'CHARGEMENT…';
+
+  activeStoryButton.disabled =
+    true;
+}
+
+await ensureRuntimeAsset(
+  audioUrl
+);
 
        if (
   activeNarrationCreature
@@ -2559,12 +2567,20 @@ async function toggleBestiaireNarration(
       els.dossierAudioIcon.textContent =
         '⏸';
 
-      els.dossierAudioLabel.textContent =
-        'PAUSE';
+els.dossierAudioLabel.textContent =
+  'PAUSE';
 
-      syncAmbientVolume();
+if (activeStoryButton) {
+  activeStoryButton.textContent =
+    'PAUSE';
 
-      await audio.play();
+  activeStoryButton.disabled =
+    false;
+}
+
+syncAmbientVolume();
+
+await audio.play();
     }
 
 catch (_) {
@@ -2671,11 +2687,13 @@ catch (_) {
         }
       );
 
-    els.dossierAudioBtn
-      .addEventListener(
-        'click',
-        toggleBestiaireNarration
-      );
+   els.dossierAudioBtn
+  .addEventListener(
+    'click',
+    () => {
+      toggleBestiaireNarration();
+    }
+  );
 
     els.bestiaireNarration
       .addEventListener(
@@ -2705,10 +2723,15 @@ catch (_) {
           els.dossierAudioIcon.textContent =
             '⏸';
 
-          els.dossierAudioLabel.textContent =
-            'PAUSE';
+els.dossierAudioLabel.textContent =
+  'PAUSE';
 
-          syncAmbientVolume();
+if (activeStoryButton) {
+  activeStoryButton.textContent =
+    'PAUSE';
+}
+
+syncAmbientVolume();
         }
       );
 
@@ -2723,9 +2746,14 @@ catch (_) {
           }
 
           bestiaireNarrationActive =
-            false;
+  false;
 
-          syncAmbientVolume();
+if (activeStoryButton) {
+  activeStoryButton.textContent =
+    'REPRENDRE';
+}
+
+syncAmbientVolume();
         }
       );
 
@@ -2739,10 +2767,15 @@ catch (_) {
           els.dossierAudioIcon.textContent =
             '↻';
 
-          els.dossierAudioLabel.textContent =
-            'RÉÉCOUTER';
+els.dossierAudioLabel.textContent =
+  'RÉÉCOUTER';
 
-          syncAmbientVolume();
+if (activeStoryButton) {
+  activeStoryButton.textContent =
+    'RÉÉCOUTER';
+}
+
+syncAmbientVolume();
 
           updateNarrationProgress();
         }
