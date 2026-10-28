@@ -137,17 +137,11 @@ campAudio: $('campAudio'),
     bestiaireList: $('bestiaireList'),
     bestiaireEmpty: $('bestiaireEmpty'),
 
-    dossierModal: $('dossierModal'),
-    dossierTitle: $('dossierTitle'),
-    dossierLore: $('dossierLore'),
-    dossierAudio: $('dossierAudio'),
-    dossierAudioBtn: $('dossierAudioBtn'),
-    dossierAudioIcon: $('dossierAudioIcon'),
-    dossierAudioLabel: $('dossierAudioLabel'),
-    dossierAudioProgressFill: $('dossierAudioProgressFill'),
-    dossierAudioTime: $('dossierAudioTime'),
-    dossierClose: $('dossierClose'),
-    bestiaireNarration: $('bestiaireNarration'),
+   dossierModal: $('dossierModal'),
+dossierTitle: $('dossierTitle'),
+dossierLore: $('dossierLore'),
+dossierClose: $('dossierClose'),
+bestiaireNarration: $('bestiaireNarration'),
 
     version: $('version')
   };
@@ -229,11 +223,11 @@ campAudio: $('campAudio'),
   let openCreatureSlug = null;
   let openCreatureEntry = null;
   let bestiaireMediaToken = 0;
-let activeDossierCreature = null;
 let narrationLoadedUrl = null;
-
 let activeNarrationCreature = null;
 let activeStoryButton = null;
+let activeStoryProgressFill = null;
+let activeStoryTime = null;
 
   const worldFromValue = value =>
     value >= THRESHOLD
@@ -1810,92 +1804,138 @@ function syncAmbientVolume() {
       }
     );
 
-    const storyButton =
-      document.createElement(
-        'button'
+const storyButton =
+  document.createElement(
+    'button'
+  );
+
+storyButton.type =
+  'button';
+
+storyButton.className =
+  'story-btn';
+
+storyButton.textContent =
+  '▶ ÉCOUTER SON HISTOIRE';
+
+const storyProgressWrap =
+  document.createElement(
+    'div'
+  );
+
+storyProgressWrap.className =
+  'story-progress-wrap';
+
+const storyProgress =
+  document.createElement(
+    'div'
+  );
+
+storyProgress.className =
+  'story-progress';
+
+storyProgress.setAttribute(
+  'aria-hidden',
+  'true'
+);
+
+const storyProgressFill =
+  document.createElement(
+    'div'
+  );
+
+storyProgressFill.className =
+  'story-progress-fill';
+
+storyProgress.appendChild(
+  storyProgressFill
+);
+
+const storyTime =
+  document.createElement(
+    'div'
+  );
+
+storyTime.className =
+  'story-time';
+
+storyTime.textContent =
+  '0:00 / --:--';
+
+storyProgressWrap.append(
+  storyProgress,
+  storyTime
+);
+
+storyButton.addEventListener(
+  'click',
+  async event => {
+    event.stopPropagation();
+
+    if (!creature.narration) {
+      return;
+    }
+
+    if (
+      video
+      && !video.paused
+    ) {
+      video.pause();
+
+      stage.classList.remove(
+        'is-loading',
+        'is-playing',
+        'is-ending'
       );
 
-    storyButton.type =
-      'button';
+      replayButton
+        .classList
+        .remove('hidden');
 
-    storyButton.className =
-      'story-btn';
+      bestiaireVideoActive =
+        false;
 
-    storyButton.textContent =
-      'ÉCOUTER SON HISTOIRE';
+      syncAmbientVolume();
+    }
 
-    storyButton.addEventListener(
-      'click',
-      async event => {
-        event.stopPropagation();
+    const audioUrl =
+      bestiaireAsset(
+        'audio',
+        creature.narration
+      );
 
-        if (!creature.narration) {
-          return;
-        }
+    if (
+      activeNarrationCreature
+      && narrationLoadedUrl
+        !== audioUrl
+    ) {
+      resetNarrationUI();
+    }
 
-        /*
-         * Si le WebM joue encore,
-         * on l'arrête et on revient
-         * sur la carte fixe.
-         */
-        if (
-          video
-          && !video.paused
-        ) {
-          video.pause();
+    activeNarrationCreature =
+      creature;
 
-          stage.classList.remove(
-            'is-loading',
-            'is-playing',
-            'is-ending'
-          );
+    activeStoryButton =
+      storyButton;
 
-          replayButton
-            .classList
-            .remove('hidden');
+    activeStoryProgressFill =
+      storyProgressFill;
 
-          bestiaireVideoActive =
-            false;
+    activeStoryTime =
+      storyTime;
 
-          syncAmbientVolume();
-        }
-
-        const audioUrl =
-          bestiaireAsset(
-            'audio',
-            creature.narration
-          );
-
-        /*
-         * Si une autre narration était
-         * précédemment chargée,
-         * on la nettoie complètement.
-         */
-        if (
-          activeNarrationCreature
-          && narrationLoadedUrl
-            !== audioUrl
-        ) {
-          resetNarrationUI();
-        }
-
-        activeNarrationCreature =
-          creature;
-
-        activeStoryButton =
-          storyButton;
-
-        await toggleBestiaireNarration(
-          creature
-        );
-      }
+    await toggleBestiaireNarration(
+      creature
     );
+  }
+);
 
-    actions.append(
-      replayButton,
-      dossierButton,
-      storyButton
-    );
+actions.append(
+  replayButton,
+  dossierButton,
+  storyButton,
+  storyProgressWrap
+);
 
     content.append(
       stage,
@@ -2333,601 +2373,470 @@ function syncAmbientVolume() {
   }
 
   function resetNarrationUI() {
+  bestiaireNarrationActive =
+    false;
+
+  activeNarrationCreature =
+    null;
+
+  if (activeStoryButton) {
+    activeStoryButton.textContent =
+      '▶ ÉCOUTER SON HISTOIRE';
+
+    activeStoryButton.disabled =
+      false;
+  }
+
+  if (activeStoryProgressFill) {
+    activeStoryProgressFill.style.width =
+      '0%';
+  }
+
+  if (activeStoryTime) {
+    activeStoryTime.textContent =
+      '0:00 / --:--';
+  }
+
+  activeStoryButton =
+    null;
+
+  activeStoryProgressFill =
+    null;
+
+  activeStoryTime =
+    null;
+
+  narrationLoadedUrl =
+    null;
+
+  els.bestiaireNarration.pause();
+
+  els.bestiaireNarration
+    .removeAttribute('src');
+
+  try {
+    els.bestiaireNarration.load();
+  }
+
+  catch (_) {}
+
+  syncAmbientVolume();
+}
+
+function openDossier(
+  creature
+) {
+  if (openCreatureEntry) {
+    const video =
+      openCreatureEntry
+        .querySelector(
+          '.creature-video'
+        );
+
+    const stage =
+      openCreatureEntry
+        .querySelector(
+          '.creature-media-stage'
+        );
+
+    const replayButton =
+      openCreatureEntry
+        .querySelector(
+          '.replay-btn'
+        );
+
+    if (
+      video
+      && !video.paused
+    ) {
+      video.pause();
+
+      stage?.classList.remove(
+        'is-loading',
+        'is-playing',
+        'is-ending'
+      );
+
+      replayButton
+        ?.classList
+        .remove('hidden');
+
+      bestiaireVideoActive =
+        false;
+
+      syncAmbientVolume();
+    }
+  }
+
+  els.dossierTitle.textContent =
+    creature.name;
+
+  els.dossierLore.textContent =
+    creature.lore
+    || 'Aucune donnée disponible.';
+
+  els.dossierModal
+    .classList
+    .add('show');
+
+  els.dossierModal
+    .setAttribute(
+      'aria-hidden',
+      'false'
+    );
+
+  document.body
+    .classList
+    .add('dossier-open');
+
+  els.dossierClose.focus();
+}
+
+function closeDossier() {
+  if (!els.dossierModal) {
+    return;
+  }
+
+  els.dossierModal
+    .classList
+    .remove('show');
+
+  els.dossierModal
+    .setAttribute(
+      'aria-hidden',
+      'true'
+    );
+
+  document.body
+    .classList
+    .remove('dossier-open');
+}
+
+async function toggleBestiaireNarration(
+  creature
+) {
+  if (!creature?.narration) {
+    return;
+  }
+
+  activeNarrationCreature =
+    creature;
+
+  const audio =
+    els.bestiaireNarration;
+
+  const audioUrl =
+    bestiaireAsset(
+      'audio',
+      creature.narration
+    );
+
+  if (
+    narrationLoadedUrl === audioUrl
+    && !audio.paused
+  ) {
+    audio.pause();
+
     bestiaireNarrationActive =
       false;
 
-    activeNarrationCreature =
-      null;
-
-    /*
-     * On remet le bouton de la carte
-     * dans son état initial AVANT
-     * de provoquer l'événement pause.
-     */
     if (activeStoryButton) {
       activeStoryButton.textContent =
-        'ÉCOUTER SON HISTOIRE';
+        '▶ REPRENDRE';
 
       activeStoryButton.disabled =
         false;
-
-      activeStoryButton =
-        null;
     }
 
-    narrationLoadedUrl =
-      null;
+    syncAmbientVolume();
 
-    els.bestiaireNarration.pause();
+    return;
+  }
 
-    els.bestiaireNarration
-      .removeAttribute('src');
+  try {
+    if (
+      narrationLoadedUrl
+      !== audioUrl
+    ) {
+      if (activeStoryButton) {
+        activeStoryButton.textContent =
+          '… CHARGEMENT…';
 
-    try {
-      els.bestiaireNarration.load();
+        activeStoryButton.disabled =
+          true;
+      }
+
+      await ensureRuntimeAsset(
+        audioUrl
+      );
+
+      if (
+        activeNarrationCreature
+        !== creature
+      ) {
+        return;
+      }
+
+      narrationLoadedUrl =
+        audioUrl;
+
+      audio.src =
+        audioUrl;
+
+      audio.preload =
+        'auto';
+
+      audio.load();
     }
 
-    catch (_) {}
+    stopSpecialAudio(
+      els.ritualAudio
+    );
 
-    els.dossierAudioIcon.textContent =
-      '▶';
+    stopSpecialAudio(
+      els.campAudio
+    );
 
-    els.dossierAudioLabel.textContent =
-      'ÉCOUTER LE DOSSIER';
-
-    els.dossierAudioProgressFill
-      .style.width =
-        '0%';
-
-    els.dossierAudioTime.textContent =
-      '0:00 / --:--';
-
-    els.dossierAudioBtn.disabled =
+    specialAudioActive =
       false;
+
+    if (
+      audio.ended
+      || (
+        Number.isFinite(
+          audio.duration
+        )
+        && audio.currentTime
+          >= audio.duration
+      )
+    ) {
+      audio.currentTime =
+        0;
+    }
+
+    bestiaireNarrationActive =
+      true;
+
+    if (activeStoryButton) {
+      activeStoryButton.textContent =
+        '⏸ PAUSE';
+
+      activeStoryButton.disabled =
+        false;
+    }
+
+    syncAmbientVolume();
+
+    await audio.play();
+  }
+
+  catch (_) {
+    bestiaireNarrationActive =
+      false;
+
+    if (activeStoryButton) {
+      activeStoryButton.textContent =
+        '▶ RÉESSAYER';
+
+      activeStoryButton.disabled =
+        false;
+    }
 
     syncAmbientVolume();
   }
+}
 
-  function openDossier(
-    creature
+function updateNarrationProgress() {
+  if (
+    !activeStoryProgressFill
+    || !activeStoryTime
   ) {
-    if (openCreatureEntry) {
-      const video =
-        openCreatureEntry
-          .querySelector(
-            '.creature-video'
-          );
+    return;
+  }
 
-      const stage =
-        openCreatureEntry
-          .querySelector(
-            '.creature-media-stage'
-          );
+  const audio =
+    els.bestiaireNarration;
 
-      const replayButton =
-        openCreatureEntry
-          .querySelector(
-            '.replay-btn'
-          );
+  const duration =
+    Number.isFinite(
+      audio.duration
+    )
+      ? audio.duration
+      : 0;
 
-      if (
-        video
-        && !video.paused
-      ) {
-        video.pause();
+  const current =
+    Number.isFinite(
+      audio.currentTime
+    )
+      ? audio.currentTime
+      : 0;
 
-        stage?.classList.remove(
-          'is-loading',
-          'is-playing'
+  const progress =
+    duration > 0
+      ? clamp(
+          (current / duration) * 100,
+          0,
+          100
+        )
+      : 0;
+
+  activeStoryProgressFill
+    .style.width =
+      `${progress}%`;
+
+  activeStoryTime.textContent =
+    `${formatTime(current)} / ${
+      duration
+        ? formatTime(duration)
+        : '--:--'
+    }`;
+}
+
+function setupBestiaire() {
+  if (
+    !els.bestiaireList
+    || !els.bestiaireSearch
+  ) {
+    return;
+  }
+
+  renderBestiaire('');
+
+  els.bestiaireSearch
+    .addEventListener(
+      'input',
+      () => {
+        renderBestiaire(
+          els.bestiaireSearch.value
         );
+      }
+    );
 
-        replayButton
-          ?.classList
-          .remove('hidden');
+  els.dossierClose
+    .addEventListener(
+      'click',
+      closeDossier
+    );
 
-        bestiaireVideoActive =
-          false;
+  els.dossierModal
+    .addEventListener(
+      'click',
+      event => {
+        if (
+          event.target
+          === els.dossierModal
+        ) {
+          closeDossier();
+        }
+      }
+    );
+
+  els.bestiaireNarration
+    .addEventListener(
+      'loadedmetadata',
+      updateNarrationProgress
+    );
+
+  els.bestiaireNarration
+    .addEventListener(
+      'durationchange',
+      updateNarrationProgress
+    );
+
+  els.bestiaireNarration
+    .addEventListener(
+      'timeupdate',
+      updateNarrationProgress
+    );
+
+  els.bestiaireNarration
+    .addEventListener(
+      'play',
+      () => {
+        bestiaireNarrationActive =
+          true;
+
+        if (activeStoryButton) {
+          activeStoryButton
+            .textContent =
+              '⏸ PAUSE';
+
+          activeStoryButton.disabled =
+            false;
+        }
 
         syncAmbientVolume();
       }
-    }
+    );
 
-    activeDossierCreature =
-      creature;
-
-    /*
-     * Une narration lancée depuis
-     * la carte est arrêtée lorsqu'on
-     * ouvre le dossier.
-     */
-    resetNarrationUI();
-
-    els.dossierTitle.textContent =
-      creature.name;
-
-    els.dossierLore.textContent =
-      creature.lore
-      || 'Aucune donnée disponible.';
-
-    els.dossierAudio
-      .classList
-      .toggle(
-        'hidden',
-        !creature.narration
-      );
-
-    els.dossierModal
-      .classList
-      .add('show');
-
-    els.dossierModal
-      .setAttribute(
-        'aria-hidden',
-        'false'
-      );
-
-    document.body
-      .classList
-      .add('dossier-open');
-
-    els.dossierClose.focus();
-  }
-
-  function closeDossier() {
-    if (!els.dossierModal) {
-      return;
-    }
-
-    resetNarrationUI();
-
-    activeDossierCreature =
-      null;
-
-    els.dossierModal
-      .classList
-      .remove('show');
-
-    els.dossierModal
-      .setAttribute(
-        'aria-hidden',
-        'true'
-      );
-
-    document.body
-      .classList
-      .remove('dossier-open');
-  }
-
-  async function toggleBestiaireNarration(
-    creature = activeDossierCreature
-  ) {
-    if (!creature?.narration) {
-      return;
-    }
-
-    activeNarrationCreature =
-      creature;
-
-    const audio =
-      els.bestiaireNarration;
-
-    const audioUrl =
-      bestiaireAsset(
-        'audio',
-        creature.narration
-      );
-
-    /*
-     * Même narration déjà en cours :
-     * un clic = PAUSE.
-     */
-    if (
-      narrationLoadedUrl === audioUrl
-      && !audio.paused
-    ) {
-      audio.pause();
-
-      bestiaireNarrationActive =
-        false;
-
-      els.dossierAudioIcon
-        .textContent =
-          '▶';
-
-      els.dossierAudioLabel
-        .textContent =
-          'REPRENDRE';
-
-      if (activeStoryButton) {
-        activeStoryButton.textContent =
-          'REPRENDRE';
-
-        activeStoryButton.disabled =
-          false;
-      }
-
-      syncAmbientVolume();
-
-      return;
-    }
-
-    try {
-      /*
-       * Nouvelle narration :
-       * téléchargement/cache puis
-       * chargement dans le lecteur.
-       */
-      if (
-        narrationLoadedUrl
-        !== audioUrl
-      ) {
-        els.dossierAudioBtn.disabled =
-          true;
-
-        els.dossierAudioIcon
-          .textContent =
-            '…';
-
-        els.dossierAudioLabel
-          .textContent =
-            'CHARGEMENT…';
-
-        if (activeStoryButton) {
-          activeStoryButton.textContent =
-            'CHARGEMENT…';
-
-          activeStoryButton.disabled =
-            true;
-        }
-
-        await ensureRuntimeAsset(
-          audioUrl
-        );
-
-        /*
-         * Pendant le chargement,
-         * l'utilisateur a peut-être
-         * fermé/changé de créature.
-         */
+  els.bestiaireNarration
+    .addEventListener(
+      'pause',
+      () => {
         if (
-          activeNarrationCreature
-          !== creature
+          els.bestiaireNarration
+            .ended
         ) {
           return;
         }
 
-        narrationLoadedUrl =
-          audioUrl;
-
-        audio.src =
-          audioUrl;
-
-        audio.preload =
-          'auto';
-
-        audio.load();
-      }
-
-      /*
-       * Aucun autre son spécial
-       * ne doit se superposer.
-       */
-      stopSpecialAudio(
-        els.ritualAudio
-      );
-
-      stopSpecialAudio(
-        els.campAudio
-      );
-
-      specialAudioActive =
-        false;
-
-      /*
-       * Après une narration terminée,
-       * un nouveau clic repart de zéro.
-       */
-      if (
-        audio.ended
-        || (
-          Number.isFinite(
-            audio.duration
-          )
-          && audio.currentTime
-            >= audio.duration
-        )
-      ) {
-        audio.currentTime =
-          0;
-      }
-
-      bestiaireNarrationActive =
-        true;
-
-      els.dossierAudioBtn.disabled =
-        false;
-
-      els.dossierAudioIcon
-        .textContent =
-          '⏸';
-
-      els.dossierAudioLabel
-        .textContent =
-          'PAUSE';
-
-      if (activeStoryButton) {
-        activeStoryButton.textContent =
-          'PAUSE';
-
-        activeStoryButton.disabled =
+        bestiaireNarrationActive =
           false;
+
+        if (activeStoryButton) {
+          activeStoryButton
+            .textContent =
+              '▶ REPRENDRE';
+
+          activeStoryButton.disabled =
+            false;
+        }
+
+        syncAmbientVolume();
       }
+    );
 
-      syncAmbientVolume();
-
-      await audio.play();
-    }
-
-    catch (_) {
-      bestiaireNarrationActive =
-        false;
-
-      els.dossierAudioBtn.disabled =
-        false;
-
-      els.dossierAudioIcon
-        .textContent =
-          '▶';
-
-      els.dossierAudioLabel
-        .textContent =
-          navigator.onLine
-            ? 'RÉESSAYER'
-            : 'INDISPONIBLE HORS LIGNE';
-
-      if (activeStoryButton) {
-        activeStoryButton.textContent =
-          'RÉESSAYER';
-
-        activeStoryButton.disabled =
+  els.bestiaireNarration
+    .addEventListener(
+      'ended',
+      () => {
+        bestiaireNarrationActive =
           false;
+
+        if (activeStoryButton) {
+          activeStoryButton
+            .textContent =
+              '↻ RÉÉCOUTER';
+
+          activeStoryButton.disabled =
+            false;
+        }
+
+        updateNarrationProgress();
+        syncAmbientVolume();
       }
+    );
 
-      syncAmbientVolume();
-    }
-  }
+  els.bestiaireNarration
+    .addEventListener(
+      'error',
+      () => {
+        bestiaireNarrationActive =
+          false;
 
-  function updateNarrationProgress() {
-    const audio =
-      els.bestiaireNarration;
-
-    const duration =
-      Number.isFinite(
-        audio.duration
-      )
-        ? audio.duration
-        : 0;
-
-    const current =
-      Number.isFinite(
-        audio.currentTime
-      )
-        ? audio.currentTime
-        : 0;
-
-    const progress =
-      duration > 0
-        ? clamp(
-            (current / duration) * 100,
-            0,
-            100
-          )
-        : 0;
-
-    els.dossierAudioProgressFill
-      .style.width =
-        `${progress}%`;
-
-    els.dossierAudioTime.textContent =
-      `${formatTime(current)} / ${
-        duration
-          ? formatTime(duration)
-          : '--:--'
-      }`;
-  }
-
-  function setupBestiaire() {
-    if (
-      !els.bestiaireList
-      || !els.bestiaireSearch
-    ) {
-      return;
-    }
-
-    renderBestiaire('');
-
-    els.bestiaireSearch
-      .addEventListener(
-        'input',
-        () => {
-          renderBestiaire(
-            els.bestiaireSearch.value
-          );
-        }
-      );
-
-    els.dossierClose
-      .addEventListener(
-        'click',
-        closeDossier
-      );
-
-    els.dossierModal
-      .addEventListener(
-        'click',
-        event => {
-          if (
-            event.target
-            === els.dossierModal
-          ) {
-            closeDossier();
-          }
-        }
-      );
-
-    /*
-     * IMPORTANT :
-     * on utilise une fonction intermédiaire
-     * pour éviter que l'événement click
-     * soit interprété comme une créature.
-     */
-    els.dossierAudioBtn
-      .addEventListener(
-        'click',
-        () => {
-          toggleBestiaireNarration();
-        }
-      );
-
-    els.bestiaireNarration
-      .addEventListener(
-        'loadedmetadata',
-        updateNarrationProgress
-      );
-
-    els.bestiaireNarration
-      .addEventListener(
-        'durationchange',
-        updateNarrationProgress
-      );
-
-    els.bestiaireNarration
-      .addEventListener(
-        'timeupdate',
-        updateNarrationProgress
-      );
-
-    els.bestiaireNarration
-      .addEventListener(
-        'play',
-        () => {
-          bestiaireNarrationActive =
-            true;
-
-          els.dossierAudioIcon
+        if (activeStoryButton) {
+          activeStoryButton
             .textContent =
-              '⏸';
+              '▶ RÉESSAYER';
 
-          els.dossierAudioLabel
-            .textContent =
-              'PAUSE';
-
-          if (activeStoryButton) {
-            activeStoryButton
-              .textContent =
-                'PAUSE';
-
-            activeStoryButton.disabled =
-              false;
-          }
-
-          syncAmbientVolume();
-        }
-      );
-
-    els.bestiaireNarration
-      .addEventListener(
-        'pause',
-        () => {
-          /*
-           * Si le fichier est arrivé
-           * naturellement à sa fin,
-           * l'événement ended s'en charge.
-           */
-          if (
-            els.bestiaireNarration
-              .ended
-          ) {
-            return;
-          }
-
-          bestiaireNarrationActive =
+          activeStoryButton.disabled =
             false;
-
-          if (activeStoryButton) {
-            activeStoryButton
-              .textContent =
-                'REPRENDRE';
-
-            activeStoryButton.disabled =
-              false;
-          }
-
-          syncAmbientVolume();
         }
-      );
 
-    els.bestiaireNarration
-      .addEventListener(
-        'ended',
-        () => {
-          bestiaireNarrationActive =
-            false;
-
-          els.dossierAudioIcon
-            .textContent =
-              '↻';
-
-          els.dossierAudioLabel
-            .textContent =
-              'RÉÉCOUTER';
-
-          if (activeStoryButton) {
-            activeStoryButton
-              .textContent =
-                'RÉÉCOUTER';
-
-            activeStoryButton.disabled =
-              false;
-          }
-
-          syncAmbientVolume();
-
-          updateNarrationProgress();
-        }
-      );
-
-    els.bestiaireNarration
-      .addEventListener(
-        'error',
-        () => {
-          bestiaireNarrationActive =
-            false;
-
-          els.dossierAudioBtn.disabled =
-            false;
-
-          els.dossierAudioIcon
-            .textContent =
-              '▶';
-
-          els.dossierAudioLabel
-            .textContent =
-              'RÉESSAYER';
-
-          if (activeStoryButton) {
-            activeStoryButton
-              .textContent =
-                'RÉESSAYER';
-
-            activeStoryButton.disabled =
-              false;
-          }
-
-          syncAmbientVolume();
-        }
-      );
-  }
+        syncAmbientVolume();
+      }
+    );
+}
   // =========================================================
   // PROFANATION / CAMP / NOUVELLE PARTIE
   // =========================================================
