@@ -2374,7 +2374,75 @@ if (!creature.video) {
           }
         };
 
-      const onEnded =
+     const onEnded =
+  () => {
+    if (
+      token !== bestiaireMediaToken
+      || openCreatureSlug
+        !== creature.slug
+    ) {
+      return;
+    }
+
+    stage.classList.remove(
+      'is-loading',
+      'is-playing'
+    );
+
+    replayButton
+      .classList
+      .remove('hidden');
+
+    bestiaireVideoActive =
+      false;
+
+    syncAmbientVolume();
+
+    /*
+     * Certaines créatures peuvent
+     * lancer automatiquement leur
+     * narration à la fin du WebM.
+     *
+     * Pour l'instant :
+     * uniquement la Gardienne.
+     */
+    if (
+      creature.autoNarrationAfterVideo
+      && creature.narration
+    ) {
+      const storyButton =
+        entry.querySelector(
+          '.story-btn'
+        );
+
+      const storyProgressFill =
+        entry.querySelector(
+          '.story-progress-fill'
+        );
+
+      const storyTime =
+        entry.querySelector(
+          '.story-time'
+        );
+
+      activeNarrationCreature =
+        creature;
+
+      activeStoryButton =
+        storyButton;
+
+      activeStoryProgressFill =
+        storyProgressFill;
+
+      activeStoryTime =
+        storyTime;
+
+      /*
+       * Petite attente pour laisser
+       * le fondu final revenir
+       * complètement sur la carte fixe.
+       */
+      setTimeout(
         () => {
           if (
             token !== bestiaireMediaToken
@@ -2384,20 +2452,14 @@ if (!creature.video) {
             return;
           }
 
-          stage.classList.remove(
-            'is-loading',
-            'is-playing'
+          toggleBestiaireNarration(
+            creature
           );
-
-          replayButton
-            .classList
-            .remove('hidden');
-
-          bestiaireVideoActive =
-            false;
-
-          syncAmbientVolume();
-        };
+        },
+        180
+      );
+    }
+  };
 
       const onError =
         () => {
