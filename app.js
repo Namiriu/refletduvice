@@ -229,8 +229,11 @@ campAudio: $('campAudio'),
   let openCreatureSlug = null;
   let openCreatureEntry = null;
   let bestiaireMediaToken = 0;
-  let activeDossierCreature = null;
-  let narrationLoadedUrl = null;
+let activeDossierCreature = null;
+let narrationLoadedUrl = null;
+
+let activeNarrationCreature = null;
+let activeStoryButton = null;
 
   const worldFromValue = value =>
     value >= THRESHOLD
@@ -1810,6 +1813,63 @@ storyButton.className =
 
 storyButton.textContent =
   'ÉCOUTER SON HISTOIRE';
+
+storyButton.addEventListener(
+  'click',
+  async event => {
+    event.stopPropagation();
+
+    if (!creature.narration) {
+      return;
+    }
+
+    if (
+      video
+      && !video.paused
+    ) {
+      video.pause();
+
+      stage.classList.remove(
+        'is-loading',
+        'is-playing',
+        'is-ending'
+      );
+
+      replayButton.classList.remove(
+        'hidden'
+      );
+
+      bestiaireVideoActive =
+        false;
+
+      syncAmbientVolume();
+    }
+
+    const audioUrl =
+      bestiaireAsset(
+        'audio',
+        creature.narration
+      );
+
+    if (
+      activeNarrationCreature
+      && narrationLoadedUrl
+        !== audioUrl
+    ) {
+      resetNarrationUI();
+    }
+
+    activeNarrationCreature =
+      creature;
+
+    activeStoryButton =
+      storyButton;
+
+    await toggleBestiaireNarration(
+      creature
+    );
+  }
+);
     
     actions.append(
   replayButton,
@@ -2236,6 +2296,20 @@ video.onerror =
     bestiaireNarrationActive =
       false;
 
+      activeNarrationCreature =
+    null;
+
+  if (activeStoryButton) {
+    activeStoryButton.textContent =
+      'ÉCOUTER SON HISTOIRE';
+
+    activeStoryButton.disabled =
+      false;
+
+    activeStoryButton =
+      null;
+  }
+
     narrationLoadedUrl =
       null;
 
@@ -2370,9 +2444,11 @@ video.onerror =
       .remove('dossier-open');
   }
 
-  async function toggleBestiaireNarration() {
-    const creature =
-      activeDossierCreature;
+async function toggleBestiaireNarration(
+  creature = activeDossierCreature
+) {
+  activeNarrationCreature =
+    creature;
 
     if (!creature?.narration) {
       return;
