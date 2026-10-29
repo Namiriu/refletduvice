@@ -583,6 +583,21 @@
       font-style:italic;
     }
 
+
+    .bestiaire-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .bestiaire-tool-btn{flex:1 1 190px;min-height:43px;padding:10px 12px;border:1px solid #4a3b3e;border-radius:10px;background:rgba(31,24,26,.92);color:#e1d1d3;font-family:var(--font-ui);font-size:12px;letter-spacing:.4px;cursor:pointer}
+    .bestiaire-tool-btn.secondary{flex:0 1 auto;background:rgba(17,17,19,.92);border-color:#37373c}
+    .recensement-panel{margin:0 0 12px;padding:13px;border:1px solid #403235;border-radius:10px;background:rgba(18,15,17,.93)}
+    .recensement-panel.hidden{display:none}
+    .recensement-label{display:block;margin-bottom:8px;color:#c7bfc0;font-size:13px}
+    .recensement-row{display:flex;gap:7px;flex-wrap:wrap}
+    .recensement-input{flex:1 1 180px;min-width:0;min-height:43px;padding:10px 12px;border:1px solid #38383d;border-radius:9px;outline:none;background:rgba(10,10,12,.88);color:#ededed;font-family:var(--font-body);font-size:16px}
+    .recensement-submit{min-height:43px;padding:10px 15px;border:1px solid #6b4449;border-radius:9px;background:#3b2529;color:#f0dedf;font-family:var(--font-ui);cursor:pointer}
+    .recensement-error{min-height:0;margin:8px 0 0;color:#d99595;font-size:12px;line-height:1.4}
+    .recensement-error:empty{display:none}
+    .creature-locked{background:rgba(15,15,17,.77);border-color:#28282c}
+    .creature-locked-label{min-height:49px;display:flex;align-items:center;padding:11px 13px;color:#76767b;font-family:var(--font-ui);font-size:12px;letter-spacing:.4px;user-select:none}
+
     /* Entrée repliée */
     .creature-entry{
       overflow:hidden;
@@ -1566,12 +1581,27 @@
           </p>
         </header>
 
+        <div class="bestiaire-toolbar">
+          <button id="btnRecenser" class="bestiaire-tool-btn" type="button" aria-controls="recensementPanel" aria-expanded="false">+ RECENSER UNE CRÉATURE</button>
+          <button id="btnBestiaireHelp" class="bestiaire-tool-btn secondary" type="button">ⓘ FONCTIONNEMENT DU BESTIAIRE</button>
+        </div>
+        <div id="recensementPanel" class="recensement-panel hidden">
+          <form id="recensementForm" autocomplete="off">
+            <label class="recensement-label" for="recensementInput">Nom complet de la créature rencontrée</label>
+            <div class="recensement-row">
+              <input id="recensementInput" class="recensement-input" type="text" maxlength="100" autocomplete="off" spellcheck="false" placeholder="Inscrire le nom de la carte…" />
+              <button class="recensement-submit" type="submit">RECENSER</button>
+            </div>
+            <p id="recensementError" class="recensement-error" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
         <div class="bestiaire-search-wrap">
           <input
             id="bestiaireSearch"
             class="bestiaire-search"
             type="search"
-            placeholder="Rechercher une créature…"
+            placeholder="Rechercher une créature recensée…"
             autocomplete="off"
             spellcheck="false"
             aria-label="Rechercher une créature">
@@ -1613,7 +1643,7 @@
       </div>
     </section>
 
-    <div id="version">v0.9.1 Playtest</div>
+    <div id="version">v0.9.3 Playtest</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
