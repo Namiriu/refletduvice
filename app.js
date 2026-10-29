@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.2 Playtest';
+  const VERSION = 'v0.9.3 Playtest';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -132,6 +132,12 @@ campAudio: $('campAudio'),
     installBtn: $('installBtn'),
     installClose: $('installClose'),
 
+    btnRecenser: $('btnRecenser'),
+    btnBestiaireHelp: $('btnBestiaireHelp'),
+    recensementPanel: $('recensementPanel'),
+    recensementForm: $('recensementForm'),
+    recensementInput: $('recensementInput'),
+    recensementError: $('recensementError'),
     bestiaireSearch: $('bestiaireSearch'),
     bestiaireMeta: $('bestiaireMeta'),
     bestiaireList: $('bestiaireList'),
@@ -195,6 +201,145 @@ bestiaireNarration: $('bestiaireNarration'),
       2
     )
   };
+
+
+  // Archives permanentes, indépendantes du compteur de parties.
+  const BESTIAIRE_UNLOCK_KEY = LSK('bestiaire_unlocked_v1');
+
+  function loadBestiaireUnlocks() {
+    try {
+      const data = JSON.parse(localStorage.getItem(BESTIAIRE_UNLOCK_KEY) || '[]');
+      return new Set(Array.isArray(data) ? data.filter(slug => typeof slug === 'string') : []);
+    } catch (_) {
+      return new Set();
+    }
+  }
+
+  let unlockedCreatureSlugs = loadBestiaireUnlocks();
+
+  function isCreatureUnlocked(creature) {
+    return unlockedCreatureSlugs.has(creature.slug);
+  }
+
+  function normalizeCreatureName(text) {
+    return String(text ?? '')
+      .toLocaleLowerCase('fr-FR')
+      .replace(/œ/g, 'oe')
+      .replace(/æ/g, 'ae')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  }
+
+  function creatureNameDistance(a, b) {
+    let previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+      const next = [i];
+      for (let j = 1; j <= b.length; j++) {
+        next[j] = Math.min(
+          next[j - 1] + 1,
+          previous[j] + 1,
+          previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+        );
+      }
+      previous = next;
+    }
+    return previous[b.length];
+  }
+
+  function matchRecensedCreature(input) {
+    const enteredName = normalizeCreatureName(input);
+    if (enteredName.length < 4 || enteredName.length > 80) return null;
+
+    const creatures = getBestiaireData();
+    const exact = creatures.filter(
+      creature => normalizeCreatureName(creature.name) === enteredName
+    );
+    if (exact.length === 1) return { creature: exact[0], approximate: false };
+    if (exact.length > 1) return null;
+
+    const maximumErrors = enteredName.length <= 9
+      ? 1
+      : enteredName.length <= 20 ? 2 : 3;
+
+    const matches = creatures
+      .map(creature => ({
+        creature,
+        distance: creatureNameDistance(
+          enteredName,
+          normalizeCreatureName(creature.name)
+        )
+      }))
+      .filter(match => match.distance <= maximumErrors);
+
+    // Pas de suggestion ni de proposition arbitraire en cas d'ambiguïté.
+    if (matches.length !== 1) return null;
+    return { creature: matches[0].creature, approximate: true };
+  }
+
+  function unlockCreature(creature) {
+    if (isCreatureUnlocked(creature)) {
+      showInfo('Déjà recensée', 'Cette créature figure déjà dans vos archives.');
+      return;
+    }
+    const next = new Set(unlockedCreatureSlugs);
+    next.add(creature.slug);
+    try {
+      localStorage.setItem(BESTIAIRE_UNLOCK_KEY, JSON.stringify([...next]));
+    } catch (_) {
+      showInfo(
+        'Sauvegarde impossible',
+        'Le navigateur ne permet pas de conserver la découverte. Vérifiez le stockage local avant de réessayer.'
+      );
+      return;
+    }
+    unlockedCreatureSlugs = next;
+    els.bestiaireSearch.value = '';
+    els.recensementInput.value = '';
+    els.recensementError.textContent = '';
+    els.recensementPanel.classList.add('hidden');
+    els.btnRecenser.setAttribute('aria-expanded', 'false');
+    renderBestiaire('');
+    showInfo(
+      'Créature recensée',
+      '« ' + creature.name + ' » est désormais accessible dans le Bestiaire.'
+    );
+  }
+
+  function submitRecensement(event) {
+    event.preventDefault();
+    const found = matchRecensedCreature(els.recensementInput.value);
+    if (!found) {
+      els.recensementError.textContent =
+        'Aucune correspondance certaine. Vérifiez le nom inscrit sur la carte.';
+      return;
+    }
+    els.recensementError.textContent = '';
+    if (isCreatureUnlocked(found.creature)) {
+      showInfo('Déjà recensée', 'Cette créature figure déjà dans vos archives.');
+      return;
+    }
+    if (found.approximate) {
+      showConfirm(
+        'Confirmer le recensement',
+        'Vous avez saisi un nom approchant. S’agit-il bien de « '
+          + found.creature.name + ' » ?',
+        () => unlockCreature(found.creature)
+      );
+      return;
+    }
+    unlockCreature(found.creature);
+  }
+
+  function buildLockedCreatureEntry() {
+    const entry = document.createElement('article');
+    entry.className = 'creature-entry creature-locked';
+    const label = document.createElement('div');
+    label.className = 'creature-locked-label';
+    label.textContent = '🔒 CRÉATURE NON RECENSÉE';
+    entry.appendChild(label);
+    return entry;
+  }
 
   let history = [];
   let pendingAction = null;
@@ -1488,9 +1633,7 @@ function syncAmbientVolume() {
     }
 
     els.bestiaireMeta.textContent =
-      total === 1
-        ? '1 créature recensée'
-        : `${total} créatures recensées`;
+      shown + ' / ' + total + ' créatures recensées';
   }
 
   function renderBestiaire(query = '') {
@@ -1507,17 +1650,13 @@ function syncAmbientVolume() {
     const normalizedQuery =
       normalizeSearch(query);
 
-    const shown =
-      normalizedQuery
-        ? all.filter(
-            creature =>
-              normalizeSearch(
-                creature.name
-              ).includes(
-                normalizedQuery
-              )
-          )
-        : all;
+    // Les noms inconnus ne doivent jamais apparaître dans les résultats.
+    const known = all.filter(isCreatureUnlocked);
+    const shown = normalizedQuery
+      ? known.filter(creature =>
+          normalizeSearch(creature.name).includes(normalizedQuery)
+        )
+      : all;
 
     els.bestiaireList.innerHTML =
       '';
@@ -1530,7 +1669,7 @@ function syncAmbientVolume() {
       );
 
     updateBestiaireMeta(
-      shown.length,
+      normalizedQuery ? shown.length : known.length,
       all.length,
       normalizedQuery
     );
@@ -1541,9 +1680,9 @@ function syncAmbientVolume() {
     ) {
       els.bestiaireList
         .appendChild(
-          buildCreatureEntry(
-            creature
-          )
+          isCreatureUnlocked(creature)
+            ? buildCreatureEntry(creature)
+            : buildLockedCreatureEntry()
         );
     }
   }
@@ -2937,6 +3076,29 @@ function setupBestiaire() {
   }
 
   renderBestiaire('');
+
+  els.btnRecenser.addEventListener('click', () => {
+    const showing = els.recensementPanel.classList.contains('hidden');
+    els.recensementPanel.classList.toggle('hidden', !showing);
+    els.btnRecenser.setAttribute('aria-expanded', String(showing));
+    els.recensementError.textContent = '';
+    if (showing) els.recensementInput.focus();
+  });
+
+  els.btnBestiaireHelp.addEventListener('click', () => {
+    showInfo(
+      'Fonctionnement du Bestiaire',
+      'Les 35 créatures sont initialement verrouillées.\n\n' +
+      'Lorsqu’une créature apparaît pendant votre partie, appuyez sur « RECENSER UNE CRÉATURE » puis saisissez son nom complet.\n\n' +
+      'Les accents, la casse et la ponctuation n’ont pas d’importance. Une petite faute peut nécessiter une confirmation.\n\n' +
+      'Les créatures découvertes restent accessibles, même après « Nouvelle partie ». Leur sauvegarde est locale à ce navigateur et peut disparaître si vous effacez les données du site.'
+    );
+  });
+
+  els.recensementForm.addEventListener('submit', submitRecensement);
+  els.recensementInput.addEventListener('input', () => {
+    els.recensementError.textContent = '';
+  });
 
   els.bestiaireSearch
     .addEventListener(
