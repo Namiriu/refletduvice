@@ -1633,7 +1633,9 @@ function syncAmbientVolume() {
     }
 
     els.bestiaireMeta.textContent =
-      shown + ' / ' + total + ' créatures recensées';
+      shown === 1
+        ? '1 créature recensée'
+        : `${shown} créatures recensées`;
   }
 
   function renderBestiaire(query = '') {
