@@ -1,4 +1,4 @@
-const CACHE = 'instability-v61';
+const CACHE = 'instability-v62';
 const RUNTIME_CACHE = 'instability-runtime-v1';
 
 const ASSETS = [
