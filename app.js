@@ -3093,7 +3093,7 @@ function setupBestiaire() {
       'Toutes les créatures sont initialement verrouillées.\n\n' +
       'Lorsqu’une créature apparaît pendant votre partie, appuyez sur « RECENSER UNE CRÉATURE » puis saisissez son nom complet.\n\n' +
       'Les accents, la casse et la ponctuation n’ont pas d’importance. Une petite faute peut nécessiter une confirmation.\n\n' +
-      'Les créatures recensées restent accessibles, y compris lorsque vous démarrez une nouvelle partie. Leur sauvegarde est locale à ce navigateur et peut disparaître si vous effacez les données du site.'
+      'Les créatures recensées restent accessibles, y compris lorsque vous démarrez une nouvelle partie. Votre progression est sauvegardée sur cet appareil. Elle peut être perdue si vous effacez les données de l’application ou du site.'
     );
   });
 
