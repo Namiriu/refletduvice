@@ -1388,9 +1388,9 @@
     /* =========================================================
        ÉVÉNEMENTS AUDIO — prototype du Masque
        ========================================================= */
-    .event-game-card{margin:10px 0;padding:13px 14px 15px;text-align:center}
+    .event-game-card{margin:10px 0;padding:12px 14px 13px;text-align:center}
     .event-game-heading{color:#e0cdce;font:14px var(--font-ui);letter-spacing:1.1px}
-    .event-game-status{min-height:19px;margin:8px 0 11px;color:#aaa0a3;font-size:15px}
+    .event-game-status{min-height:18px;margin:7px 0 9px;color:#aaa0a3;font-size:14px}
     .event-game-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
     .event-game-btn{min-height:44px;min-width:120px;padding:10px 13px;border:1px solid #68484d;border-radius:9px;background:#332327;color:#f0e6e8;font:12px var(--font-ui);cursor:pointer}
     .event-game-btn.secondary{border-color:#414147;background:#242429}
@@ -1404,6 +1404,30 @@
 
     .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:none;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate}
     .mask-event-overlay.show{display:flex}
+    .utility-controls{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+    .utility-controls .utility-btn{font-size:clamp(9px,2.35vw,12px);padding:7px 3px}
+    .utility-controls .event-test-btn{grid-column:1/-1;min-height:39px;border-color:#634148}
+    @media(max-width:340px){.utility-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .mask-event-overlay.has-result .mask-event-portrait{
+      width:min(35vw,128px);
+      height:min(21dvh,142px);
+      margin:0 auto 4px;
+      transition:height .45s ease,width .45s ease,margin .45s ease;
+    }
+    .mask-event-overlay.has-result .mask-event-content{padding:3px 8px 9px}
+    .mask-event-overlay.has-result .mask-event-status{font-size:15px;min-height:20px;margin:3px 0 6px}
+    .mask-event-overlay.has-result .mask-event-result{padding:9px 11px}
+    .mask-event-overlay.has-result .mask-event-effect{font-size:clamp(15px,3.8vw,18px);line-height:1.27;margin:3px 0 10px}
+    .mask-event-overlay.has-result .mask-event-inventory-label{margin-bottom:5px}
+    .mask-event-overlay.has-result .mask-event-backpack-halo{flex-basis:43px;width:43px;height:43px}
+    .mask-event-overlay.has-result .mask-event-backpack-halo img{width:29px;height:36px}
+    @media(max-height:630px){
+      .mask-event-overlay.has-result{padding:6px}
+      .mask-event-overlay.has-result .mask-event-content{max-height:calc(100dvh - 12px)}
+      .mask-event-overlay.has-result .mask-event-portrait{height:min(16dvh,103px);width:min(29vw,102px)}
+      .mask-event-overlay.has-result .mask-event-effect{font-size:15px;line-height:1.22}
+      .mask-event-overlay.has-result .mask-event-result{padding:6px 8px}
+    }
     .mask-event-content{width:min(100%,520px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:10px 12px 25px}
     .mask-event-kicker{margin:0;color:#b88d92;font:12px var(--font-ui);letter-spacing:2.4px}
     .mask-event-portrait{display:block;width:min(64vw,230px);height:min(50dvh,330px);object-fit:contain;margin:4px auto 12px;filter:drop-shadow(0 0 18px rgba(125,17,29,.25));animation:mask-event-arrival .8s ease-out both}
@@ -1532,16 +1556,16 @@
             aria-pressed="false">
             Plein écran
           </button>
+          <button id="btnPlayers" class="utility-btn" type="button">JOUEURS · 4/4</button>
+          <button id="btnTestMaskEvent" class="utility-btn event-test-btn hidden" type="button">TESTER LE MASQUE</button>
         </div>
       </section>
 
-      <section class="card event-game-card" aria-labelledby="eventGameHeading">
-        <h2 id="eventGameHeading" class="event-game-heading">INTERVENTIONS</h2>
-        <p id="eventGameStatus" class="event-game-status">En attente du début de partie.</p>
+      <section id="eventGameCard" class="card event-game-card" aria-labelledby="eventGameHeading">
+        <h2 id="eventGameHeading" class="event-game-heading">DÉBUT DE PARTIE</h2>
+        <p id="eventGameStatus" class="event-game-status">Lancez la partie lorsque tout le monde est prêt.</p>
         <div class="event-game-actions">
           <button id="btnStartEvents" class="event-game-btn" type="button">COMMENCER LA PARTIE</button>
-          <button id="btnPlayers" class="event-game-btn secondary" type="button">JOUEURS · 4/4</button>
-          <button id="btnTestMaskEvent" class="event-game-btn secondary hidden" type="button">TESTER LE MASQUE</button>
         </div>
       </section>
 
