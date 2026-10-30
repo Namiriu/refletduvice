@@ -5034,6 +5034,330 @@ syncMusicForActiveTab();
     }
   }
 
+
+  // =========================================================
+  // RADIO : APPEL, DÉPLACEMENT IMMÉDIAT, RÉSOLUTION
+  // =========================================================
+
+  function getRadioItem(id) {
+    return AUDIO_EVENTS.find(item => item.type === 'radio' && item.id === id);
+  }
+
+  function renderRadioMission() {
+    const mission = eventSession.radioMission;
+    const show = Boolean(eventSession.active && mission && isPartieTabActive()
+      && !currentRadioEvent && !gameOverShown && state.value < 100);
+    els.radioMissionTab.classList.toggle('hidden', !show);
+    if (!show) return;
+
+    const item = getRadioItem(mission.id);
+    els.radioMissionTitle.textContent = mission.stage === 'travel'
+      ? 'APPEL EN COURS — ' + (item ? item.destination : 'Lieu inconnu')
+      : 'TRANSMISSION — RÉSOLUTION EN ATTENTE';
+    els.radioMissionText.textContent = mission.stage === 'travel'
+      ? 'Rejoignez immédiatement le bâtiment indiqué. Appliquez les pénalités '
+        + 'habituelles de déplacement avant de confirmer votre arrivée.'
+      : mission.stage === 'resolving'
+        ? 'Vous êtes arrivés sur place. Écoutez le récit du narrateur pour '
+          + 'découvrir ce que vous avez trouvé.'
+        : 'La découverte a déjà eu lieu. Retrouvez la récompense et confirmez '
+          + 'sa distribution sans piocher deux fois.';
+    els.radioMissionArrived.textContent = mission.stage === 'travel'
+      ? 'NOUS Y SOMMES !'
+      : mission.stage === 'resolving'
+        ? 'ÉCOUTER LA RÉSOLUTION'
+        : 'VOIR LA RÉCOMPENSE';
+    els.radioMissionAbandon.textContent = mission.stage === 'travel'
+      ? 'ABANDONNER L’APPEL'
+      : 'ANNULER LA MISSION';
+  }
+
+  function closeRadioMissionPanel() {
+    els.radioMissionTab.classList.remove('is-open');
+    els.radioMissionPanel.classList.add('hidden');
+    els.radioMissionToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleRadioMissionPanel() {
+    if (!eventSession.radioMission || currentRadioEvent) return;
+    const isOpen = !els.radioMissionTab.classList.contains('is-open');
+    els.radioMissionTab.classList.toggle('is-open', isOpen);
+    els.radioMissionPanel.classList.toggle('hidden', !isOpen);
+    els.radioMissionToggle.setAttribute('aria-expanded', String(isOpen));
+  }
+
+  function dismissRadioEvent() {
+    radioEventToken += 1;
+    if (currentRadioEvent && currentRadioEvent.audio) {
+      const audio = currentRadioEvent.audio;
+      audio.pause();
+      audio.onended = null;
+      audio.onerror = null;
+    }
+    currentRadioEvent = null;
+    els.radioEventOverlay.classList.remove('show', 'is-speaking', 'is-resolution');
+    els.radioEventOverlay.setAttribute('aria-hidden', 'true');
+    els.radioEventPlay.classList.add('hidden');
+    els.radioEventSkip.classList.add('hidden');
+    els.radioEventAccept.classList.add('hidden');
+    els.radioEventIgnore.classList.add('hidden');
+    els.radioEventDone.classList.add('hidden');
+    specialAudioActive = false;
+    syncAmbientVolume();
+    renderEventControls();
+  }
+
+  function showRadioAudioFallback() {
+    const event = currentRadioEvent;
+    if (!event) return;
+    els.radioEventOverlay.classList.remove('is-speaking');
+    els.radioEventStatus.textContent =
+      'La lecture a été interrompue. Vous pouvez réessayer ou continuer sans audio.';
+    els.radioEventPlay.textContent = 'ÉCOUTER LA TRANSMISSION';
+    els.radioEventPlay.classList.remove('hidden');
+    els.radioEventSkip.classList.remove('hidden');
+  }
+
+  function playRadioEventAudio() {
+    const event = currentRadioEvent;
+    if (!event || !event.audio) return;
+    const token = event.token;
+    const audio = event.audio;
+    els.radioEventPlay.classList.add('hidden');
+    els.radioEventSkip.classList.add('hidden');
+    els.radioEventOverlay.classList.add('is-speaking');
+    els.radioEventStatus.textContent = event.phase === 'call'
+      ? 'Une voix traverse les parasites de la fréquence…'
+      : 'Vous découvrez enfin ce qui se cache derrière cet appel…';
+
+    audio.onended = () => {
+      if (!currentRadioEvent || currentRadioEvent.token !== token) return;
+      els.radioEventOverlay.classList.remove('is-speaking');
+      if (event.phase === 'call') {
+        showRadioCallChoices();
+      } else {
+        showRadioReward();
+      }
+    };
+    audio.onerror = () => {
+      if (currentRadioEvent && currentRadioEvent.token === token) {
+        showRadioAudioFallback();
+      }
+    };
+    try {
+      audio.play().catch(() => {
+        if (currentRadioEvent && currentRadioEvent.token === token) {
+          showRadioAudioFallback();
+        }
+      });
+    } catch (_) {
+      showRadioAudioFallback();
+    }
+  }
+
+  function beginRadioEvent(item, preview) {
+    if (!item || item.type !== 'radio' || !eventSession.active
+      || currentMaskEvent || currentRadioEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || document.visibilityState !== 'visible'
+      || !isPartieTabActive() || state.value >= 100
+      || (eventSession.radioMission
+        && eventSession.radioMission.stage !== 'travel')) return false;
+
+    pauseAudioEventClock();
+    const savedPreviewDelay = eventSession.remainingMs;
+
+    // Un appel entrant remplace définitivement la mission radio non terminée.
+    if (eventSession.radioMission) eventSession.radioMission = null;
+    closeRadioMissionPanel();
+    const token = ++radioEventToken;
+    const audio = new Audio(item.audio);
+    audio.preload = 'auto';
+    audio.volume = 1;
+    currentRadioEvent = {
+      token, item, audio, preview,
+      phase: 'call', savedPreviewDelay
+    };
+
+    if (!preview) {
+      eventSession.played.push(item.id);
+      eventSession.remainingMs = null;
+    }
+    saveAudioEventSession();
+
+    els.radioEventHeading.textContent = 'TRANSMISSION INTERCEPTÉE';
+    els.radioEventStatus.textContent = 'Une fréquence inconnue s’active…';
+    els.radioEventPlay.classList.add('hidden');
+    els.radioEventSkip.classList.add('hidden');
+    els.radioEventAccept.classList.add('hidden');
+    els.radioEventIgnore.classList.add('hidden');
+    els.radioEventDone.classList.add('hidden');
+    els.radioEventOverlay.classList.remove('is-resolution');
+    els.radioEventOverlay.classList.add('show');
+    els.radioEventOverlay.setAttribute('aria-hidden', 'false');
+
+    specialAudioActive = true;
+    silenceHauntSounds();
+    syncAmbientVolume();
+    renderEventControls();
+    playRadioEventAudio();
+    return true;
+  }
+
+  function showRadioCallChoices() {
+    if (!currentRadioEvent || currentRadioEvent.phase !== 'call') return;
+    els.radioEventStatus.textContent =
+      'Une voix demande de l’aide depuis la station de pompage.\\n'
+      + 'Répondre impose un déplacement immédiat jusqu’au bâtiment indiqué.';
+    els.radioEventPlay.classList.add('hidden');
+    els.radioEventSkip.classList.add('hidden');
+    els.radioEventAccept.classList.remove('hidden');
+    els.radioEventIgnore.classList.remove('hidden');
+    els.radioEventAccept.focus();
+  }
+
+  function answerRadioCall(accept) {
+    const event = currentRadioEvent;
+    if (!event || event.phase !== 'call' || event.answered) return;
+    event.answered = true;
+
+    if (accept) {
+      eventSession.radioMission = {
+        id: event.item.id, stage: 'travel', recipients: []
+      };
+    }
+    // Ignorer ne provoque aucune sanction : le groupe poursuit sa partie.
+    const delay = event.preview
+      ? event.savedPreviewDelay
+      : randomBetween(...EVENT_NEXT_DELAY);
+    dismissRadioEvent();
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+  }
+
+  function beginRadioResolution() {
+    const mission = eventSession.radioMission;
+    if (!mission || !eventSession.active
+      || !['resolving', 'reward'].includes(mission.stage)
+      || currentMaskEvent || currentRadioEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || document.visibilityState !== 'visible' || !isPartieTabActive()) {
+      return false;
+    }
+    const item = getRadioItem(mission.id);
+    if (!item) return false;
+
+    closeRadioMissionPanel();
+    const token = ++radioEventToken;
+    const audio = mission.stage === 'resolving'
+      ? new Audio(item.resolutionAudio) : null;
+    if (audio) {
+      audio.preload = 'auto';
+      audio.volume = 1;
+    }
+    currentRadioEvent = {
+      token, item, audio, phase: audio ? 'resolution' : 'reward'
+    };
+    els.radioEventHeading.textContent = 'LOCAL DE MAINTENANCE';
+    els.radioEventPlay.classList.add('hidden');
+    els.radioEventSkip.classList.add('hidden');
+    els.radioEventAccept.classList.add('hidden');
+    els.radioEventIgnore.classList.add('hidden');
+    els.radioEventDone.classList.add('hidden');
+    els.radioEventOverlay.classList.add('show', 'is-resolution');
+    els.radioEventOverlay.setAttribute('aria-hidden', 'false');
+
+    specialAudioActive = true;
+    silenceHauntSounds();
+    syncAmbientVolume();
+    renderEventControls();
+
+    if (audio) playRadioEventAudio();
+    else showRadioReward();
+    return true;
+  }
+
+  function radioMissionArrived() {
+    const mission = eventSession.radioMission;
+    if (!mission) return;
+    if (mission.stage === 'travel') {
+      mission.stage = 'resolving';
+      saveAudioEventSession();
+      renderRadioMission();
+    }
+    beginRadioResolution();
+  }
+
+  function showRadioReward() {
+    const event = currentRadioEvent;
+    const mission = eventSession.radioMission;
+    if (!event || !mission || mission.id !== event.item.id
+      || !['resolving', 'reward'].includes(mission.stage)) return;
+
+    // Le bénéficiaire est tiré une seule fois, même si la PWA est rechargée.
+    if (mission.stage !== 'reward') {
+      const pool = livingPlayerNumbers();
+      const chosen = [];
+      while (chosen.length < 2 && pool.length) {
+        chosen.push(pool.splice(randomBetween(0, pool.length - 1), 1)[0]);
+      }
+      mission.recipients = chosen;
+      mission.stage = 'reward';
+      saveAudioEventSession();
+    }
+
+    const recipients = mission.recipients;
+    els.radioEventOverlay.classList.remove('is-speaking');
+    els.radioEventStatus.textContent = recipients.length >= 2
+      ? 'Le local est vide… mais les affaires promises sont bien là.\\n\\n'
+        + 'JOUEUR ' + recipients[0] + ' et JOUEUR ' + recipients[1]
+        + ' : piochez chacun UNE carte Objet.\\n\\n'
+        + 'Les deux bénéficiaires ont été tirés au hasard.'
+      : recipients.length === 1
+        ? 'Le local est vide… mais le matériel est toujours là.\\n\\n'
+          + 'JOUEUR ' + recipients[0] + ' : pioche UNE carte Objet.'
+        : 'Le local est vide. Aucun survivant ne peut recevoir la récompense.';
+    els.radioEventPlay.classList.add('hidden');
+    els.radioEventSkip.classList.add('hidden');
+    els.radioEventDone.classList.remove('hidden');
+    els.radioEventDone.focus();
+  }
+
+  function finishRadioResolution() {
+    if (!currentRadioEvent || currentRadioEvent.phase === 'call') return;
+    const mission = eventSession.radioMission;
+    if (!mission || mission.stage !== 'reward') return;
+    eventSession.radioMission = null;
+    saveAudioEventSession();
+    dismissRadioEvent();
+    updateAudioEventClock();
+  }
+
+  function skipRadioAudio() {
+    const event = currentRadioEvent;
+    if (!event) return;
+    if (event.audio) {
+      event.audio.pause();
+      event.audio.onended = null;
+      event.audio.onerror = null;
+    }
+    els.radioEventOverlay.classList.remove('is-speaking');
+    if (event.phase === 'call') showRadioCallChoices();
+    else showRadioReward();
+  }
+
+  function abandonRadioMission() {
+    const mission = eventSession.radioMission;
+    if (!mission || currentRadioEvent) return;
+    eventSession.radioMission = null;
+    closeRadioMissionPanel();
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+  }
+
   // =========================================================
   // DÉMARRAGE / ÉVÉNEMENTS
   // =========================================================
