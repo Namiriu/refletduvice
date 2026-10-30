@@ -1402,15 +1402,16 @@
     .event-player-row[aria-pressed="true"] .event-player-state{color:#e5a4a8}
     .event-player-help{color:#b4adb1;font-size:15px;line-height:1.4;margin:0 0 15px}
 
-    .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:none;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate}
-    .mask-event-overlay.show{display:flex}
+    .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
+    .mask-event-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .65s ease}
+    .mask-event-overlay.closing{visibility:visible;opacity:0;pointer-events:none;transition:opacity .7s ease}
     .utility-controls{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
     .utility-controls .utility-btn{font-size:clamp(9px,2.35vw,12px);padding:7px 3px}
     .utility-controls .event-test-btn{grid-column:1/-1;min-height:39px;border-color:#634148}
     @media(max-width:340px){.utility-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .mask-event-overlay.has-result .mask-event-portrait{
-      width:min(35vw,128px);
-      height:min(21dvh,142px);
+      width:min(40vw,150px);
+      height:min(23dvh,157px);
       margin:0 auto 4px;
       transition:height .45s ease,width .45s ease,margin .45s ease;
     }
@@ -1496,6 +1497,14 @@
 
     <section id="tab-partie" class="tab-panel active" role="tabpanel">
 
+      <section id="eventGameCard" class="card event-game-card" aria-labelledby="eventGameHeading">
+        <h2 id="eventGameHeading" class="event-game-heading">DÉBUT DE PARTIE</h2>
+        <p id="eventGameStatus" class="event-game-status">Lancez la partie lorsque tout le monde est prêt.</p>
+        <div class="event-game-actions">
+          <button id="btnStartEvents" class="event-game-btn" type="button">COMMENCER LA PARTIE</button>
+        </div>
+      </section>
+
       <section class="card instability-card">
         <div class="instability-layout">
 
@@ -1559,14 +1568,6 @@
           </button>
           <button id="btnPlayers" class="utility-btn" type="button">JOUEURS · 4/4</button>
           <button id="btnTestMaskEvent" class="utility-btn event-test-btn hidden" type="button">TESTER LE MASQUE</button>
-        </div>
-      </section>
-
-      <section id="eventGameCard" class="card event-game-card" aria-labelledby="eventGameHeading">
-        <h2 id="eventGameHeading" class="event-game-heading">DÉBUT DE PARTIE</h2>
-        <p id="eventGameStatus" class="event-game-status">Lancez la partie lorsque tout le monde est prêt.</p>
-        <div class="event-game-actions">
-          <button id="btnStartEvents" class="event-game-btn" type="button">COMMENCER LA PARTIE</button>
         </div>
       </section>
 
