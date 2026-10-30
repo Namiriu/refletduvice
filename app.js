@@ -4714,16 +4714,100 @@ syncMusicForActiveTab();
   }
 
   function showMaskEventResult(token, audioUnavailable = false) {
-    if (!currentMaskEvent || currentMaskEvent.token !== token) return;
-    const player = currentMaskEvent.player;
+    if (!currentMaskEvent || currentMaskEvent.token !== token
+      || currentMaskEvent.intro) return;
+
+    const running = currentMaskEvent;
+    const player = running.player;
     els.maskEventStatus.textContent = audioUnavailable
       ? 'Audio indisponible — appliquez la conséquence ci-dessous.'
       : 'Le Masque a prononcé sa sentence.';
     els.maskEventPlay.classList.add('hidden');
-    els.maskEventEffect.textContent =
-      'Joueur ' + player + ' : mélange face cachée toutes les cartes rangées dans tes emplacements de sac à dos et défausse-en une au hasard.\n\nTon arme et ton armure équipées ne sont pas concernées. Si ton sac est vide, aucun effet.';
+    els.maskEventInventoryLabel.classList.toggle(
+      'hidden', running.item.id !== 'masque-001'
+    );
+    els.maskEventChoices.classList.add('hidden');
+    els.maskEventDone.classList.remove('hidden');
+
+    if (running.item.id === 'masque-002') {
+      // La baisse est automatique à la fin du discours.
+      // Le franchissement du seuil de 50% sera annoncé APRÈS
+      // la fermeture du Masque, jamais par-dessus sa voix.
+      if (!running.effectApplied) {
+        running.effectApplied = true;
+        const before = state.value;
+        const effect = applyInstabilityDelta(-5, {
+          source: 'Le Masque — Un élan de générosité',
+          deferThreshold: true,
+          deferGameOver: true
+        });
+        running.deferredThreshold = [before, state.value];
+        running.actualChange = effect.actual;
+      }
+      const before = running.deferredThreshold[0];
+      const after = running.deferredThreshold[1];
+      els.maskEventEffect.textContent =
+        'Le Masque a réduit l’Instabilité mentale collective de 5 points.\\n\\n'
+        + before + '% → ' + after + ' %. Aucun bouton à utiliser.';
+    } else if (running.item.id === 'masque-003') {
+      els.maskEventEffect.textContent =
+        'Joueur ' + player + ', à toi de décider.\\n\\n'
+        + '1. Subis 1 blessure ET passe ton prochain tour.\\n'
+        + '2. Évite ces pénalités, mais inflige +15 points d’Instabilité au groupe.';
+      els.maskEventChoices.classList.remove('hidden');
+      els.maskEventDone.classList.add('hidden');
+    } else {
+      els.maskEventEffect.textContent =
+        'Joueur ' + player
+        + ' : mélange face cachée toutes les cartes rangées dans tes emplacements '
+        + 'de sac à dos et défausse-en une au hasard.\\n\\n'
+        + 'Ton arme et ton armure équipées ne sont pas concernées. '
+        + 'Si ton sac est vide, aucun effet.';
+    }
+
     els.maskEventResult.classList.remove('hidden');
     els.maskEventOverlay.classList.add('has-result');
+    if (running.item.id === 'masque-003') {
+      els.maskChoiceSelf.focus();
+    } else {
+      els.maskEventDone.focus();
+    }
+  }
+
+  function chooseMaskSacrifice(option) {
+    const running = currentMaskEvent;
+    if (!running || running.intro || running.item.id !== 'masque-003'
+      || running.choiceMade || !['self', 'group'].includes(option)) return;
+
+    running.choiceMade = option;
+    els.maskEventChoices.classList.add('hidden');
+    els.maskEventDone.classList.remove('hidden');
+
+    if (option === 'self') {
+      els.maskEventEffect.textContent =
+        'Joueur ' + running.player + ' : tu te sacrifies.\\n\\n'
+        + 'Subis 1 blessure et passe ton prochain tour. '
+        + 'Appliquez ces deux conséquences sur le plateau.\\n\\n'
+        + 'L’Instabilité collective ne change pas.';
+    } else {
+      const before = state.value;
+      const effect = applyInstabilityDelta(15, {
+        source: 'Le Masque — Le Prix du sacrifice (groupe)',
+        deferThreshold: true,
+        deferGameOver: true
+      });
+      running.deferredThreshold = [before, state.value];
+      running.deferredGameOver = effect.gameOver;
+      els.maskEventEffect.textContent =
+        'Joueur ' + running.player + ' : le groupe paie.\\n\\n'
+        + 'Instabilité collective : ' + before + '% → ' + state.value
+        + '% (+' + effect.actual + ' points).\\n\\n'
+        + (effect.gameOver
+          ? 'Le seuil de 100 % est atteint : la fin de partie sera déclenchée '
+            + 'après la fermeture de cette fenêtre.'
+          : 'Aucune blessure ni perte de tour pour le joueur désigné.');
+    }
+
     els.maskEventDone.focus();
   }
 
