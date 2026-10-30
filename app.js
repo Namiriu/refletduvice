@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.6 Événements (test)';
+  const VERSION = 'v0.9.7 Événements (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -405,6 +405,7 @@ bestiaireNarration: $('bestiaireNarration'),
   let eventDueAt = null;
   let currentMaskEvent = null;
   let eventAudioGapTimer = null;
+  let maskClosingTimer = null;
   let maskEventToken = 0;
 
 
@@ -4511,7 +4512,9 @@ syncMusicForActiveTab();
     els.maskEventTitle.textContent = 'Le Masque';
     els.maskEventPortrait.src = getMaskState(state.value).src;
     els.maskEventStatus.textContent = 'Le Masque vous accueille…';
-    els.maskEventOverlay.classList.remove('has-result');
+    clearTimeout(maskClosingTimer);
+    maskClosingTimer = null;
+    els.maskEventOverlay.classList.remove('closing', 'has-result');
     els.maskEventPlay.classList.add('hidden');
     els.maskIntroSkip.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
@@ -4543,10 +4546,12 @@ syncMusicForActiveTab();
     }, 850);
   }
 
-  function dismissMaskEvent() {
+  function dismissMaskEvent(immediate = false) {
     maskEventToken += 1;
     clearTimeout(eventAudioGapTimer);
     eventAudioGapTimer = null;
+    clearTimeout(maskClosingTimer);
+    maskClosingTimer = null;
 
     if (currentMaskEvent) {
       currentMaskEvent.audios.forEach(audio => {
@@ -4557,8 +4562,22 @@ syncMusicForActiveTab();
     }
 
     currentMaskEvent = null;
-    els.maskEventOverlay.classList.remove('show', 'has-result');
-    els.maskEventOverlay.setAttribute('aria-hidden', 'true');
+    const overlay = els.maskEventOverlay;
+
+    // Le Masque s'efface en douceur, au lieu de disparaître d'un coup.
+    // Les resets et les fins de partie peuvent le fermer immédiatement.
+    if (immediate || !overlay.classList.contains('show')) {
+      overlay.classList.remove('show', 'closing', 'has-result');
+    } else {
+      overlay.classList.add('closing');
+      overlay.classList.remove('show');
+      maskClosingTimer = setTimeout(() => {
+        maskClosingTimer = null;
+        overlay.classList.remove('closing', 'has-result');
+      }, REDUCED_MOTION ? 0 : 740);
+    }
+
+    overlay.setAttribute('aria-hidden', 'true');
     els.maskEventPlay.classList.add('hidden');
     els.maskIntroSkip.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
@@ -4568,7 +4587,7 @@ syncMusicForActiveTab();
 
   function resetAudioEventSession() {
     pauseAudioEventClock();
-    dismissMaskEvent();
+    dismissMaskEvent(true);
     eventSession.active = false;
     eventSession.introPlayed = false;
     eventSession.alive = [true, true, true, true];
@@ -4581,7 +4600,7 @@ syncMusicForActiveTab();
   function stopAudioEventsForGameOver() {
     if (!eventSession.active && !currentMaskEvent) return;
     pauseAudioEventClock();
-    dismissMaskEvent();
+    dismissMaskEvent(true);
     eventSession.active = false;
     eventSession.remainingMs = null;
     saveAudioEventSession();
@@ -4631,7 +4650,9 @@ syncMusicForActiveTab();
     els.maskEventTitle.textContent = 'Le Masque';
     els.maskEventPortrait.src = getMaskState(state.value).src;
     els.maskEventStatus.textContent = 'Le Masque prend la parole…';
-    els.maskEventOverlay.classList.remove('has-result');
+    clearTimeout(maskClosingTimer);
+    maskClosingTimer = null;
+    els.maskEventOverlay.classList.remove('closing', 'has-result');
     els.maskIntroSkip.classList.add('hidden');
     els.maskEventPlay.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
