@@ -1436,6 +1436,7 @@
     .mask-event-result{padding:13px 14px;border:1px solid #644247;border-radius:12px;background:rgba(24,16,19,.88)}
     .mask-event-effect{margin:5px 0 13px;color:#f4e8e8;font-size:20px;line-height:1.4;white-space:pre-line}
     .mask-event-cta{min-height:46px;padding:10px 16px;border:1px solid #91545c;border-radius:9px;background:#44252b;color:#fff;font:12px var(--font-ui);cursor:pointer}
+    .mask-event-skip{display:block;margin:9px auto 0;background:transparent;border-color:#554044;color:#c3adb1;font-size:11px}
     .mask-event-visually-hidden{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
     .mask-event-inventory-label{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 12px;color:#e8cace;font:clamp(12px,3.4vw,15px) var(--font-ui);letter-spacing:.4px}
     .mask-event-backpack-halo{display:flex;align-items:center;justify-content:center;flex:0 0 54px;width:54px;height:54px;border:1px solid rgba(156,60,70,.45);border-radius:50%;background:radial-gradient(circle,rgba(151,26,39,.58) 0,rgba(92,16,27,.35) 45%,rgba(22,9,12,.58) 80%);box-shadow:0 0 17px rgba(155,30,42,.20),inset 0 0 11px rgba(169,30,45,.21)}
@@ -1837,6 +1838,7 @@
       <h2 id="maskEventTitle" class="mask-event-title mask-event-visually-hidden">Le Masque</h2>
       <p id="maskEventStatus" class="mask-event-status" aria-live="polite">Le Masque prend la parole…</p>
       <button id="maskEventPlay" class="mask-event-cta hidden" type="button">ÉCOUTER LE MASQUE</button>
+      <button id="maskIntroSkip" class="mask-event-cta mask-event-skip hidden" type="button">PASSER L’INTRODUCTION</button>
       <div id="maskEventResult" class="mask-event-result hidden">
         <div class="mask-event-inventory-label">
           <span class="mask-event-backpack-halo" aria-hidden="true">
