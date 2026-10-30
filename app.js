@@ -606,6 +606,12 @@ function useOfflineBestiaireMusicFallback() {
 }
 
 function syncAmbientVolume() {
+  if (!state.musicOn) {
+    fadeAudioVolume(els.ambient, 0);
+    fadeAudioVolume(els.bestiaireAmbient, 0);
+    return;
+  }
+
   const bestiaireActive =
     isBestiaireTabActive();
 
@@ -4599,7 +4605,7 @@ syncMusicForActiveTab();
       : 'Le Masque a prononcé sa sentence.';
     els.maskEventPlay.classList.add('hidden');
     els.maskEventEffect.textContent =
-      'Joueur ' + player + ' : mélange face cachée toutes les cartes rangées dans tes emplacements de sac à dos et défausses-en une au hasard.\n\nTon arme et ton armure équipées ne sont pas concernées. Si ton sac est vide, aucun effet.';
+      'Joueur ' + player + ' : mélange face cachée toutes les cartes rangées dans tes emplacements de sac à dos et défausse-en une au hasard.\n\nTon arme et ton armure équipées ne sont pas concernées. Si ton sac est vide, aucun effet.';
     els.maskEventResult.classList.remove('hidden');
     els.maskEventDone.focus();
   }
