@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.7 Événements (test)';
+  const VERSION = 'v0.9.8 Événements (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -114,6 +114,7 @@ campAudio: $('campAudio'),
     btnStartEvents: $('btnStartEvents'),
     btnPlayers: $('btnPlayers'),
     btnTestMaskEvent: $('btnTestMaskEvent'),
+    testMaskEventSelect: $('testMaskEventSelect'),
     eventGameStatus: $('eventGameStatus'),
     playersModal: $('playersModal'),
     playersClose: $('playersClose'),
@@ -126,6 +127,10 @@ campAudio: $('campAudio'),
     maskIntroSkip: $('maskIntroSkip'),
     maskEventResult: $('maskEventResult'),
     maskEventEffect: $('maskEventEffect'),
+    maskEventInventoryLabel: $('maskEventInventoryLabel'),
+    maskEventChoices: $('maskEventChoices'),
+    maskChoiceSelf: $('maskChoiceSelf'),
+    maskChoiceGroup: $('maskChoiceGroup'),
     maskEventDone: $('maskEventDone'),
 
     actionModal: $('actionModal'),
@@ -398,6 +403,21 @@ bestiaireNarration: $('bestiaireNarration'),
       title: 'LE COLLECTIONNEUR',
       audio: 'audio/events/masque/interventions/masque-001-collectionneur.mp3',
       target: 'joueur-vivant'
+    },
+    {
+      id: 'masque-002',
+      type: 'masque',
+      title: 'UN ÉLAN DE GÉNÉROSITÉ',
+      audio: 'audio/events/masque/interventions/masque-002-elan-de-generosite.mp3',
+      target: 'joueur-vivant',
+      minInstability: 5
+    },
+    {
+      id: 'masque-003',
+      type: 'masque',
+      title: 'LE PRIX DU SACRIFICE',
+      audio: 'audio/events/masque/interventions/masque-003-prix-du-sacrifice.mp3',
+      target: 'joueur-vivant'
     }
   ];
   const eventSession = readAudioEventSession();
@@ -406,6 +426,7 @@ bestiaireNarration: $('bestiaireNarration'),
   let currentMaskEvent = null;
   let eventAudioGapTimer = null;
   let maskClosingTimer = null;
+  let maskDeferredOutcomeTimer = null;
   let maskEventToken = 0;
 
 
@@ -4343,6 +4364,12 @@ syncMusicForActiveTab();
     return AUDIO_EVENTS.filter(item => !eventSession.played.includes(item.id));
   }
 
+  function eligibleAudioEvents() {
+    return unusedAudioEvents().filter(item =>
+      state.value >= (item.minInstability || 0)
+    );
+  }
+
   function livingPlayerNumbers() {
     return eventSession.alive.reduce((list, alive, index) => {
       if (alive) list.push(index + 1);
@@ -4360,9 +4387,18 @@ syncMusicForActiveTab();
     els.eventGameStatus.textContent = 'Lancez la partie lorsque tout le monde est prêt.';
 
     // Les interventions déjà jouées ne sont jamais révélées aux joueurs.
-    els.btnTestMaskEvent.classList.toggle('hidden', !EVENT_TEST_MODE || !eventSession.active);
+    const showDebug = EVENT_TEST_MODE && eventSession.active;
+    els.btnTestMaskEvent.classList.toggle('hidden', !showDebug);
+    els.testMaskEventSelect.classList.toggle('hidden', !showDebug);
+    const testEvent = AUDIO_EVENTS.find(item =>
+      item.id === els.testMaskEventSelect.value
+    ) || AUDIO_EVENTS[0];
+    const locked = state.value < (testEvent.minInstability || 0);
+    els.btnTestMaskEvent.textContent = locked
+      ? 'TEST : MINIMUM ' + testEvent.minInstability + '%'
+      : 'TESTER LE MASQUE';
     els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
-      || alive === 0 || state.value >= 100;
+      || alive === 0 || state.value >= 100 || locked;
   }
 
   function renderPlayerStatuses() {
@@ -4422,7 +4458,7 @@ syncMusicForActiveTab();
       && isPartieTabActive()
       && currentMaskEvent === null
       && livingPlayerNumbers().length > 0
-      && unusedAudioEvents().length > 0;
+      && eligibleAudioEvents().length > 0;
   }
 
   function updateAudioEventClock() {
@@ -4465,7 +4501,7 @@ syncMusicForActiveTab();
       return;
     }
 
-    const candidates = unusedAudioEvents().filter(
+    const candidates = eligibleAudioEvents().filter(
       item => item.type === 'masque'
     );
     if (candidates.length === 0) return;
@@ -4929,10 +4965,15 @@ syncMusicForActiveTab();
     els.btnStartEvents.addEventListener('click', startAudioEvents);
     els.btnPlayers.addEventListener('click', openPlayersModal);
     els.playersClose.addEventListener('click', closePlayersModal);
+    els.testMaskEventSelect.addEventListener('change', renderEventControls);
     els.btnTestMaskEvent.addEventListener('click', () => {
       // Disponible uniquement avec ?test-events=1, sur la branche de test.
       if (!EVENT_TEST_MODE) return;
-      beginMaskEvent(AUDIO_EVENTS[0], true);
+      const selected = AUDIO_EVENTS.find(item =>
+        item.id === els.testMaskEventSelect.value
+      );
+      if (!selected || state.value < (selected.minInstability || 0)) return;
+      beginMaskEvent(selected, true);
     });
     els.maskEventPlay.addEventListener('click', resumeMaskEventAudio);
     els.maskIntroSkip.addEventListener('click', () => finishMaskIntroduction(true));
