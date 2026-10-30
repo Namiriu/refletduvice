@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.8 Événements (test)';
+  const VERSION = 'v0.9.9 Événements (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -368,6 +368,7 @@ bestiaireNarration: $('bestiaireNarration'),
 
   let gameOverShown = false;
   let alertTimer = null;
+  const activeHauntSounds = new Set();
   let passiveTimer = null;
   let maskDisturbanceTimer = null;
   let maskTransitionTimer = null;
@@ -3793,18 +3794,33 @@ window.addEventListener(
   }
 
   function playRandomHauntSfx() {
-    const src =
-      HAUNT.sfx[
-        Math.floor(
-          Math.random()
-          * HAUNT.sfx.length
-        )
-      ];
+    // Les manifestations ne peuvent pas démarrer sous une intervention.
+    if (specialAudioActive || currentMaskEvent) return;
 
-    playOneShot(
-      src,
-      HAUNT.volume
-    );
+    const src = HAUNT.sfx[
+      Math.floor(Math.random() * HAUNT.sfx.length)
+    ];
+    const audio = playOneShot(src, HAUNT.volume);
+    activeHauntSounds.add(audio);
+
+    const release = () => activeHauntSounds.delete(audio);
+    audio.addEventListener('ended', release, { once: true });
+    audio.addEventListener('error', release, { once: true });
+  }
+
+  function silenceHauntSounds() {
+    // Un corbeau ayant commencé 50 ms AVANT l'intervention doit
+    // aussi s'effacer, pas seulement les sons futurs.
+    for (const audio of activeHauntSounds) {
+      if (audio.paused || audio.ended) {
+        activeHauntSounds.delete(audio);
+        continue;
+      }
+      fadeAudioVolume(audio, 0, 150).then(() => {
+        audio.pause();
+        activeHauntSounds.delete(audio);
+      });
+    }
   }
 
   function maybeHaunt() {
@@ -4569,6 +4585,7 @@ syncMusicForActiveTab();
     els.maskEventOverlay.setAttribute('aria-hidden', 'false');
 
     specialAudioActive = true;
+    silenceHauntSounds();
     syncAmbientVolume();
     renderEventControls();
     playMaskEventSegment(0, token);
@@ -4711,6 +4728,7 @@ syncMusicForActiveTab();
     els.maskEventOverlay.setAttribute('aria-hidden', 'false');
 
     specialAudioActive = true;
+    silenceHauntSounds();
     syncAmbientVolume();
     renderEventControls();
     playMaskEventSegment(0, token);
