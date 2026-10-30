@@ -4134,6 +4134,7 @@ window.addEventListener(
 
 syncMusicForActiveTab();
           updateAudioEventClock();
+          renderRadioMission();
         }
       );
     }
@@ -4729,7 +4730,7 @@ syncMusicForActiveTab();
   function stopAudioEventsForGameOver() {
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
-    if (!eventSession.active && !currentMaskEvent) return;
+    if (!eventSession.active && !currentMaskEvent && !currentRadioEvent) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
     dismissRadioEvent(true);
@@ -5024,6 +5025,12 @@ syncMusicForActiveTab();
 
   function handleAudioEventVisibility() {
     updateAudioEventClock();
+    if (currentRadioEvent && document.visibilityState === 'hidden'
+      && currentRadioEvent.audio
+      && !currentRadioEvent.audio.paused) {
+      currentRadioEvent.audio.pause();
+      showRadioAudioFallback();
+    }
     if (!currentMaskEvent || document.visibilityState !== 'hidden') return;
     const running = currentMaskEvent;
     if (running.activeAudio && !running.activeAudio.paused) {
@@ -5207,7 +5214,7 @@ syncMusicForActiveTab();
   function showRadioCallChoices() {
     if (!currentRadioEvent || currentRadioEvent.phase !== 'call') return;
     els.radioEventStatus.textContent =
-      'Une voix demande de l’aide depuis la station de pompage.\\n'
+      'Une voix demande de l’aide depuis la station de pompage.\n'
       + 'Répondre impose un déplacement immédiat jusqu’au bâtiment indiqué.';
     els.radioEventPlay.classList.add('hidden');
     els.radioEventSkip.classList.add('hidden');
@@ -5311,12 +5318,12 @@ syncMusicForActiveTab();
     const recipients = mission.recipients;
     els.radioEventOverlay.classList.remove('is-speaking');
     els.radioEventStatus.textContent = recipients.length >= 2
-      ? 'Le local est vide… mais les affaires promises sont bien là.\\n\\n'
+      ? 'Le local est vide… mais les affaires promises sont bien là.\n\n'
         + 'JOUEUR ' + recipients[0] + ' et JOUEUR ' + recipients[1]
-        + ' : piochez chacun UNE carte Objet.\\n\\n'
+        + ' : piochez chacun UNE carte Objet.\n\n'
         + 'Les deux bénéficiaires ont été tirés au hasard.'
       : recipients.length === 1
-        ? 'Le local est vide… mais le matériel est toujours là.\\n\\n'
+        ? 'Le local est vide… mais le matériel est toujours là.\n\n'
           + 'JOUEUR ' + recipients[0] + ' : pioche UNE carte Objet.'
         : 'Le local est vide. Aucun survivant ne peut recevoir la récompense.';
     els.radioEventPlay.classList.add('hidden');
@@ -5519,6 +5526,15 @@ syncMusicForActiveTab();
     els.maskChoiceSelf.addEventListener('click', () => chooseMaskSacrifice('self'));
     els.maskChoiceGroup.addEventListener('click', () => chooseMaskSacrifice('group'));
     els.maskEventDone.addEventListener('click', completeMaskEvent);
+
+    els.radioMissionToggle.addEventListener('click', toggleRadioMissionPanel);
+    els.radioMissionArrived.addEventListener('click', radioMissionArrived);
+    els.radioMissionAbandon.addEventListener('click', abandonRadioMission);
+    els.radioEventPlay.addEventListener('click', playRadioEventAudio);
+    els.radioEventSkip.addEventListener('click', skipRadioAudio);
+    els.radioEventAccept.addEventListener('click', () => answerRadioCall(true));
+    els.radioEventIgnore.addEventListener('click', () => answerRadioCall(false));
+    els.radioEventDone.addEventListener('click', finishRadioResolution);
 
 
     els.audioToggle
