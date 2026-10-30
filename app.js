@@ -1212,7 +1212,9 @@ function syncAmbientVolume() {
     delta,
     {
       source = 'Ajustement',
-      haunt = false
+      haunt = false,
+      deferThreshold = false,
+      deferGameOver = false
     } = {}
   ) {
     if (
@@ -1244,18 +1246,27 @@ function syncAmbientVolume() {
         source
       );
 
-      handleThresholdTransition(
-        before,
-        state.value
-      );
+      if (!deferThreshold) {
+        handleThresholdTransition(
+          before,
+          state.value
+        );
+      }
 
       microEffect();
     }
 
     render();
 
-    const gameOver =
-      checkGameOver();
+    const gameOver = deferGameOver
+      ? state.value >= 100
+      : checkGameOver();
+
+    // Un changement manuel d'Instabilité peut rendre de nouveau
+    // possible un événement positif suspendu faute d'effet utile.
+    if (eventSession.active && !currentMaskEvent) {
+      updateAudioEventClock();
+    }
 
     if (
       haunt
