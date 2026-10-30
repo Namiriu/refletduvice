@@ -4577,7 +4577,7 @@ syncMusicForActiveTab();
     els.maskEventStatus.textContent = 'Le Masque vous accueille…';
     clearTimeout(maskClosingTimer);
     maskClosingTimer = null;
-    els.maskEventOverlay.classList.remove('closing', 'has-result', 'has-choices');
+    els.maskEventOverlay.classList.remove('closing', 'has-result', 'has-choices', 'has-generosity');
     els.maskEventPlay.classList.add('hidden');
     els.maskIntroSkip.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
@@ -4631,13 +4631,13 @@ syncMusicForActiveTab();
     // Le Masque s'efface en douceur, au lieu de disparaître d'un coup.
     // Les resets et les fins de partie peuvent le fermer immédiatement.
     if (immediate || !overlay.classList.contains('show')) {
-      overlay.classList.remove('show', 'closing', 'has-result', 'has-choices');
+      overlay.classList.remove('show', 'closing', 'has-result', 'has-choices', 'has-generosity');
     } else {
       overlay.classList.add('closing');
       overlay.classList.remove('show');
       maskClosingTimer = setTimeout(() => {
         maskClosingTimer = null;
-        overlay.classList.remove('closing', 'has-result', 'has-choices');
+        overlay.classList.remove('closing', 'has-result', 'has-choices', 'has-generosity');
       }, REDUCED_MOTION ? 0 : 740);
     }
 
@@ -4720,7 +4720,7 @@ syncMusicForActiveTab();
     els.maskEventStatus.textContent = 'Le Masque prend la parole…';
     clearTimeout(maskClosingTimer);
     maskClosingTimer = null;
-    els.maskEventOverlay.classList.remove('closing', 'has-result', 'has-choices');
+    els.maskEventOverlay.classList.remove('closing', 'has-result', 'has-choices', 'has-generosity');
     els.maskIntroSkip.classList.add('hidden');
     els.maskEventPlay.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
@@ -4750,6 +4750,9 @@ syncMusicForActiveTab();
     );
     els.maskEventOverlay.classList.toggle(
       'has-choices', running.item.id === 'masque-003'
+    );
+    els.maskEventOverlay.classList.toggle(
+      'has-generosity', running.item.id === 'masque-002'
     );
     els.maskEventChoices.classList.add('hidden');
     els.maskEventDone.classList.remove('hidden');
