@@ -4523,6 +4523,7 @@ syncMusicForActiveTab();
 
     if (!audioEventClockAllowed()) {
       eventSession.remainingMs = EVENT_RETRY_DELAY;
+      saveAudioEventSession();
       updateAudioEventClock();
       return;
     }
@@ -4617,6 +4618,7 @@ syncMusicForActiveTab();
     if (possibleTargets.length === 0) return false;
 
     pauseAudioEventClock();
+    const savedPreviewDelay = eventSession.remainingMs;
     const player = possibleTargets[randomBetween(0, possibleTargets.length - 1)];
     const token = ++maskEventToken;
 
@@ -4625,6 +4627,7 @@ syncMusicForActiveTab();
       item,
       player,
       preview,
+      savedPreviewDelay,
       segment: 0,
       pendingSegment: null,
       activeAudio: null,
@@ -4640,8 +4643,10 @@ syncMusicForActiveTab();
       audio.load();
     });
 
-    if (!preview) eventSession.played.push(item.id);
-    eventSession.remainingMs = null;
+    if (!preview) {
+      eventSession.played.push(item.id);
+      eventSession.remainingMs = null;
+    }
     saveAudioEventSession();
 
     els.maskEventTitle.textContent = item.title;
@@ -4738,8 +4743,11 @@ syncMusicForActiveTab();
 
   function completeMaskEvent() {
     if (!currentMaskEvent) return;
+    const delay = currentMaskEvent.preview
+      ? currentMaskEvent.savedPreviewDelay
+      : randomBetween(...EVENT_NEXT_DELAY);
     dismissMaskEvent();
-    eventSession.remainingMs = randomBetween(...EVENT_NEXT_DELAY);
+    eventSession.remainingMs = delay;
     saveAudioEventSession();
     renderEventControls();
     updateAudioEventClock();
