@@ -1,4 +1,4 @@
-const CACHE = 'instability-v72';
+const CACHE = 'instability-v73';
 const RUNTIME_CACHE = 'instability-runtime-v1';
 
 const ASSETS = [
@@ -118,6 +118,9 @@ const ASSETS = [
   './audio/events/masque/interventions/masque-001-collectionneur.mp3',
   './audio/events/masque/interventions/masque-002-elan-de-generosite.mp3',
   './audio/events/masque/interventions/masque-003-prix-du-sacrifice.mp3',
+  // Première transmission radio : appel monté + résolution narrée
+  './audio/events/radio/radio-001-derriere-la-porte.MP3',
+  './audio/events/radio/radio-001-resolution-local-vide.mp3',
 
   // Ambiance
   './audio/ambient_loop.mp3',
