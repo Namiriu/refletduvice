@@ -1,4 +1,4 @@
-const CACHE = 'instability-v69';
+const CACHE = 'instability-v70';
 const RUNTIME_CACHE = 'instability-runtime-v1';
 
 const ASSETS = [
@@ -116,6 +116,8 @@ const ASSETS = [
   './audio/events/masque/designations/joueur-3.mp3',
   './audio/events/masque/designations/joueur-4.mp3',
   './audio/events/masque/interventions/masque-001-collectionneur.mp3',
+  './audio/events/masque/interventions/masque-002-elan-de-generosite.mp3',
+  './audio/events/masque/interventions/masque-003-prix-du-sacrifice.mp3',
 
   // Ambiance
   './audio/ambient_loop.mp3',
