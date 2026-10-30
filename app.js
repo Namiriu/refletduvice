@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.5 Événements (test)';
+  const VERSION = 'v0.9.6 Événements (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -110,6 +110,7 @@ campAudio: $('campAudio'),
     campInfo: $('campInfo'),
 
     btnNew: $('btnNew'),
+    eventGameCard: $('eventGameCard'),
     btnStartEvents: $('btnStartEvents'),
     btnPlayers: $('btnPlayers'),
     btnTestMaskEvent: $('btnTestMaskEvent'),
@@ -122,6 +123,7 @@ campAudio: $('campAudio'),
     maskEventTitle: $('maskEventTitle'),
     maskEventStatus: $('maskEventStatus'),
     maskEventPlay: $('maskEventPlay'),
+    maskIntroSkip: $('maskIntroSkip'),
     maskEventResult: $('maskEventResult'),
     maskEventEffect: $('maskEventEffect'),
     maskEventDone: $('maskEventDone'),
@@ -385,6 +387,7 @@ bestiaireNarration: $('bestiaireNarration'),
   // Interventions : progression propre à la partie, distincte du Bestiaire.
   const AUDIO_EVENT_STORAGE = LSK('audio_events_session_v1');
   const EVENT_FIRST_DELAY = [5 * 60000, 9 * 60000];
+  const MASK_INTRO_AUDIO = 'audio/events/masque/introduction/masque-000-presentation.mp3';
   const EVENT_NEXT_DELAY = [7 * 60000, 14 * 60000];
   const EVENT_RETRY_DELAY = 20000;
   const EVENT_TEST_MODE = new URLSearchParams(location.search).has('test-events');
@@ -4285,6 +4288,7 @@ syncMusicForActiveTab();
   function readAudioEventSession() {
     const defaults = {
       active: false,
+      introPlayed: false,
       alive: [true, true, true, true],
       played: [],
       remainingMs: null
@@ -4306,6 +4310,7 @@ syncMusicForActiveTab();
 
       return {
         active: saved.active === true,
+        introPlayed: saved.introPlayed === true,
         alive: Array.isArray(saved.alive) && saved.alive.length === 4
           ? saved.alive.map(value => value === true)
           : defaults.alive,
@@ -4347,26 +4352,16 @@ syncMusicForActiveTab();
   function renderEventControls() {
     const alive = livingPlayerNumbers().length;
     els.btnPlayers.textContent = 'JOUEURS · ' + alive + '/4';
+    // Le panneau de démarrage disparaît ensuite : priorité aux actions spéciales.
+    els.eventGameCard.classList.toggle('hidden', eventSession.active);
     els.btnStartEvents.disabled = eventSession.active || state.value >= 100;
-    els.btnStartEvents.textContent = eventSession.active
-      ? 'PARTIE EN COURS'
-      : 'COMMENCER LA PARTIE';
+    els.btnStartEvents.textContent = 'COMMENCER LA PARTIE';
+    els.eventGameStatus.textContent = 'Lancez la partie lorsque tout le monde est prêt.';
 
-    if (!eventSession.active) {
-      els.eventGameStatus.textContent = 'Les interventions attendent le début de partie.';
-    } else if (currentMaskEvent) {
-      els.eventGameStatus.textContent = 'Le Masque s’adresse à vous…';
-    } else if (unusedAudioEvents().length === 0) {
-      els.eventGameStatus.textContent = 'Tous les événements de cette version ont été joués.';
-    } else {
-      els.eventGameStatus.textContent = 'Interventions activées.';
-    }
-
-    els.btnTestMaskEvent.classList.toggle('hidden', !EVENT_TEST_MODE);
-    els.btnTestMaskEvent.disabled = !eventSession.active
-      || currentMaskEvent !== null
-      || alive === 0
-      || state.value >= 100;
+    // Les interventions déjà jouées ne sont jamais révélées aux joueurs.
+    els.btnTestMaskEvent.classList.toggle('hidden', !EVENT_TEST_MODE || !eventSession.active);
+    els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
+      || alive === 0 || state.value >= 100;
   }
 
   function renderPlayerStatuses() {
@@ -4482,21 +4477,70 @@ syncMusicForActiveTab();
   }
 
   function startAudioEvents() {
-    if (eventSession.active || state.value >= 100) return;
+    if (eventSession.active || state.value >= 100
+      || document.visibilityState !== 'visible' || !isPartieTabActive()
+      || specialAudioActive || anyBlockingModalOpen()) return;
+
     eventSession.active = true;
+    // L'introduction est marquée comme jouée avant la lecture : F5 ne la rejoue pas.
+    eventSession.introPlayed = true;
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
-    // Confirmation visible immédiate ; le premier audio est volontairement différé.
-
-    // Préchargement préparatoire sur action explicite, sans déclencher d'audio.
-    for (let player = 1; player <= 4; player++) {
-      const audio = new Audio('audio/events/masque/designations/joueur-' + player + '.mp3');
-      audio.preload = 'auto';
-    }
-
     saveAudioEventSession();
     renderEventControls();
-    updateAudioEventClock();
+
+    // Lecture immédiatement sur le geste de l'utilisateur (Android).
+    // Le chronomètre du premier événement attend la FIN de l'introduction.
+    if (!beginMaskIntroduction()) updateAudioEventClock();
+  }
+
+  function beginMaskIntroduction() {
+    if (!eventSession.active || currentMaskEvent || state.value >= 100
+      || !isPartieTabActive() || document.visibilityState !== 'visible'
+      || specialAudioActive || anyBlockingModalOpen()) return false;
+
+    const token = ++maskEventToken;
+    const audio = new Audio(MASK_INTRO_AUDIO);
+    audio.preload = 'auto';
+    audio.volume = 1;
+    currentMaskEvent = {
+      token, intro: true, audios: [audio],
+      activeAudio: null, segment: 0, pendingSegment: null
+    };
+
+    els.maskEventTitle.textContent = 'Le Masque';
+    els.maskEventPortrait.src = getMaskState(state.value).src;
+    els.maskEventStatus.textContent = 'Le Masque vous accueille…';
+    els.maskEventOverlay.classList.remove('has-result');
+    els.maskEventPlay.classList.add('hidden');
+    els.maskIntroSkip.classList.add('hidden');
+    els.maskEventResult.classList.add('hidden');
+    els.maskEventOverlay.classList.add('show');
+    els.maskEventOverlay.setAttribute('aria-hidden', 'false');
+
+    specialAudioActive = true;
+    syncAmbientVolume();
+    renderEventControls();
+    playMaskEventSegment(0, token);
+    return true;
+  }
+
+  function finishMaskIntroduction(immediate = false) {
+    const running = currentMaskEvent;
+    if (!running || !running.intro) return;
+    const token = running.token;
+    const finish = () => {
+      if (!currentMaskEvent || currentMaskEvent.token !== token) return;
+      dismissMaskEvent();
+      renderEventControls();
+      updateAudioEventClock();
+    };
+    if (immediate) return finish();
+    clearTimeout(eventAudioGapTimer);
+    eventAudioGapTimer = setTimeout(() => {
+      eventAudioGapTimer = null;
+      finish();
+    }, 850);
   }
 
   function dismissMaskEvent() {
@@ -4513,9 +4557,10 @@ syncMusicForActiveTab();
     }
 
     currentMaskEvent = null;
-    els.maskEventOverlay.classList.remove('show');
+    els.maskEventOverlay.classList.remove('show', 'has-result');
     els.maskEventOverlay.setAttribute('aria-hidden', 'true');
     els.maskEventPlay.classList.add('hidden');
+    els.maskIntroSkip.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
     specialAudioActive = false;
     syncAmbientVolume();
@@ -4525,6 +4570,7 @@ syncMusicForActiveTab();
     pauseAudioEventClock();
     dismissMaskEvent();
     eventSession.active = false;
+    eventSession.introPlayed = false;
     eventSession.alive = [true, true, true, true];
     eventSession.played = [];
     eventSession.remainingMs = null;
@@ -4585,6 +4631,8 @@ syncMusicForActiveTab();
     els.maskEventTitle.textContent = 'Le Masque';
     els.maskEventPortrait.src = getMaskState(state.value).src;
     els.maskEventStatus.textContent = 'Le Masque prend la parole…';
+    els.maskEventOverlay.classList.remove('has-result');
+    els.maskIntroSkip.classList.add('hidden');
     els.maskEventPlay.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
     els.maskEventOverlay.classList.add('show');
@@ -4607,6 +4655,7 @@ syncMusicForActiveTab();
     els.maskEventEffect.textContent =
       'Joueur ' + player + ' : mélange face cachée toutes les cartes rangées dans tes emplacements de sac à dos et défausse-en une au hasard.\n\nTon arme et ton armure équipées ne sont pas concernées. Si ton sac est vide, aucun effet.';
     els.maskEventResult.classList.remove('hidden');
+    els.maskEventOverlay.classList.add('has-result');
     els.maskEventDone.focus();
   }
 
