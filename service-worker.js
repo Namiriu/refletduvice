@@ -1,4 +1,4 @@
-const CACHE = 'instability-v66';
+const CACHE = 'instability-v67';
 const RUNTIME_CACHE = 'instability-runtime-v1';
 
 const ASSETS = [
@@ -21,6 +21,7 @@ const ASSETS = [
   './img/masque65.png',
   './img/masque75.png',
   './img/masque90.png',
+  './img/icon-sac-a-dos.svg',
 
   // Boutons Instabilité
   './img/btn_moins5.png',
@@ -184,14 +185,37 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // L'interface évolue souvent en playtest : utiliser la dernière version
+  // de la page et du script dès qu'un réseau est disponible.
+  // Conserver un repli hors ligne pour la PWA installée.
+  const path = new URL(event.request.url);
+  const shell = path.origin === self.location.origin
+    && (event.request.mode === 'navigate'
+      || path.pathname.endsWith('/app.js')
+      || path.pathname.endsWith('/index.html'));
+
+  if (shell) {
+    event.respondWith((async () => {
+      try {
+        const fresh = await fetch(event.request, { cache: 'no-store' });
+        if (fresh.ok) {
+          const cache = await caches.open(CACHE);
+          await cache.put(event.request, fresh.clone());
+        }
+        return fresh;
+      } catch (_) {
+        return (await caches.match(event.request))
+          || (await caches.match('./index.html'))
+          || Response.error();
+      }
+    })());
+    return;
+  }
+
   event.respondWith(
-    caches
-      .match(event.request)
-      .then(
-        cachedResponse =>
-          cachedResponse ||
-          fetch(event.request)
-      )
+    caches.match(event.request).then(
+      cachedResponse => cachedResponse || fetch(event.request)
+    )
   );
 });
 
