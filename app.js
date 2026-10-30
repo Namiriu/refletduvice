@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.4 Événements (test)';
+  const VERSION = 'v0.9.5 Événements (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -372,6 +372,7 @@ bestiaireNarration: $('bestiaireNarration'),
   let bestiaireNarrationActive = false;
   let bestiaireVideoActive = false;
   let musicSyncToken = 0;
+  let musicPlayBlocked = false;
   let deferredInstallPrompt = null;
 
   let maskInitialized = false;
@@ -1161,12 +1162,9 @@ function syncAmbientVolume() {
           );
       });
 
-    els.audioToggle.textContent =
-      `MUSIQUE ${
-        state.musicOn
-          ? 'ON'
-          : 'OFF'
-      }`;
+    els.audioToggle.textContent = state.musicOn
+      ? (musicPlayBlocked ? 'LANCER MUSIQUE' : 'MUSIQUE ON')
+      : 'MUSIQUE OFF';
 
     els.audioToggle.setAttribute(
       'aria-pressed',
@@ -3599,133 +3597,63 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair, le Journal, le
   }
 
 async function syncMusicForActiveTab() {
-  const token =
-    ++musicSyncToken;
-
-  const isCurrent =
-    () =>
-      token === musicSyncToken;
+  const token = ++musicSyncToken;
+  const isCurrent = () => token === musicSyncToken;
 
   if (!state.musicOn) {
-    await Promise.all([
-      fadeAudioVolume(
-        els.ambient,
-        0,
-        AUDIO_SWITCH_FADE_MS
-      ),
-
-      fadeAudioVolume(
-        els.bestiaireAmbient,
-        0,
-        AUDIO_SWITCH_FADE_MS
-      )
+    musicPlayBlocked = false;
+    // La pause intervient après la transition, mais pas après un nouveau
+    // clic qui aurait réactivé la musique entre-temps.
+    const fade = Promise.all([
+      fadeAudioVolume(els.ambient, 0, AUDIO_SWITCH_FADE_MS),
+      fadeAudioVolume(els.bestiaireAmbient, 0, AUDIO_SWITCH_FADE_MS)
     ]);
-
-    /*
-     * Une autre synchronisation
-     * plus récente a peut-être
-     * commencé pendant le fondu.
-     */
-    if (!isCurrent()) {
-      return;
-    }
-
+    await fade;
+    if (!isCurrent() || state.musicOn) return;
     els.ambient.pause();
     els.bestiaireAmbient.pause();
-
     return;
   }
 
-  const bestiaireActive =
-    isBestiaireTabActive();
-
-  const offlineFallback =
-    useOfflineBestiaireMusicFallback();
-
-  const activeAudio =
-    bestiaireActive
-      ? (
-          offlineFallback
-            ? els.ambient
-            : els.bestiaireAmbient
-        )
-      : els.ambient;
-
-  const inactiveAudio =
-    activeAudio === els.ambient
+  const active = isBestiaireTabActive()
+    && !useOfflineBestiaireMusicFallback()
       ? els.bestiaireAmbient
       : els.ambient;
+  const inactive = active === els.ambient
+    ? els.bestiaireAmbient
+    : els.ambient;
+  const targetVolume = isBestiaireTabActive()
+    ? getBestiaireAmbientTargetVolume()
+    : (specialAudioActive ? DUCK_VOLUME : AMBIENT_VOLUME);
 
-  const activeTarget =
-    bestiaireActive
-      ? getBestiaireAmbientTargetVolume()
-      : (
-          specialAudioActive
-            ? DUCK_VOLUME
-            : AMBIENT_VOLUME
-        );
-
-  if (!inactiveAudio.paused) {
-    await fadeAudioVolume(
-      inactiveAudio,
-      0,
-      AUDIO_SWITCH_FADE_MS
-    );
-
-    /*
-     * IMPORTANT :
-     * si un nouveau changement
-     * d'onglet / réseau a eu lieu,
-     * l'ancienne synchro n'a plus
-     * le droit de mettre quoi que
-     * ce soit en pause.
-     */
-    if (
-      !isCurrent()
-      || !state.musicOn
-    ) {
-      return;
+  // IMPORTANT : sur mobile, play() doit être appelé directement depuis
+  // le clic de l'utilisateur, AVANT tout await, sinon le geste peut
+  // expirer et la lecture est refusée.
+  let playAttempt = null;
+  if (active.paused) {
+    active.volume = 0;
+    try {
+      playAttempt = active.play();
+    } catch (_) {
+      playAttempt = Promise.reject(new Error('Lecture musicale impossible'));
     }
-
-    inactiveAudio.pause();
   }
 
-  if (
-    !isCurrent()
-    || !state.musicOn
-  ) {
-    return;
-  }
-
-  if (!activeAudio.paused) {
-    fadeAudioVolume(
-      activeAudio,
-      activeTarget
-    );
-
-    return;
-  }
-
-  activeAudio.volume =
-    0;
+  fadeAudioVolume(inactive, 0, AUDIO_SWITCH_FADE_MS).then(() => {
+    if (isCurrent()) inactive.pause();
+  });
 
   try {
-    await activeAudio.play();
-
-    if (
-      !isCurrent()
-      || !state.musicOn
-    ) {
-      return;
-    }
-
-    await fadeAudioVolume(
-      activeAudio,
-      activeTarget
-    );
+    if (playAttempt) await playAttempt;
+    if (!isCurrent() || !state.musicOn) return;
+    musicPlayBlocked = false;
+    fadeAudioVolume(active, targetVolume);
+    render();
+  } catch (_) {
+    if (!isCurrent()) return;
+    musicPlayBlocked = true;
+    render();
   }
-
-  catch (_) {}
 }
 
 async function setMusic(
@@ -3735,10 +3663,8 @@ async function setMusic(
     on;
 
   save();
-
+  render(); // La touche réagit immédiatement, même si l'audio charge.
   await syncMusicForActiveTab();
-
-  render();
 }
 
 function unlockAmbientOnce() {
@@ -4554,6 +4480,7 @@ syncMusicForActiveTab();
     eventSession.active = true;
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
+    // Confirmation visible immédiate ; le premier audio est volontairement différé.
 
     // Préchargement préparatoire sur action explicite, sans déclencher d'audio.
     for (let player = 1; player <= 4; player++) {
@@ -4649,7 +4576,7 @@ syncMusicForActiveTab();
     }
     saveAudioEventSession();
 
-    els.maskEventTitle.textContent = item.title;
+    els.maskEventTitle.textContent = 'Le Masque';
     els.maskEventPortrait.src = getMaskState(state.value).src;
     els.maskEventStatus.textContent = 'Le Masque prend la parole…';
     els.maskEventPlay.classList.add('hidden');
@@ -4672,7 +4599,7 @@ syncMusicForActiveTab();
       : 'Le Masque a prononcé sa sentence.';
     els.maskEventPlay.classList.add('hidden');
     els.maskEventEffect.textContent =
-      'Joueur ' + player + ' : mélangez face cachée les cartes Objet de votre inventaire, puis défaussez-en une au hasard.\n\nSi vous ne possédez aucune carte Objet, cet ordre reste sans effet.';
+      'Joueur ' + player + ' : mélange face cachée toutes les cartes rangées dans tes emplacements de sac à dos et défausses-en une au hasard.\n\nTon arme et ton armure équipées ne sont pas concernées. Si ton sac est vide, aucun effet.';
     els.maskEventResult.classList.remove('hidden');
     els.maskEventDone.focus();
   }
@@ -4919,10 +4846,15 @@ syncMusicForActiveTab();
     els.audioToggle
       .addEventListener(
         'click',
-        () =>
-          setMusic(
-            !state.musicOn
-          )
+        () => {
+          // Si le navigateur a refusé l'autoplay initial, le clic lance
+          // la musique au lieu de la désactiver involontairement.
+          if (state.musicOn && musicPlayBlocked) {
+            syncMusicForActiveTab();
+          } else {
+            setMusic(!state.musicOn);
+          }
+        }
       );
 
     els.fsToggle
