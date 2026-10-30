@@ -4676,14 +4676,18 @@ syncMusicForActiveTab();
     const audio = running.audios[segment];
     running.activeAudio = audio;
     els.maskEventPlay.classList.add('hidden');
-    els.maskEventStatus.textContent = segment === 0
-      ? 'Le Masque choisit sa victime…'
-      : 'Le Masque dicte sa loi…';
+    els.maskEventStatus.textContent = running.intro
+      ? 'Le Masque vous accueille…'
+      : segment === 0
+        ? 'Le Masque choisit sa victime…'
+        : 'Le Masque dicte sa loi…';
 
     audio.onended = () => {
       if (!currentMaskEvent || currentMaskEvent.token !== token) return;
       running.activeAudio = null;
-      if (segment === 0) {
+      if (running.intro) {
+        finishMaskIntroduction();
+      } else if (segment === 0) {
         eventAudioGapTimer = setTimeout(() => {
           eventAudioGapTimer = null;
           playMaskEventSegment(1, token);
@@ -4693,7 +4697,17 @@ syncMusicForActiveTab();
       }
     };
 
-    audio.onerror = () => showMaskEventResult(token, true);
+    audio.onerror = () => {
+      if (!currentMaskEvent || currentMaskEvent.token !== token) return;
+      if (running.intro) {
+        els.maskEventStatus.textContent =
+          'Introduction indisponible. Vous pouvez poursuivre la partie.';
+        els.maskEventPlay.classList.add('hidden');
+        els.maskIntroSkip.classList.remove('hidden');
+      } else {
+        showMaskEventResult(token, true);
+      }
+    };
 
     audio.play().catch(() => {
       if (!currentMaskEvent || currentMaskEvent.token !== token) return;
@@ -4701,6 +4715,7 @@ syncMusicForActiveTab();
       els.maskEventStatus.textContent = 'Touchez pour écouter l’intervention.';
       els.maskEventPlay.textContent = 'ÉCOUTER LE MASQUE';
       els.maskEventPlay.classList.remove('hidden');
+      if (running.intro) els.maskIntroSkip.classList.remove('hidden');
     });
   }
 
@@ -4716,10 +4731,14 @@ syncMusicForActiveTab();
 
     if (!running.activeAudio) return;
     running.activeAudio.play().then(() => {
-      els.maskEventStatus.textContent = 'Le Masque dicte sa loi…';
+      els.maskEventStatus.textContent = running.intro
+        ? 'Le Masque vous accueille…'
+        : 'Le Masque dicte sa loi…';
+      els.maskIntroSkip.classList.add('hidden');
     }).catch(() => {
       els.maskEventStatus.textContent = 'Lecture refusée. Réessayez.';
       els.maskEventPlay.classList.remove('hidden');
+      if (running.intro) els.maskIntroSkip.classList.remove('hidden');
     });
   }
 
@@ -4895,6 +4914,7 @@ syncMusicForActiveTab();
       beginMaskEvent(AUDIO_EVENTS[0], true);
     });
     els.maskEventPlay.addEventListener('click', resumeMaskEventAudio);
+    els.maskIntroSkip.addEventListener('click', () => finishMaskIntroduction(true));
     els.maskEventDone.addEventListener('click', completeMaskEvent);
 
 
