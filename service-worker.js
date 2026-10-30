@@ -1,4 +1,4 @@
-const CACHE = 'instability-v65';
+const CACHE = 'instability-v66';
 const RUNTIME_CACHE = 'instability-runtime-v1';
 
 const ASSETS = [
@@ -105,6 +105,13 @@ const ASSETS = [
 './bestiaire/audio/siffle-circuit.mp3',
 './bestiaire/audio/recuperateur-voile.mp3',
 './bestiaire/audio/fetard-en-retard.mp3',
+
+  // Événements audio — Le Masque (prototype hors connexion)
+  './audio/events/masque/designations/joueur-1.mp3',
+  './audio/events/masque/designations/joueur-2.mp3',
+  './audio/events/masque/designations/joueur-3.mp3',
+  './audio/events/masque/designations/joueur-4.mp3',
+  './audio/events/masque/interventions/masque-001-collectionneur.mp3',
 
   // Ambiance
   './audio/ambient_loop.mp3',
