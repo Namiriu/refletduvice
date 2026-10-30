@@ -1411,12 +1411,21 @@
     .utility-controls .event-test-select{grid-column:1/span 2;min-height:39px;border-color:#634148;color:#f1e5e7;font-family:var(--font-ui);font-size:12px}
     @media(max-width:340px){.utility-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .mask-event-overlay.has-result .mask-event-portrait{
-      width:min(40vw,150px);
-      height:min(23dvh,157px);
+      width:min(50vw,180px);
+      height:min(30dvh,193px);
       margin:0 auto 4px;
       transition:height .45s ease,width .45s ease,margin .45s ease;
     }
-    .mask-event-overlay.has-choices .mask-event-portrait{width:min(31vw,112px);height:min(18dvh,115px)}
+    /* La générosité contient peu de texte : le Masque peut rester imposant. */
+    .mask-event-overlay.has-result.has-generosity .mask-event-portrait{
+      width:min(54vw,205px);
+      height:min(33dvh,217px);
+    }
+    /* Le dilemme présente deux décisions, donc on réserve de la place aux boutons. */
+    .mask-event-overlay.has-result.has-choices .mask-event-portrait{
+      width:min(43vw,155px);
+      height:min(26dvh,170px);
+    }
     .mask-event-overlay.has-choices .mask-event-effect{font-size:clamp(15px,3.6vw,17px);line-height:1.24}
     .mask-event-overlay.has-result .mask-event-content{padding:3px 8px 9px}
     .mask-event-overlay.has-result .mask-event-status{font-size:15px;min-height:20px;margin:3px 0 6px}
@@ -1425,10 +1434,16 @@
     .mask-event-overlay.has-result .mask-event-inventory-label{margin-bottom:5px}
     .mask-event-overlay.has-result .mask-event-backpack-halo{flex-basis:43px;width:43px;height:43px}
     .mask-event-overlay.has-result .mask-event-backpack-halo img{width:29px;height:36px}
-    @media(max-height:630px){
+    @media(max-height:520px){
       .mask-event-overlay.has-result{padding:6px}
       .mask-event-overlay.has-result .mask-event-content{max-height:calc(100dvh - 12px)}
-      .mask-event-overlay.has-result .mask-event-portrait{height:min(16dvh,103px);width:min(29vw,102px)}
+      .mask-event-overlay.has-result .mask-event-portrait,
+      .mask-event-overlay.has-result.has-choices .mask-event-portrait{
+        height:min(20dvh,120px);width:min(34vw,118px)
+      }
+      .mask-event-overlay.has-result.has-generosity .mask-event-portrait{
+        height:min(24dvh,140px);width:min(38vw,135px)
+      }
       .mask-event-overlay.has-result .mask-event-effect{font-size:15px;line-height:1.22}
       .mask-event-overlay.has-result .mask-event-result{padding:6px 8px}
     }
