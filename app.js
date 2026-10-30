@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.3 Playtest';
+  const VERSION = 'v0.9.4 Événements (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -110,6 +110,21 @@ campAudio: $('campAudio'),
     campInfo: $('campInfo'),
 
     btnNew: $('btnNew'),
+    btnStartEvents: $('btnStartEvents'),
+    btnPlayers: $('btnPlayers'),
+    btnTestMaskEvent: $('btnTestMaskEvent'),
+    eventGameStatus: $('eventGameStatus'),
+    playersModal: $('playersModal'),
+    playersClose: $('playersClose'),
+    eventPlayersList: $('eventPlayersList'),
+    maskEventOverlay: $('maskEventOverlay'),
+    maskEventPortrait: $('maskEventPortrait'),
+    maskEventTitle: $('maskEventTitle'),
+    maskEventStatus: $('maskEventStatus'),
+    maskEventPlay: $('maskEventPlay'),
+    maskEventResult: $('maskEventResult'),
+    maskEventEffect: $('maskEventEffect'),
+    maskEventDone: $('maskEventDone'),
 
     actionModal: $('actionModal'),
     actionModalTitle: $('actionModalTitle'),
@@ -365,6 +380,29 @@ bestiaireNarration: $('bestiaireNarration'),
   let maskRequestToken = 0;
 
   const preloadedMasks = new Map();
+
+  // Interventions : progression propre à la partie, distincte du Bestiaire.
+  const AUDIO_EVENT_STORAGE = LSK('audio_events_session_v1');
+  const EVENT_FIRST_DELAY = [5 * 60000, 9 * 60000];
+  const EVENT_NEXT_DELAY = [7 * 60000, 14 * 60000];
+  const EVENT_RETRY_DELAY = 20000;
+  const EVENT_TEST_MODE = new URLSearchParams(location.search).has('test-events');
+  const AUDIO_EVENTS = [
+    {
+      id: 'masque-001',
+      type: 'masque',
+      title: 'LE COLLECTIONNEUR',
+      audio: 'audio/events/masque/interventions/masque-001-collectionneur.mp3',
+      target: 'joueur-vivant'
+    }
+  ];
+  const eventSession = readAudioEventSession();
+  let eventTimer = null;
+  let eventDueAt = null;
+  let currentMaskEvent = null;
+  let eventAudioGapTimer = null;
+  let maskEventToken = 0;
+
 
   let openCreatureSlug = null;
   let openCreatureEntry = null;
@@ -1136,6 +1174,7 @@ function syncAmbientVolume() {
     );
 
     updateMask();
+    renderEventControls();
     updateFullscreenButton();
     save();
   }
@@ -1522,6 +1561,8 @@ function syncAmbientVolume() {
       || els.dossierModal
         .classList
         .contains('show')
+      || els.playersModal.classList.contains('show')
+      || els.maskEventOverlay.classList.contains('show')
     );
   }
 
@@ -3421,7 +3462,7 @@ Chaque personnage encore en vie soigne 2 blessures.`
 
 `Démarrer une nouvelle partie ?
 
-L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal seront réinitialisés.`,
+L’Instabilité, le Camp de fortune, la Profanation de la chair, le Journal, les interventions audio et l’état des quatre joueurs seront réinitialisés.`,
 
       newGame
     );
@@ -3463,6 +3504,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair et le Journal s
     gameOverShown =
       false;
 
+    resetAudioEventSession();
     syncAmbientVolume();
 
     closeActionModal();
@@ -3868,6 +3910,8 @@ window.addEventListener(
       return false;
     }
 
+    stopAudioEventsForGameOver();
+
     if (!gameOverShown) {
       gameOverShown =
         true;
@@ -4079,6 +4123,7 @@ window.addEventListener(
 }
 
 syncMusicForActiveTab();
+          updateAudioEventClock();
         }
       );
     }
@@ -4300,6 +4345,418 @@ syncMusicForActiveTab();
       .catch(() => {});
   }
 
+
+  // =========================================================
+  // INTERVENTIONS AUDIO — v1 / LE COLLECTIONNEUR
+  // =========================================================
+
+  function readAudioEventSession() {
+    const defaults = {
+      active: false,
+      alive: [true, true, true, true],
+      played: [],
+      remainingMs: null
+    };
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(AUDIO_EVENT_STORAGE) || 'null');
+      if (!saved || typeof saved !== 'object') return defaults;
+
+      let remaining = Number.isFinite(saved.remainingMs)
+        ? Math.max(0, saved.remainingMs)
+        : null;
+
+      // Une actualisation accidentelle conserve l'échéance du tirage.
+      // On n'essaie jamais de rejouer plusieurs événements manqués.
+      if (saved.active && Number.isFinite(saved.dueAt)) {
+        remaining = Math.max(15000, saved.dueAt - Date.now());
+      }
+
+      return {
+        active: saved.active === true,
+        alive: Array.isArray(saved.alive) && saved.alive.length === 4
+          ? saved.alive.map(value => value === true)
+          : defaults.alive,
+        played: Array.isArray(saved.played)
+          ? saved.played.filter(id => typeof id === 'string')
+          : [],
+        remainingMs: remaining
+      };
+    } catch (_) {
+      return defaults;
+    }
+  }
+
+  function saveAudioEventSession() {
+    try {
+      localStorage.setItem(AUDIO_EVENT_STORAGE, JSON.stringify({
+        ...eventSession,
+        remainingMs: eventDueAt === null
+          ? eventSession.remainingMs
+          : Math.max(0, eventDueAt - Date.now()),
+        dueAt: eventDueAt
+      }));
+    } catch (_) {
+      // L'application reste utilisable sans stockage local.
+    }
+  }
+
+  function unusedAudioEvents() {
+    return AUDIO_EVENTS.filter(item => !eventSession.played.includes(item.id));
+  }
+
+  function livingPlayerNumbers() {
+    return eventSession.alive.reduce((list, alive, index) => {
+      if (alive) list.push(index + 1);
+      return list;
+    }, []);
+  }
+
+  function renderEventControls() {
+    const alive = livingPlayerNumbers().length;
+    els.btnPlayers.textContent = 'JOUEURS · ' + alive + '/4';
+    els.btnStartEvents.disabled = eventSession.active || state.value >= 100;
+    els.btnStartEvents.textContent = eventSession.active
+      ? 'PARTIE EN COURS'
+      : 'COMMENCER LA PARTIE';
+
+    if (!eventSession.active) {
+      els.eventGameStatus.textContent = 'Les interventions attendent le début de partie.';
+    } else if (currentMaskEvent) {
+      els.eventGameStatus.textContent = 'Le Masque s’adresse à vous…';
+    } else if (unusedAudioEvents().length === 0) {
+      els.eventGameStatus.textContent = 'Tous les événements de cette version ont été joués.';
+    } else {
+      els.eventGameStatus.textContent = 'Interventions activées.';
+    }
+
+    els.btnTestMaskEvent.classList.toggle('hidden', !EVENT_TEST_MODE);
+    els.btnTestMaskEvent.disabled = !eventSession.active
+      || currentMaskEvent !== null
+      || alive === 0
+      || state.value >= 100;
+  }
+
+  function renderPlayerStatuses() {
+    els.eventPlayersList.replaceChildren();
+
+    eventSession.alive.forEach((alive, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'event-player-row';
+      button.setAttribute('aria-pressed', String(!alive));
+      button.setAttribute('aria-label', 'Joueur ' + (index + 1) + ' : ' + (alive ? 'vivant' : 'mort'));
+      const name = document.createElement('span');
+      name.textContent = 'JOUEUR ' + (index + 1);
+      const label = document.createElement('span');
+      label.className = 'event-player-state';
+      label.textContent = alive ? '● VIVANT' : '✕ MORT';
+      button.append(name, label);
+      button.addEventListener('click', () => {
+        eventSession.alive[index] = !eventSession.alive[index];
+        saveAudioEventSession();
+        renderPlayerStatuses();
+        renderEventControls();
+        updateAudioEventClock();
+      });
+      els.eventPlayersList.appendChild(button);
+    });
+  }
+
+  function openPlayersModal() {
+    if (currentMaskEvent) return;
+    renderPlayerStatuses();
+    els.playersModal.classList.add('show');
+    els.playersClose.focus();
+  }
+
+  function closePlayersModal() {
+    els.playersModal.classList.remove('show');
+    updateAudioEventClock();
+  }
+
+  function pauseAudioEventClock() {
+    if (eventTimer !== null) {
+      clearTimeout(eventTimer);
+      eventTimer = null;
+      eventSession.remainingMs = Math.max(0, eventDueAt - Date.now());
+      eventDueAt = null;
+      saveAudioEventSession();
+    }
+  }
+
+  function audioEventClockAllowed() {
+    return appStarted
+      && eventSession.active
+      && !gameOverShown
+      && state.value < 100
+      && document.visibilityState === 'visible'
+      && isPartieTabActive()
+      && currentMaskEvent === null
+      && livingPlayerNumbers().length > 0
+      && unusedAudioEvents().length > 0;
+  }
+
+  function updateAudioEventClock() {
+    if (!audioEventClockAllowed()) {
+      pauseAudioEventClock();
+      return;
+    }
+
+    if (eventTimer !== null) return;
+
+    if (eventSession.remainingMs === null) {
+      eventSession.remainingMs = randomBetween(...EVENT_NEXT_DELAY);
+    }
+
+    const delay = Math.max(1000, eventSession.remainingMs);
+    eventDueAt = Date.now() + delay;
+    eventTimer = setTimeout(onAudioEventDue, delay);
+    saveAudioEventSession();
+  }
+
+  function onAudioEventDue() {
+    eventTimer = null;
+    eventDueAt = null;
+    eventSession.remainingMs = null;
+    saveAudioEventSession();
+
+    if (!audioEventClockAllowed()) {
+      eventSession.remainingMs = EVENT_RETRY_DELAY;
+      updateAudioEventClock();
+      return;
+    }
+
+    // Priorité au rituel, au camp, aux transitions et aux fenêtres ouvertes.
+    // Un seul événement peut être reporté ; aucune file ne s'accumule.
+    if (specialAudioActive || bestiaireNarrationActive
+      || bestiaireVideoActive || anyBlockingModalOpen()) {
+      eventSession.remainingMs = EVENT_RETRY_DELAY;
+      updateAudioEventClock();
+      return;
+    }
+
+    const candidates = unusedAudioEvents().filter(
+      item => item.type === 'masque'
+    );
+    if (candidates.length === 0) return;
+    const item = candidates[randomBetween(0, candidates.length - 1)];
+
+    if (!beginMaskEvent(item, false)) {
+      eventSession.remainingMs = EVENT_RETRY_DELAY;
+      updateAudioEventClock();
+    }
+  }
+
+  function startAudioEvents() {
+    if (eventSession.active || state.value >= 100) return;
+    eventSession.active = true;
+    eventSession.played = [];
+    eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
+
+    // Préchargement préparatoire sur action explicite, sans déclencher d'audio.
+    for (let player = 1; player <= 4; player++) {
+      const audio = new Audio('audio/events/masque/designations/joueur-' + player + '.mp3');
+      audio.preload = 'auto';
+    }
+
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+  }
+
+  function dismissMaskEvent() {
+    maskEventToken += 1;
+    clearTimeout(eventAudioGapTimer);
+    eventAudioGapTimer = null;
+
+    if (currentMaskEvent) {
+      currentMaskEvent.audios.forEach(audio => {
+        audio.pause();
+        audio.onended = null;
+        audio.onerror = null;
+      });
+    }
+
+    currentMaskEvent = null;
+    els.maskEventOverlay.classList.remove('show');
+    els.maskEventOverlay.setAttribute('aria-hidden', 'true');
+    els.maskEventPlay.classList.add('hidden');
+    els.maskEventResult.classList.add('hidden');
+    specialAudioActive = false;
+    syncAmbientVolume();
+  }
+
+  function resetAudioEventSession() {
+    pauseAudioEventClock();
+    dismissMaskEvent();
+    eventSession.active = false;
+    eventSession.alive = [true, true, true, true];
+    eventSession.played = [];
+    eventSession.remainingMs = null;
+    saveAudioEventSession();
+    renderEventControls();
+  }
+
+  function stopAudioEventsForGameOver() {
+    if (!eventSession.active && !currentMaskEvent) return;
+    pauseAudioEventClock();
+    dismissMaskEvent();
+    eventSession.active = false;
+    eventSession.remainingMs = null;
+    saveAudioEventSession();
+    renderEventControls();
+  }
+
+  function beginMaskEvent(item, preview) {
+    if (!eventSession.active || currentMaskEvent || state.value >= 100
+      || document.visibilityState !== 'visible' || !isPartieTabActive()
+      || specialAudioActive || anyBlockingModalOpen()) return false;
+
+    const possibleTargets = livingPlayerNumbers();
+    if (possibleTargets.length === 0) return false;
+
+    pauseAudioEventClock();
+    const player = possibleTargets[randomBetween(0, possibleTargets.length - 1)];
+    const token = ++maskEventToken;
+
+    currentMaskEvent = {
+      token,
+      item,
+      player,
+      preview,
+      segment: 0,
+      pendingSegment: null,
+      activeAudio: null,
+      audios: [
+        new Audio('audio/events/masque/designations/joueur-' + player + '.mp3'),
+        new Audio(item.audio)
+      ]
+    };
+
+    currentMaskEvent.audios.forEach(audio => {
+      audio.preload = 'auto';
+      audio.volume = 1;
+      audio.load();
+    });
+
+    if (!preview) eventSession.played.push(item.id);
+    eventSession.remainingMs = null;
+    saveAudioEventSession();
+
+    els.maskEventTitle.textContent = item.title;
+    els.maskEventPortrait.src = getMaskState(state.value).src;
+    els.maskEventStatus.textContent = 'Le Masque prend la parole…';
+    els.maskEventPlay.classList.add('hidden');
+    els.maskEventResult.classList.add('hidden');
+    els.maskEventOverlay.classList.add('show');
+    els.maskEventOverlay.setAttribute('aria-hidden', 'false');
+
+    specialAudioActive = true;
+    syncAmbientVolume();
+    renderEventControls();
+    playMaskEventSegment(0, token);
+    return true;
+  }
+
+  function showMaskEventResult(token, audioUnavailable = false) {
+    if (!currentMaskEvent || currentMaskEvent.token !== token) return;
+    const player = currentMaskEvent.player;
+    els.maskEventStatus.textContent = audioUnavailable
+      ? 'Audio indisponible — appliquez la conséquence ci-dessous.'
+      : 'Le Masque a prononcé sa sentence.';
+    els.maskEventPlay.classList.add('hidden');
+    els.maskEventEffect.textContent =
+      'Joueur ' + player + ' : mélangez face cachée les cartes Objet de votre inventaire, puis défaussez-en une au hasard.\n\nSi vous ne possédez aucune carte Objet, cet ordre reste sans effet.';
+    els.maskEventResult.classList.remove('hidden');
+    els.maskEventDone.focus();
+  }
+
+  function playMaskEventSegment(segment, token) {
+    if (!currentMaskEvent || currentMaskEvent.token !== token) return;
+    const running = currentMaskEvent;
+    running.segment = segment;
+    running.pendingSegment = null;
+
+    if (document.visibilityState !== 'visible') {
+      running.pendingSegment = segment;
+      els.maskEventStatus.textContent = 'Intervention suspendue.';
+      els.maskEventPlay.textContent = 'REPRENDRE L’INTERVENTION';
+      els.maskEventPlay.classList.remove('hidden');
+      return;
+    }
+
+    const audio = running.audios[segment];
+    running.activeAudio = audio;
+    els.maskEventPlay.classList.add('hidden');
+    els.maskEventStatus.textContent = segment === 0
+      ? 'Le Masque choisit sa victime…'
+      : 'Le Masque dicte sa loi…';
+
+    audio.onended = () => {
+      if (!currentMaskEvent || currentMaskEvent.token !== token) return;
+      running.activeAudio = null;
+      if (segment === 0) {
+        eventAudioGapTimer = setTimeout(() => {
+          eventAudioGapTimer = null;
+          playMaskEventSegment(1, token);
+        }, 320);
+      } else {
+        showMaskEventResult(token);
+      }
+    };
+
+    audio.onerror = () => showMaskEventResult(token, true);
+
+    audio.play().catch(() => {
+      if (!currentMaskEvent || currentMaskEvent.token !== token) return;
+      // Certains Android exigent un geste explicite avant l'autoplay.
+      els.maskEventStatus.textContent = 'Touchez pour écouter l’intervention.';
+      els.maskEventPlay.textContent = 'ÉCOUTER LE MASQUE';
+      els.maskEventPlay.classList.remove('hidden');
+    });
+  }
+
+  function resumeMaskEventAudio() {
+    if (!currentMaskEvent) return;
+    const running = currentMaskEvent;
+    els.maskEventPlay.classList.add('hidden');
+
+    if (running.pendingSegment !== null) {
+      playMaskEventSegment(running.pendingSegment, running.token);
+      return;
+    }
+
+    if (!running.activeAudio) return;
+    running.activeAudio.play().then(() => {
+      els.maskEventStatus.textContent = 'Le Masque dicte sa loi…';
+    }).catch(() => {
+      els.maskEventStatus.textContent = 'Lecture refusée. Réessayez.';
+      els.maskEventPlay.classList.remove('hidden');
+    });
+  }
+
+  function completeMaskEvent() {
+    if (!currentMaskEvent) return;
+    dismissMaskEvent();
+    eventSession.remainingMs = randomBetween(...EVENT_NEXT_DELAY);
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+  }
+
+  function handleAudioEventVisibility() {
+    updateAudioEventClock();
+    if (!currentMaskEvent || document.visibilityState !== 'hidden') return;
+    const running = currentMaskEvent;
+    if (running.activeAudio && !running.activeAudio.paused) {
+      running.activeAudio.pause();
+      els.maskEventStatus.textContent = 'Intervention suspendue.';
+      els.maskEventPlay.textContent = 'REPRENDRE L’AUDIO';
+      els.maskEventPlay.classList.remove('hidden');
+    }
+  }
+
   // =========================================================
   // DÉMARRAGE / ÉVÉNEMENTS
   // =========================================================
@@ -4319,6 +4776,8 @@ syncMusicForActiveTab();
     schedulePassiveHaunt();
 
     scheduleMaskDisturbance();
+
+    updateAudioEventClock();
 
     if (
       state.musicOn
@@ -4437,6 +4896,18 @@ syncMusicForActiveTab();
         requestNewGame
       );
 
+    els.btnStartEvents.addEventListener('click', startAudioEvents);
+    els.btnPlayers.addEventListener('click', openPlayersModal);
+    els.playersClose.addEventListener('click', closePlayersModal);
+    els.btnTestMaskEvent.addEventListener('click', () => {
+      // Disponible uniquement avec ?test-events=1, sur la branche de test.
+      if (!EVENT_TEST_MODE) return;
+      beginMaskEvent(AUDIO_EVENTS[0], true);
+    });
+    els.maskEventPlay.addEventListener('click', resumeMaskEventAudio);
+    els.maskEventDone.addEventListener('click', completeMaskEvent);
+
+
     els.audioToggle
       .addEventListener(
         'click',
@@ -4512,14 +4983,14 @@ syncMusicForActiveTab();
       .addEventListener(
         'visibilitychange',
         () => {
-          if (
-            document.visibilityState
-            === 'visible'
-          ) {
+          if (document.visibilityState === 'visible') {
             requestWakeLock();
           }
+          handleAudioEventVisibility();
         }
       );
+
+    window.addEventListener('pagehide', pauseAudioEventClock);
 
     document
       .addEventListener(
@@ -4529,6 +5000,11 @@ syncMusicForActiveTab();
             event.key
             !== 'Escape'
           ) {
+            return;
+          }
+
+          if (els.playersModal.classList.contains('show')) {
+            closePlayersModal();
             return;
           }
 
@@ -4574,6 +5050,8 @@ syncMusicForActiveTab();
 
     els.version.textContent =
       VERSION;
+
+    renderEventControls();
 
     syncAmbientVolume();
 
