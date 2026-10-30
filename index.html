@@ -1407,7 +1407,8 @@
     .mask-event-overlay.closing{visibility:visible;opacity:0;pointer-events:none;transition:opacity .7s ease}
     .utility-controls{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
     .utility-controls .utility-btn{font-size:clamp(9px,2.35vw,12px);padding:7px 3px}
-    .utility-controls .event-test-btn{grid-column:1/-1;min-height:39px;border-color:#634148}
+    .utility-controls .event-test-btn{grid-column:3/-1;min-height:39px;border-color:#634148}
+    .utility-controls .event-test-select{grid-column:1/span 2;min-height:39px;border-color:#634148;color:#f1e5e7;font-family:var(--font-ui);font-size:12px}
     @media(max-width:340px){.utility-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .mask-event-overlay.has-result .mask-event-portrait{
       width:min(40vw,150px);
@@ -1437,6 +1438,10 @@
     .mask-event-result{padding:13px 14px;border:1px solid #644247;border-radius:12px;background:rgba(24,16,19,.88)}
     .mask-event-effect{margin:5px 0 13px;color:#f4e8e8;font-size:20px;line-height:1.4;white-space:pre-line}
     .mask-event-cta{min-height:46px;padding:10px 16px;border:1px solid #91545c;border-radius:9px;background:#44252b;color:#fff;font:12px var(--font-ui);cursor:pointer}
+    .mask-event-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 10px}
+    .mask-event-choice{font-size:clamp(10px,2.6vw,13px);min-height:51px;padding:9px 7px}
+    .mask-event-choice:first-child{background:#363238;border-color:#77707b}
+    .mask-event-choice:last-child{background:#51212a;border-color:#98434f}
     .mask-event-skip{display:block;margin:9px auto 0;background:transparent;border-color:#554044;color:#c3adb1;font-size:11px}
     .mask-event-visually-hidden{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
     .mask-event-inventory-label{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 12px;color:#e8cace;font:clamp(12px,3.4vw,15px) var(--font-ui);letter-spacing:.4px}
@@ -1567,6 +1572,11 @@
             Plein écran
           </button>
           <button id="btnPlayers" class="utility-btn" type="button">JOUEURS · 4/4</button>
+          <select id="testMaskEventSelect" class="utility-btn event-test-select hidden" aria-label="Choisir une intervention du Masque pour le test">
+            <option value="masque-001">001 · Le Collectionneur</option>
+            <option value="masque-002">002 · Un élan de générosité</option>
+            <option value="masque-003">003 · Le Prix du sacrifice</option>
+          </select>
           <button id="btnTestMaskEvent" class="utility-btn event-test-btn hidden" type="button">TESTER LE MASQUE</button>
         </div>
       </section>
@@ -1841,13 +1851,17 @@
       <button id="maskEventPlay" class="mask-event-cta hidden" type="button">ÉCOUTER LE MASQUE</button>
       <button id="maskIntroSkip" class="mask-event-cta mask-event-skip hidden" type="button">PASSER L’INTRODUCTION</button>
       <div id="maskEventResult" class="mask-event-result hidden">
-        <div class="mask-event-inventory-label">
+        <div id="maskEventInventoryLabel" class="mask-event-inventory-label">
           <span class="mask-event-backpack-halo" aria-hidden="true">
             <img src="img/icon-sac-a-dos.svg" alt="">
           </span>
           <span>OBJETS DU SAC À DOS</span>
         </div>
         <p id="maskEventEffect" class="mask-event-effect"></p>
+        <div id="maskEventChoices" class="mask-event-choices hidden">
+          <button id="maskChoiceSelf" class="mask-event-cta mask-event-choice" type="button">JE ME SACRIFIE</button>
+          <button id="maskChoiceGroup" class="mask-event-cta mask-event-choice" type="button">LE GROUPE PAIE</button>
+        </div>
         <button id="maskEventDone" class="mask-event-cta" type="button">CONTINUER LA PARTIE</button>
       </div>
     </div>
