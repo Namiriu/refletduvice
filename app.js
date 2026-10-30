@@ -1629,6 +1629,7 @@ function syncAmbientVolume() {
         .contains('show')
       || els.playersModal.classList.contains('show')
       || els.maskEventOverlay.classList.contains('show')
+      || els.radioEventOverlay.classList.contains('show')
     );
   }
 
@@ -4618,7 +4619,7 @@ syncMusicForActiveTab();
   }
 
   function beginMaskIntroduction() {
-    if (!eventSession.active || currentMaskEvent || state.value >= 100
+    if (!eventSession.active || currentMaskEvent || currentRadioEvent || state.value >= 100
       || !isPartieTabActive() || document.visibilityState !== 'visible'
       || specialAudioActive || anyBlockingModalOpen()) return false;
 
@@ -4713,8 +4714,11 @@ syncMusicForActiveTab();
     maskDeferredOutcomeTimer = null;
     pauseAudioEventClock();
     dismissMaskEvent(true);
+    dismissRadioEvent(true);
     eventSession.active = false;
     eventSession.introPlayed = false;
+    eventSession.radioMission = null;
+    eventSession.lastEventType = null;
     eventSession.alive = [true, true, true, true];
     eventSession.played = [];
     eventSession.remainingMs = null;
@@ -4728,14 +4732,16 @@ syncMusicForActiveTab();
     if (!eventSession.active && !currentMaskEvent) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
+    dismissRadioEvent(true);
     eventSession.active = false;
+    eventSession.radioMission = null;
     eventSession.remainingMs = null;
     saveAudioEventSession();
     renderEventControls();
   }
 
   function beginMaskEvent(item, preview) {
-    if (!eventSession.active || currentMaskEvent || state.value >= 100
+    if (!eventSession.active || currentMaskEvent || currentRadioEvent || state.value >= 100
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || specialAudioActive || anyBlockingModalOpen()) return false;
 
@@ -5178,7 +5184,11 @@ syncMusicForActiveTab();
         item.id === els.testMaskEventSelect.value
       );
       if (!selected || state.value < (selected.minInstability || 0)) return;
-      beginMaskEvent(selected, true);
+      if (selected.type === 'radio') {
+        beginRadioEvent(selected, true);
+      } else {
+        beginMaskEvent(selected, true);
+      }
     });
     els.maskEventPlay.addEventListener('click', resumeMaskEventAudio);
     els.maskIntroSkip.addEventListener('click', () => finishMaskIntroduction(true));
