@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v0.9.9 Événements (test)';
+  const VERSION = 'v1.0.0 Radio (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -115,6 +115,21 @@ campAudio: $('campAudio'),
     btnPlayers: $('btnPlayers'),
     btnTestMaskEvent: $('btnTestMaskEvent'),
     testMaskEventSelect: $('testMaskEventSelect'),
+    radioMissionTab: $('radioMissionTab'),
+    radioMissionToggle: $('radioMissionToggle'),
+    radioMissionPanel: $('radioMissionPanel'),
+    radioMissionTitle: $('radioMissionTitle'),
+    radioMissionText: $('radioMissionText'),
+    radioMissionArrived: $('radioMissionArrived'),
+    radioMissionAbandon: $('radioMissionAbandon'),
+    radioEventOverlay: $('radioEventOverlay'),
+    radioEventHeading: $('radioEventHeading'),
+    radioEventStatus: $('radioEventStatus'),
+    radioEventPlay: $('radioEventPlay'),
+    radioEventSkip: $('radioEventSkip'),
+    radioEventAccept: $('radioEventAccept'),
+    radioEventIgnore: $('radioEventIgnore'),
+    radioEventDone: $('radioEventDone'),
     eventGameStatus: $('eventGameStatus'),
     playersModal: $('playersModal'),
     playersClose: $('playersClose'),
@@ -419,12 +434,22 @@ bestiaireNarration: $('bestiaireNarration'),
       title: 'LE PRIX DU SACRIFICE',
       audio: 'audio/events/masque/interventions/masque-003-prix-du-sacrifice.mp3',
       target: 'joueur-vivant'
+    },
+    {
+      id: 'radio-001',
+      type: 'radio',
+      title: 'DERRIÈRE LA PORTE',
+      destination: 'Station de pompage — Quartier 2',
+      audio: 'audio/events/radio/radio-001-derriere-la-porte.MP3',
+      resolutionAudio: 'audio/events/radio/radio-001-resolution-local-vide.mp3'
     }
   ];
   const eventSession = readAudioEventSession();
   let eventTimer = null;
   let eventDueAt = null;
   let currentMaskEvent = null;
+  let currentRadioEvent = null;
+  let radioEventToken = 0;
   let eventAudioGapTimer = null;
   let maskClosingTimer = null;
   let maskDeferredOutcomeTimer = null;
@@ -4338,6 +4363,8 @@ syncMusicForActiveTab();
     const defaults = {
       active: false,
       introPlayed: false,
+      radioMission: null,
+      lastEventType: null,
       alive: [true, true, true, true],
       played: [],
       remainingMs: null
@@ -4360,6 +4387,20 @@ syncMusicForActiveTab();
       return {
         active: saved.active === true,
         introPlayed: saved.introPlayed === true,
+        radioMission: saved.radioMission
+          && typeof saved.radioMission.id === 'string'
+          && ['travel', 'resolving', 'reward'].includes(saved.radioMission.stage)
+            ? {
+                id: saved.radioMission.id,
+                stage: saved.radioMission.stage,
+                recipients: Array.isArray(saved.radioMission.recipients)
+                  ? saved.radioMission.recipients.filter(n =>
+                    Number.isInteger(n) && n >= 1 && n <= 4
+                  ) : []
+              }
+            : null,
+        lastEventType: ['masque', 'radio', 'meteo'].includes(saved.lastEventType)
+          ? saved.lastEventType : null,
         alive: Array.isArray(saved.alive) && saved.alive.length === 4
           ? saved.alive.map(value => value === true)
           : defaults.alive,
@@ -4394,6 +4435,9 @@ syncMusicForActiveTab();
   function eligibleAudioEvents() {
     return unusedAudioEvents().filter(item =>
       state.value >= (item.minInstability || 0)
+      && !(eventSession.radioMission
+        && eventSession.radioMission.stage !== 'travel'
+        && item.type === 'radio')
     );
   }
 
@@ -4423,9 +4467,13 @@ syncMusicForActiveTab();
     const locked = state.value < (testEvent.minInstability || 0);
     els.btnTestMaskEvent.textContent = locked
       ? 'TEST : MINIMUM ' + testEvent.minInstability + '%'
-      : 'TESTER LE MASQUE';
+      : testEvent.type === 'radio' ? 'TESTER LA RADIO' : 'TESTER LE MASQUE';
     els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
-      || alive === 0 || state.value >= 100 || locked;
+      || currentRadioEvent !== null || alive === 0
+      || state.value >= 100 || locked
+      || (testEvent.type === 'radio' && eventSession.radioMission
+          && eventSession.radioMission.stage !== 'travel');
+    renderRadioMission();
   }
 
   function renderPlayerStatuses() {
@@ -4484,6 +4532,9 @@ syncMusicForActiveTab();
       && document.visibilityState === 'visible'
       && isPartieTabActive()
       && currentMaskEvent === null
+      && currentRadioEvent === null
+      && !(eventSession.radioMission
+        && eventSession.radioMission.stage !== 'travel')
       && livingPlayerNumbers().length > 0
       && eligibleAudioEvents().length > 0;
   }
@@ -4528,13 +4579,21 @@ syncMusicForActiveTab();
       return;
     }
 
-    const candidates = eligibleAudioEvents().filter(
-      item => item.type === 'masque'
-    );
+    let candidates = eligibleAudioEvents();
     if (candidates.length === 0) return;
+    // Des types différents se succèdent dès que la pioche le permet.
+    const otherType = candidates.filter(
+      item => item.type !== eventSession.lastEventType
+    );
+    if (otherType.length) candidates = otherType;
     const item = candidates[randomBetween(0, candidates.length - 1)];
-
-    if (!beginMaskEvent(item, false)) {
+    const started = item.type === 'radio'
+      ? beginRadioEvent(item, false)
+      : beginMaskEvent(item, false);
+    if (started) {
+      eventSession.lastEventType = item.type;
+      saveAudioEventSession();
+    } else {
       eventSession.remainingMs = EVENT_RETRY_DELAY;
       updateAudioEventClock();
     }
