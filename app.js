@@ -4633,6 +4633,8 @@ syncMusicForActiveTab();
   }
 
   function resetAudioEventSession() {
+    clearTimeout(maskDeferredOutcomeTimer);
+    maskDeferredOutcomeTimer = null;
     pauseAudioEventClock();
     dismissMaskEvent(true);
     eventSession.active = false;
@@ -4645,6 +4647,8 @@ syncMusicForActiveTab();
   }
 
   function stopAudioEventsForGameOver() {
+    clearTimeout(maskDeferredOutcomeTimer);
+    maskDeferredOutcomeTimer = null;
     if (!eventSession.active && !currentMaskEvent) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
@@ -4747,12 +4751,12 @@ syncMusicForActiveTab();
       const before = running.deferredThreshold[0];
       const after = running.deferredThreshold[1];
       els.maskEventEffect.textContent =
-        'Le Masque a réduit l’Instabilité mentale collective de 5 points.\\n\\n'
+        'Le Masque a réduit l’Instabilité mentale collective de 5 points.\n\n'
         + before + '% → ' + after + ' %. Aucun bouton à utiliser.';
     } else if (running.item.id === 'masque-003') {
       els.maskEventEffect.textContent =
-        'Joueur ' + player + ', à toi de décider.\\n\\n'
-        + '1. Subis 1 blessure ET passe ton prochain tour.\\n'
+        'Joueur ' + player + ', à toi de décider.\n\n'
+        + '1. Subis 1 blessure ET passe ton prochain tour.\n'
         + '2. Évite ces pénalités, mais inflige +15 points d’Instabilité au groupe.';
       els.maskEventChoices.classList.remove('hidden');
       els.maskEventDone.classList.add('hidden');
@@ -4760,7 +4764,7 @@ syncMusicForActiveTab();
       els.maskEventEffect.textContent =
         'Joueur ' + player
         + ' : mélange face cachée toutes les cartes rangées dans tes emplacements '
-        + 'de sac à dos et défausse-en une au hasard.\\n\\n'
+        + 'de sac à dos et défausse-en une au hasard.\n\n'
         + 'Ton arme et ton armure équipées ne sont pas concernées. '
         + 'Si ton sac est vide, aucun effet.';
     }
@@ -4785,9 +4789,9 @@ syncMusicForActiveTab();
 
     if (option === 'self') {
       els.maskEventEffect.textContent =
-        'Joueur ' + running.player + ' : tu te sacrifies.\\n\\n'
+        'Joueur ' + running.player + ' : tu te sacrifies.\n\n'
         + 'Subis 1 blessure et passe ton prochain tour. '
-        + 'Appliquez ces deux conséquences sur le plateau.\\n\\n'
+        + 'Appliquez ces deux conséquences sur le plateau.\n\n'
         + 'L’Instabilité collective ne change pas.';
     } else {
       const before = state.value;
@@ -4799,9 +4803,9 @@ syncMusicForActiveTab();
       running.deferredThreshold = [before, state.value];
       running.deferredGameOver = effect.gameOver;
       els.maskEventEffect.textContent =
-        'Joueur ' + running.player + ' : le groupe paie.\\n\\n'
+        'Joueur ' + running.player + ' : le groupe paie.\n\n'
         + 'Instabilité collective : ' + before + '% → ' + state.value
-        + '% (+' + effect.actual + ' points).\\n\\n'
+        + '% (+' + effect.actual + ' points).\n\n'
         + (effect.gameOver
           ? 'Le seuil de 100 % est atteint : la fin de partie sera déclenchée '
             + 'après la fermeture de cette fenêtre.'
@@ -4895,15 +4899,38 @@ syncMusicForActiveTab();
   }
 
   function completeMaskEvent() {
-    if (!currentMaskEvent) return;
-    const delay = currentMaskEvent.preview
-      ? currentMaskEvent.savedPreviewDelay
+    if (!currentMaskEvent || currentMaskEvent.intro
+      || (currentMaskEvent.item.id === 'masque-003'
+        && !currentMaskEvent.choiceMade)) return;
+
+    const finished = currentMaskEvent;
+    const delay = finished.preview
+      ? finished.savedPreviewDelay
       : randomBetween(...EVENT_NEXT_DELAY);
+    const deferredTransition = finished.deferredThreshold;
+    const deferredGameOver = finished.deferredGameOver;
+
     dismissMaskEvent();
     eventSession.remainingMs = delay;
     saveAudioEventSession();
     renderEventControls();
     updateAudioEventClock();
+
+    // L'alerte et sa voix sont déclenchées APRES le fondu du Masque,
+    // pas pendant son discours ni derrière sa fenêtre.
+    if (deferredTransition || deferredGameOver) {
+      clearTimeout(maskDeferredOutcomeTimer);
+      maskDeferredOutcomeTimer = setTimeout(() => {
+        maskDeferredOutcomeTimer = null;
+        if (deferredTransition && state.value === deferredTransition[1]
+          && !deferredGameOver) {
+          handleThresholdTransition(
+            deferredTransition[0], deferredTransition[1]
+          );
+        }
+        if (deferredGameOver) checkGameOver();
+      }, REDUCED_MOTION ? 0 : 790);
+    }
   }
 
   function handleAudioEventVisibility() {
@@ -5072,6 +5099,8 @@ syncMusicForActiveTab();
     });
     els.maskEventPlay.addEventListener('click', resumeMaskEventAudio);
     els.maskIntroSkip.addEventListener('click', () => finishMaskIntroduction(true));
+    els.maskChoiceSelf.addEventListener('click', () => chooseMaskSacrifice('self'));
+    els.maskChoiceGroup.addEventListener('click', () => chooseMaskSacrifice('group'));
     els.maskEventDone.addEventListener('click', completeMaskEvent);
 
 
