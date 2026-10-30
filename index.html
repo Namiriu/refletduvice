@@ -1383,6 +1383,37 @@
         transition-duration:.01ms!important;
       }
     }
+
+
+    /* =========================================================
+       ÉVÉNEMENTS AUDIO — prototype du Masque
+       ========================================================= */
+    .event-game-card{margin:10px 0;padding:13px 14px 15px;text-align:center}
+    .event-game-heading{color:#e0cdce;font:14px var(--font-ui);letter-spacing:1.1px}
+    .event-game-status{min-height:19px;margin:8px 0 11px;color:#aaa0a3;font-size:15px}
+    .event-game-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .event-game-btn{min-height:44px;min-width:120px;padding:10px 13px;border:1px solid #68484d;border-radius:9px;background:#332327;color:#f0e6e8;font:12px var(--font-ui);cursor:pointer}
+    .event-game-btn.secondary{border-color:#414147;background:#242429}
+    .event-game-btn:disabled{opacity:.58;cursor:default}
+    .event-players{display:grid;gap:9px}
+    .event-player-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:47px;padding:10px 13px;border:1px solid #414148;border-radius:9px;background:#1e1e22;color:#eee;font:14px var(--font-ui);cursor:pointer}
+    .event-player-row[aria-pressed="true"]{border-color:#7c4148;background:#332027}
+    .event-player-state{font-size:12px;color:#b9d3ba}
+    .event-player-row[aria-pressed="true"] .event-player-state{color:#e5a4a8}
+    .event-player-help{color:#b4adb1;font-size:15px;line-height:1.4;margin:0 0 15px}
+
+    .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:none;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate}
+    .mask-event-overlay.show{display:flex}
+    .mask-event-content{width:min(100%,520px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:10px 12px 25px}
+    .mask-event-kicker{margin:0;color:#b88d92;font:12px var(--font-ui);letter-spacing:2.4px}
+    .mask-event-portrait{display:block;width:min(64vw,230px);height:min(50dvh,330px);object-fit:contain;margin:4px auto 12px;filter:drop-shadow(0 0 18px rgba(125,17,29,.25));animation:mask-event-arrival .8s ease-out both}
+    .mask-event-title{margin:0 0 12px;color:#e9dedf;font:clamp(18px,5vw,25px) var(--font-ui);letter-spacing:.5px}
+    .mask-event-status{min-height:26px;margin:8px 0 15px;color:#c9b9bb;font-size:17px}
+    .mask-event-result{padding:13px 14px;border:1px solid #644247;border-radius:12px;background:rgba(24,16,19,.88)}
+    .mask-event-effect{margin:5px 0 13px;color:#f4e8e8;font-size:20px;line-height:1.4;white-space:pre-line}
+    .mask-event-cta{min-height:46px;padding:10px 16px;border:1px solid #91545c;border-radius:9px;background:#44252b;color:#fff;font:12px var(--font-ui);cursor:pointer}
+    @keyframes mask-event-arrival{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+    @media(max-width:420px){.event-game-btn{flex:1 1 125px;font-size:11px}.mask-event-portrait{height:min(46dvh,270px)}}
   </style>
 </head>
 
@@ -1497,6 +1528,16 @@
             aria-pressed="false">
             Plein écran
           </button>
+        </div>
+      </section>
+
+      <section class="card event-game-card" aria-labelledby="eventGameHeading">
+        <h2 id="eventGameHeading" class="event-game-heading">INTERVENTIONS</h2>
+        <p id="eventGameStatus" class="event-game-status">En attente du début de partie.</p>
+        <div class="event-game-actions">
+          <button id="btnStartEvents" class="event-game-btn" type="button">COMMENCER LA PARTIE</button>
+          <button id="btnPlayers" class="event-game-btn secondary" type="button">JOUEURS · 4/4</button>
+          <button id="btnTestMaskEvent" class="event-game-btn secondary hidden" type="button">TESTER LE MASQUE</button>
         </div>
       </section>
 
@@ -1744,6 +1785,33 @@
           type="button">
           Fermer
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JOUEURS / VIVANT-MORT ==================== -->
+  <div id="playersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="playersTitle">
+    <div class="modal-inner">
+      <h2 id="playersTitle" class="modal-title">État des joueurs</h2>
+      <p class="event-player-help">Touchez un joueur lors de sa mort ou de sa résurrection. Le Masque ne cible que les personnages vivants.</p>
+      <div id="eventPlayersList" class="event-players"></div>
+      <div class="modal-actions">
+        <button id="playersClose" class="modal-btn" type="button">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== INTERVENTION DU MASQUE ==================== -->
+  <div id="maskEventOverlay" class="mask-event-overlay" role="dialog" aria-modal="true" aria-labelledby="maskEventTitle" aria-hidden="true">
+    <div class="mask-event-content">
+      <p class="mask-event-kicker">UNE VOIX VOUS INTERPELLE</p>
+      <img id="maskEventPortrait" class="mask-event-portrait" src="img/masque0.png" alt="Le Masque">
+      <h2 id="maskEventTitle" class="mask-event-title">LE COLLECTIONNEUR</h2>
+      <p id="maskEventStatus" class="mask-event-status" aria-live="polite">Le Masque prend la parole…</p>
+      <button id="maskEventPlay" class="mask-event-cta hidden" type="button">ÉCOUTER LE MASQUE</button>
+      <div id="maskEventResult" class="mask-event-result hidden">
+        <p id="maskEventEffect" class="mask-event-effect"></p>
+        <button id="maskEventDone" class="mask-event-cta" type="button">CONTINUER LA PARTIE</button>
       </div>
     </div>
   </div>
