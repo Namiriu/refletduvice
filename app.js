@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.2 Cache hors-ligne (test)';
+  const VERSION = 'v1.1.3 Masque 004 (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -158,6 +158,18 @@ campAudio: $('campAudio'),
     maskChoiceSelf: $('maskChoiceSelf'),
     maskChoiceGroup: $('maskChoiceGroup'),
     maskEventDone: $('maskEventDone'),
+    maskDuelPanel: $('maskDuelPanel'),
+    maskDuelPlayer1: $('maskDuelPlayer1'),
+    maskDuelPlayer2: $('maskDuelPlayer2'),
+    maskDuelHelp: $('maskDuelHelp'),
+    maskDuelClock: $('maskDuelClock'),
+    maskDuelTrack: $('maskDuelTrack'),
+    maskDuelProgress: $('maskDuelProgress'),
+    maskDuelStart: $('maskDuelStart'),
+    maskDuelLoss1: $('maskDuelLoss1'),
+    maskDuelLoss2: $('maskDuelLoss2'),
+    maskDuelSuccess: $('maskDuelSuccess'),
+    maskDuelSkipAudio: $('maskDuelSkipAudio'),
 
     actionModal: $('actionModal'),
     actionModalTitle: $('actionModalTitle'),
@@ -447,6 +459,16 @@ bestiaireNarration: $('bestiaireNarration'),
       title: 'LE PRIX DU SACRIFICE',
       audio: 'audio/events/masque/interventions/masque-003-prix-du-sacrifice.mp3',
       target: 'joueur-vivant'
+    },
+    {
+      id: 'masque-004',
+      type: 'masque',
+      title: 'LE REGARD DU VICE',
+      audio: 'audio/events/masque/interventions/masque-004-regard-du-vice-intro.mp3',
+      duelAudio: 'audio/events/masque/interventions/masque-004-regard-du-vice-epreuve.mp3',
+      lossAudio: 'audio/events/masque/interventions/masque-004-regard-du-vice-perdant.mp3',
+      successAudio: 'audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3',
+      target: 'deux-joueurs-vivants'
     },
     {
       id: 'radio-001',
@@ -4477,6 +4499,7 @@ syncMusicForActiveTab();
   function eligibleAudioEvents() {
     return unusedAudioEvents().filter(item =>
       state.value >= (item.minInstability || 0)
+      && (item.id !== 'masque-004' || livingPlayerNumbers().length >= 2)
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel'
         && item.type === 'radio')
@@ -4510,8 +4533,11 @@ syncMusicForActiveTab();
     const testEvent = AUDIO_EVENTS.find(item =>
       item.id === els.testMaskEventSelect.value
     ) || AUDIO_EVENTS[0];
+    const insufficientDuelPlayers = testEvent.id === 'masque-004' && alive < 2;
     const locked = state.value < (testEvent.minInstability || 0);
-    els.btnTestMaskEvent.textContent = locked
+    els.btnTestMaskEvent.textContent = insufficientDuelPlayers
+      ? 'TEST : 2 VIVANTS MINIMUM'
+      : locked
       ? 'TEST : MINIMUM ' + testEvent.minInstability + '%'
       : testEvent.type === 'radio' ? 'TESTER LA RADIO'
         : testEvent.type === 'meteo' ? 'TESTER LA MÉTÉO'
@@ -4519,7 +4545,7 @@ syncMusicForActiveTab();
     els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
       || currentRadioEvent !== null || currentWeatherEvent !== null
       || eventSession.pendingWeather !== null || alive === 0
-      || state.value >= 100 || locked
+      || state.value >= 100 || locked || insufficientDuelPlayers
       || (testEvent.type === 'radio' && eventSession.radioMission
           && eventSession.radioMission.stage !== 'travel');
     renderRadioMission();
@@ -4750,6 +4776,10 @@ syncMusicForActiveTab();
     clearTimeout(maskClosingTimer);
     maskClosingTimer = null;
 
+    if (currentMaskEvent?.duelTimer !== null && currentMaskEvent?.duelTimer !== undefined) {
+      clearInterval(currentMaskEvent.duelTimer);
+    }
+
     if (currentMaskEvent) {
       currentMaskEvent.audios.forEach(audio => {
         audio.pause();
@@ -4777,6 +4807,9 @@ syncMusicForActiveTab();
     overlay.setAttribute('aria-hidden', 'true');
     els.maskEventPlay.classList.add('hidden');
     els.maskIntroSkip.classList.add('hidden');
+    els.maskDuelPanel.classList.add('hidden');
+    els.maskDuelSkipAudio.classList.add('hidden');
+    overlay.classList.remove('has-duel');
     els.maskEventResult.classList.add('hidden');
     specialAudioActive = false;
     syncAmbientVolume();
@@ -4834,26 +4867,43 @@ syncMusicForActiveTab();
       || specialAudioActive || anyBlockingModalOpen()) return false;
 
     const possibleTargets = livingPlayerNumbers();
-    if (possibleTargets.length === 0) return false;
+    if (possibleTargets.length === 0
+      || (item.id === 'masque-004' && possibleTargets.length < 2)) return false;
 
     pauseAudioEventClock();
     const savedPreviewDelay = eventSession.remainingMs;
     const player = possibleTargets[randomBetween(0, possibleTargets.length - 1)];
+    const otherPlayers = possibleTargets.filter(number => number !== player);
+    const opponent = item.id === 'masque-004'
+      ? otherPlayers[randomBetween(0, otherPlayers.length - 1)]
+      : null;
     const token = ++maskEventToken;
+
+    const audios = [
+      new Audio('audio/events/masque/designations/joueur-' + player + '.mp3')
+    ];
+    if (opponent !== null) {
+      audios.push(new Audio('audio/events/masque/designations/joueur-' + opponent + '.mp3'));
+    }
+    audios.push(new Audio(item.audio));
+    if (item.id === 'masque-004') audios.push(new Audio(item.duelAudio));
 
     currentMaskEvent = {
       token,
       item,
       player,
+      opponent,
       preview,
       savedPreviewDelay,
       segment: 0,
       pendingSegment: null,
       activeAudio: null,
-      audios: [
-        new Audio('audio/events/masque/designations/joueur-' + player + '.mp3'),
-        new Audio(item.audio)
-      ]
+      duelAudio: item.id === 'masque-004' ? audios[3] : null,
+      duelStage: null,
+      duelTimer: null,
+      duelRemainingMs: 30000,
+      duelDeadline: null,
+      audios
     };
 
     currentMaskEvent.audios.forEach(audio => {
@@ -4873,9 +4923,11 @@ syncMusicForActiveTab();
     els.maskEventStatus.textContent = 'Le Masque prend la parole…';
     clearTimeout(maskClosingTimer);
     maskClosingTimer = null;
-    els.maskEventOverlay.classList.remove('closing', 'has-result', 'has-choices', 'has-generosity');
+    els.maskEventOverlay.classList.remove('closing', 'has-result', 'has-choices', 'has-generosity', 'has-duel');
     els.maskIntroSkip.classList.add('hidden');
     els.maskEventPlay.classList.add('hidden');
+    els.maskDuelPanel.classList.add('hidden');
+    els.maskDuelSkipAudio.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
     els.maskEventOverlay.classList.add('show');
     els.maskEventOverlay.setAttribute('aria-hidden', 'false');
@@ -4893,6 +4945,10 @@ syncMusicForActiveTab();
       || currentMaskEvent.intro) return;
 
     const running = currentMaskEvent;
+    if (running.item.id === 'masque-004') {
+      showMaskDuelReward(token, audioUnavailable);
+      return;
+    }
     const player = running.player;
     els.maskEventStatus.textContent = audioUnavailable
       ? 'Audio indisponible — appliquez la conséquence ci-dessous.'
@@ -4992,6 +5048,177 @@ syncMusicForActiveTab();
     els.maskEventDone.focus();
   }
 
+
+  // =========================================================
+  // MASQUE 004 — LE REGARD DU VICE : DUEL EN TEMPS RÉEL
+  // =========================================================
+
+  function renderMaskDuelCountdown(running) {
+    const remaining = Math.max(0, running.duelRemainingMs);
+    const seconds = Math.ceil(remaining / 1000);
+    els.maskDuelClock.textContent = '00:' + String(seconds).padStart(2, '0');
+    els.maskDuelProgress.style.width = (remaining / 30000 * 100).toFixed(2) + '%';
+    els.maskDuelTrack.setAttribute('aria-valuenow', String(seconds));
+  }
+
+  function showMaskDuelReady(token) {
+    const running = currentMaskEvent;
+    if (!running || running.token !== token || running.item.id !== 'masque-004') return;
+
+    running.activeAudio = null;
+    running.duelStage = 'ready';
+    running.duelRemainingMs = 30000;
+    els.maskEventStatus.textContent = 'Deux regards. Un arbitre. Trente secondes.';
+    els.maskEventPlay.classList.add('hidden');
+    els.maskEventOverlay.classList.add('has-duel');
+    els.maskDuelPlayer1.textContent = 'JOUEUR ' + running.player;
+    els.maskDuelPlayer2.textContent = 'JOUEUR ' + running.opponent;
+    els.maskDuelHelp.textContent = livingPlayerNumbers().length > 2
+      ? 'Confiez le téléphone à un témoin. Le premier à détourner les yeux perd.'
+      : 'Confiez le téléphone à un témoin disponible. Sinon, confirmez honnêtement le résultat après le duel.';
+    els.maskDuelLoss1.textContent = 'JOUEUR ' + running.player + ' A DÉTOURNÉ LE REGARD';
+    els.maskDuelLoss2.textContent = 'JOUEUR ' + running.opponent + ' A DÉTOURNÉ LE REGARD';
+    els.maskDuelLoss1.disabled = true;
+    els.maskDuelLoss2.disabled = true;
+    els.maskDuelSuccess.disabled = true;
+    els.maskDuelStart.textContent = 'COMMENCER L’ÉPREUVE';
+    els.maskDuelStart.classList.remove('hidden');
+    renderMaskDuelCountdown(running);
+    els.maskDuelPanel.classList.remove('hidden');
+    els.maskDuelStart.focus();
+  }
+
+  function tickMaskDuel(token) {
+    const running = currentMaskEvent;
+    if (!running || running.token !== token || running.duelStage !== 'running') return;
+    running.duelRemainingMs = Math.max(0, running.duelDeadline - performance.now());
+    renderMaskDuelCountdown(running);
+    if (running.duelRemainingMs !== 0) return;
+    clearInterval(running.duelTimer);
+    running.duelTimer = null;
+    running.duelStage = 'awaiting-verdict';
+    els.maskDuelSuccess.disabled = false;
+    els.maskEventStatus.textContent = 'Temps écoulé. L’arbitre confirme le résultat.';
+    els.maskDuelHelp.textContent =
+      'Les deux ont-ils tenu ? Si quelqu’un a cédé, indiquez lequel.';
+  }
+
+  function startMaskDuel() {
+    const running = currentMaskEvent;
+    if (!running || running.item.id !== 'masque-004'
+      || !['ready', 'paused'].includes(running.duelStage)) return;
+
+    const isResume = running.duelStage === 'paused';
+    running.duelStage = 'running';
+    running.duelDeadline = performance.now() + running.duelRemainingMs;
+    els.maskDuelStart.classList.add('hidden');
+    els.maskDuelLoss1.disabled = false;
+    els.maskDuelLoss2.disabled = false;
+    els.maskDuelSuccess.disabled = true;
+    els.maskEventStatus.textContent = 'Ne détournez pas les yeux.';
+    els.maskDuelHelp.textContent = 'L’arbitre interrompt immédiatement le duel au premier regard détourné.';
+    running.duelAudio.play().catch(() => {
+      if (currentMaskEvent !== running || running.duelStage !== 'running') return;
+      els.maskDuelHelp.textContent =
+        'Audio indisponible. Le chronomètre continue ; l’arbitre surveille les regards.';
+    });
+    running.duelTimer = setInterval(() => tickMaskDuel(running.token), 100);
+    tickMaskDuel(running.token);
+  }
+
+  function pauseMaskDuel() {
+    const running = currentMaskEvent;
+    if (!running || running.item.id !== 'masque-004' || running.duelStage !== 'running') return;
+    running.duelRemainingMs = Math.max(0, running.duelDeadline - performance.now());
+    clearInterval(running.duelTimer);
+    running.duelTimer = null;
+    running.duelAudio.pause();
+    running.duelStage = 'paused';
+    renderMaskDuelCountdown(running);
+    els.maskDuelLoss1.disabled = true;
+    els.maskDuelLoss2.disabled = true;
+    els.maskDuelStart.textContent = 'REPRENDRE L’ÉPREUVE';
+    els.maskDuelStart.classList.remove('hidden');
+    els.maskEventStatus.textContent = 'Épreuve suspendue. Reprenez lorsque les joueurs sont prêts.';
+  }
+
+  function resolveMaskDuel(outcome) {
+    const running = currentMaskEvent;
+    if (!running || running.item.id !== 'masque-004'
+      || !['running', 'awaiting-verdict'].includes(running.duelStage)) return;
+    if (outcome === 'both' && running.duelStage !== 'awaiting-verdict') return;
+    if (!['first', 'second', 'both'].includes(outcome)) return;
+
+    running.duelOutcome = outcome;
+    running.duelStage = 'reaction';
+    clearInterval(running.duelTimer);
+    running.duelTimer = null;
+    running.duelAudio.pause();
+    running.activeAudio = null;
+    els.maskDuelLoss1.disabled = true;
+    els.maskDuelLoss2.disabled = true;
+    els.maskDuelSuccess.disabled = true;
+    els.maskDuelPanel.classList.add('hidden');
+    els.maskEventOverlay.classList.remove('has-duel');
+    els.maskEventStatus.textContent = 'Le Masque réagit à votre choix…';
+
+    const reaction = new Audio(
+      outcome === 'both' ? running.item.successAudio : running.item.lossAudio
+    );
+    reaction.volume = 1;
+    reaction.preload = 'auto';
+    running.audios.push(reaction);
+    running.activeAudio = reaction;
+    const token = running.token;
+    reaction.onended = () => showMaskDuelReward(token);
+    reaction.onerror = () => showMaskDuelReward(token, true);
+    reaction.play().catch(() => {
+      if (currentMaskEvent !== running || running.duelStage !== 'reaction') return;
+      els.maskEventStatus.textContent = 'Touchez pour écouter le verdict.';
+      els.maskEventPlay.textContent = 'ÉCOUTER LE VERDICT';
+      els.maskEventPlay.classList.remove('hidden');
+      els.maskDuelSkipAudio.classList.remove('hidden');
+    });
+  }
+
+  function showMaskDuelReward(token, audioUnavailable = false) {
+    const running = currentMaskEvent;
+    if (!running || running.token !== token || running.item.id !== 'masque-004'
+      || running.duelStage !== 'reaction') return;
+    running.duelStage = 'done';
+    running.activeAudio = null;
+    els.maskEventPlay.classList.add('hidden');
+    els.maskDuelSkipAudio.classList.add('hidden');
+    els.maskEventStatus.textContent = audioUnavailable
+      ? 'Verdict audio indisponible — appliquez la récompense.'
+      : 'Le Masque a rendu son verdict.';
+    els.maskEventInventoryLabel.classList.add('hidden');
+    els.maskEventChoices.classList.add('hidden');
+    els.maskEventDone.classList.remove('hidden');
+    if (running.duelOutcome === 'both') {
+      els.maskEventEffect.textContent =
+        'Les joueurs ' + running.player + ' et ' + running.opponent
+        + ' ont tenu 30 secondes.\\n\\n'
+        + 'Chacun pioche 1 carte Objet (2 cartes au total).';
+    } else {
+      const loser = running.duelOutcome === 'first' ? running.player : running.opponent;
+      els.maskEventEffect.textContent =
+        'Joueur ' + loser + ' a détourné le regard.\\n\\n'
+        + 'Le Masque le prend en pitié : ce joueur pioche 1 carte Objet. '
+        + 'L’autre ne reçoit rien.';
+    }
+    els.maskEventResult.classList.remove('hidden');
+    els.maskEventOverlay.classList.add('has-result');
+    els.maskEventDone.focus();
+  }
+
+  function skipMaskDuelReaction() {
+    const running = currentMaskEvent;
+    if (!running || running.item.id !== 'masque-004' || running.duelStage !== 'reaction') return;
+    running.activeAudio?.pause();
+    showMaskDuelReward(running.token, true);
+  }
+
   function playMaskEventSegment(segment, token) {
     if (!currentMaskEvent || currentMaskEvent.token !== token) return;
     const running = currentMaskEvent;
@@ -5020,6 +5247,15 @@ syncMusicForActiveTab();
       running.activeAudio = null;
       if (running.intro) {
         finishMaskIntroduction();
+      } else if (running.item.id === 'masque-004') {
+        if (segment < 2) {
+          eventAudioGapTimer = setTimeout(() => {
+            eventAudioGapTimer = null;
+            playMaskEventSegment(segment + 1, token);
+          }, 320);
+        } else {
+          showMaskDuelReady(token);
+        }
       } else if (segment === 0) {
         eventAudioGapTimer = setTimeout(() => {
           eventAudioGapTimer = null;
@@ -5037,6 +5273,11 @@ syncMusicForActiveTab();
           'Introduction indisponible. Vous pouvez poursuivre la partie.';
         els.maskEventPlay.classList.add('hidden');
         els.maskIntroSkip.classList.remove('hidden');
+      } else if (running.item.id === 'masque-004') {
+        // Même si une désignation ou l'introduction est introuvable,
+        // l'épreuve physique reste jouable.
+        if (segment < 2) playMaskEventSegment(segment + 1, token);
+        else showMaskDuelReady(token);
       } else {
         showMaskEventResult(token, true);
       }
@@ -5066,7 +5307,10 @@ syncMusicForActiveTab();
     running.activeAudio.play().then(() => {
       els.maskEventStatus.textContent = running.intro
         ? 'Le Masque vous accueille…'
-        : 'Le Masque dicte sa loi…';
+        : running.item?.id === 'masque-004' && running.duelStage === 'reaction'
+          ? 'Le Masque rend son verdict…'
+          : 'Le Masque dicte sa loi…';
+      els.maskDuelSkipAudio.classList.add('hidden');
       els.maskIntroSkip.classList.add('hidden');
     }).catch(() => {
       els.maskEventStatus.textContent = 'Lecture refusée. Réessayez.';
@@ -5078,7 +5322,9 @@ syncMusicForActiveTab();
   function completeMaskEvent() {
     if (!currentMaskEvent || currentMaskEvent.intro
       || (currentMaskEvent.item.id === 'masque-003'
-        && !currentMaskEvent.choiceMade)) return;
+        && !currentMaskEvent.choiceMade)
+      || (currentMaskEvent.item.id === 'masque-004'
+        && currentMaskEvent.duelStage !== 'done')) return;
 
     const finished = currentMaskEvent;
     const delay = finished.preview
@@ -5125,6 +5371,10 @@ syncMusicForActiveTab();
     }
     if (!currentMaskEvent || document.visibilityState !== 'hidden') return;
     const running = currentMaskEvent;
+    if (running.item?.id === 'masque-004' && running.duelStage === 'running') {
+      pauseMaskDuel();
+      return;
+    }
     if (running.activeAudio && !running.activeAudio.paused) {
       running.activeAudio.pause();
       els.maskEventStatus.textContent = 'Intervention suspendue.';
@@ -5879,6 +6129,11 @@ syncMusicForActiveTab();
     els.maskChoiceSelf.addEventListener('click', () => chooseMaskSacrifice('self'));
     els.maskChoiceGroup.addEventListener('click', () => chooseMaskSacrifice('group'));
     els.maskEventDone.addEventListener('click', completeMaskEvent);
+    els.maskDuelStart.addEventListener('click', startMaskDuel);
+    els.maskDuelLoss1.addEventListener('click', () => resolveMaskDuel('first'));
+    els.maskDuelLoss2.addEventListener('click', () => resolveMaskDuel('second'));
+    els.maskDuelSuccess.addEventListener('click', () => resolveMaskDuel('both'));
+    els.maskDuelSkipAudio.addEventListener('click', skipMaskDuelReaction);
 
     els.radioMissionToggle.addEventListener('click', toggleRadioMissionPanel);
     els.radioMissionArrived.addEventListener('click', radioMissionArrived);
