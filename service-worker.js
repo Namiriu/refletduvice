@@ -1,4 +1,4 @@
-const CACHE = 'instability-v77';
+const CACHE = 'instability-v78';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -120,6 +120,10 @@ const ASSETS = [
   './audio/events/masque/interventions/masque-001-collectionneur.mp3',
   './audio/events/masque/interventions/masque-002-elan-de-generosite.mp3',
   './audio/events/masque/interventions/masque-003-prix-du-sacrifice.mp3',
+'./audio/events/masque/interventions/masque-004-regard-du-vice-intro.mp3',
+'./audio/events/masque/interventions/masque-004-regard-du-vice-epreuve.mp3',
+'./audio/events/masque/interventions/masque-004-regard-du-vice-perdant.mp3',
+'./audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3',
   // Première transmission radio : appel monté + résolution narrée
   './audio/events/radio/radio-001-derriere-la-porte.MP3',
   './audio/events/radio/radio-001-resolution-local-vide.mp3',
@@ -264,6 +268,10 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-001-collectionneur.mp3": "24e2377d6b74a9d71151e067f0a8e99c6981bcdf",
   "./audio/events/masque/interventions/masque-002-elan-de-generosite.mp3": "9ba126b121b272bcca8f6b21d02d3e8450222866",
   "./audio/events/masque/interventions/masque-003-prix-du-sacrifice.mp3": "c3cfbb27d1f3a1038a1358e075e8416c28bba697",
+  "./audio/events/masque/interventions/masque-004-regard-du-vice-intro.mp3": "61d5fc839300524702144812d6a5f61cde80bd07",
+  "./audio/events/masque/interventions/masque-004-regard-du-vice-epreuve.mp3": "21394f03272827e2846ea6b1927b55558646ba42",
+  "./audio/events/masque/interventions/masque-004-regard-du-vice-perdant.mp3": "88e44b914376506ddd478231f7854290693a5a5e",
+  "./audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3": "9bc3b59d8ce0adc120b654ea700eeb7df141602e",
   "./audio/events/radio/radio-001-derriere-la-porte.MP3": "f058d8962a4e843d4af550cabc36989d58a29d6b",
   "./audio/events/radio/radio-001-resolution-local-vide.mp3": "9af4f7ee68a2358f9287c91816b201604a34c41e",
   "./audio/events/meteo/meteo-001-pression-fantome.mp3": "fe45d827bd3792ce1a14ca66638a18ffafac2f45",
