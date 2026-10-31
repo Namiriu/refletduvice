@@ -5198,12 +5198,12 @@ syncMusicForActiveTab();
     if (running.duelOutcome === 'both') {
       els.maskEventEffect.textContent =
         'Les joueurs ' + running.player + ' et ' + running.opponent
-        + ' ont tenu 30 secondes.\\n\\n'
+        + ' ont tenu 30 secondes.\n\n'
         + 'Chacun pioche 1 carte Objet (2 cartes au total).';
     } else {
       const loser = running.duelOutcome === 'first' ? running.player : running.opponent;
       els.maskEventEffect.textContent =
-        'Joueur ' + loser + ' a détourné le regard.\\n\\n'
+        'Joueur ' + loser + ' a détourné le regard.\n\n'
         + 'Le Masque le prend en pitié : ce joueur pioche 1 carte Objet. '
         + 'L’autre ne reçoit rien.';
     }
