@@ -1,4 +1,4 @@
-const CACHE = 'instability-v76';
+const CACHE = 'instability-v77';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -335,13 +335,28 @@ async function cachePersistentMedia() {
 }
 
 
+// L'interface doit devenir disponible hors ligne sans attendre les 110 Mio
+// de contenus du Bestiaire. Ces médias sont préparés séparément.
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const shellCache = await caches.open(CACHE);
     await shellCache.addAll(SHELL_ASSETS);
-    await cachePersistentMedia();
     await self.skipWaiting();
   })());
+});
+
+let mediaCacheJob = null;
+self.addEventListener('message', event => {
+  if (event.data?.type !== 'rdv-cache-offline-media') return;
+  if (!mediaCacheJob) {
+    mediaCacheJob = cachePersistentMedia()
+      .catch(err => {
+        // L'échec d'un gros fichier ne doit plus rendre toute la PWA inutilisable.
+        console.warn('Médias hors ligne incomplets :', err);
+      })
+      .finally(() => { mediaCacheJob = null; });
+  }
+  event.waitUntil(mediaCacheJob);
 });
 
 self.addEventListener('activate', event => {
