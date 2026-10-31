@@ -1520,6 +1520,29 @@
     .mask-event-choice:first-child{background:#363238;border-color:#77707b}
     .mask-event-choice:last-child{background:#51212a;border-color:#98434f}
     .mask-event-skip{display:block;margin:9px auto 0;background:transparent;border-color:#554044;color:#c3adb1;font-size:11px}
+    /* Masque 004 — regard fixe, chronomètre et arbitrage manuel */
+    .mask-event-overlay.has-duel .mask-event-portrait{
+      width:min(38vw,155px);height:min(25dvh,162px);margin:0 auto 6px
+    }
+    .mask-event-overlay.has-duel .mask-event-content{padding:5px 10px 12px}
+    .mask-event-overlay.has-duel .mask-event-status{font-size:15px;margin:4px 0 9px}
+    .mask-duel-panel{display:grid;gap:11px;max-width:460px;margin:0 auto;color:#eadcdb}
+    .mask-duel-kicker{margin:2px 0;color:#e3bbb8;font:clamp(14px,4vw,18px) var(--font-ui);letter-spacing:1.1px;text-align:center}
+    .mask-duel-contenders{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center}
+    .mask-duel-player{padding:11px 5px;min-height:60px;display:flex;align-items:center;justify-content:center;background:#2d2125;border:1px solid #6c464d;border-radius:9px;color:#efd6d4;font:clamp(11px,3.2vw,15px) var(--font-ui);text-align:center}
+    .mask-duel-vs{color:#bb8a8c;font:15px var(--font-ui)}
+    .mask-duel-help{font:clamp(14px,3.5vw,16px)/1.38 var(--font-body);color:#bba9aa;margin:0;text-align:center}
+    .mask-duel-timer{font:clamp(30px,9vw,44px) var(--font-ui);color:#f1dbd4;letter-spacing:2px;text-align:center}
+    .mask-duel-track{height:7px;background:#3f3035;border-radius:10px;overflow:hidden}
+    .mask-duel-progress{height:100%;width:100%;background:#b77574;border-radius:10px;transition:width .12s linear}
+    .mask-duel-outcomes{display:grid;gap:7px;margin-top:2px}
+    .mask-duel-outcomes .mask-event-cta,.mask-duel-panel>.mask-event-cta{display:block;width:100%;text-align:center;min-height:46px;white-space:normal;font:clamp(10px,2.6vw,12px)/1.3 var(--font-ui)}
+    .mask-duel-outcomes .mask-event-cta{background:#34262b;border-color:#704d55;padding:11px 8px}
+    .mask-duel-outcomes .mask-event-cta:disabled{opacity:.38;cursor:default}
+    .mask-duel-outcomes .mask-duel-success{border-color:#74604f;background:#3a2f2b}
+    .mask-event-overlay .mask-event-cta:focus-visible{outline:2px solid #e8bdac;outline-offset:3px}
+    @media(max-height:590px){.mask-event-overlay.has-duel .mask-event-portrait{height:min(16dvh,90px);width:min(28vw,110px)}.mask-duel-panel{gap:6px}.mask-duel-player{min-height:42px}}
+    @media(prefers-reduced-motion:reduce){.mask-duel-progress{transition:none}}
     .mask-event-visually-hidden{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
     .mask-event-inventory-label{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 12px;color:#e8cace;font:clamp(12px,3.4vw,15px) var(--font-ui);letter-spacing:.4px}
     .mask-event-backpack-halo{display:flex;align-items:center;justify-content:center;flex:0 0 54px;width:54px;height:54px;border:1px solid rgba(156,60,70,.45);border-radius:50%;background:radial-gradient(circle,rgba(151,26,39,.58) 0,rgba(92,16,27,.35) 45%,rgba(22,9,12,.58) 80%);box-shadow:0 0 17px rgba(155,30,42,.20),inset 0 0 11px rgba(169,30,45,.21)}
@@ -1653,6 +1676,7 @@
             <option value="masque-001">001 · Le Collectionneur</option>
             <option value="masque-002">002 · Un élan de générosité</option>
             <option value="masque-003">003 · Le Prix du sacrifice</option>
+            <option value="masque-004">004 · Le Regard du Vice</option>
             <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
             <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
             <option value="meteo-002">🌧️ Météo 002 · La Pluie à rebours</option>
@@ -1978,6 +2002,26 @@
       <p id="maskEventStatus" class="mask-event-status" aria-live="polite">Le Masque prend la parole…</p>
       <button id="maskEventPlay" class="mask-event-cta hidden" type="button">ÉCOUTER LE MASQUE</button>
       <button id="maskIntroSkip" class="mask-event-cta mask-event-skip hidden" type="button">PASSER L’INTRODUCTION</button>
+      <section id="maskDuelPanel" class="mask-duel-panel hidden" aria-label="Le Regard du Vice">
+        <h3 class="mask-duel-kicker">LE REGARD DU VICE</h3>
+        <div class="mask-duel-contenders">
+          <div id="maskDuelPlayer1" class="mask-duel-player">JOUEUR 1</div>
+          <span class="mask-duel-vs" aria-hidden="true">VS</span>
+          <div id="maskDuelPlayer2" class="mask-duel-player">JOUEUR 2</div>
+        </div>
+        <p id="maskDuelHelp" class="mask-duel-help">Confiez le téléphone à un témoin. Il surveille les regards et indique le résultat.</p>
+        <div id="maskDuelClock" class="mask-duel-timer" role="timer" aria-live="off">00:30</div>
+        <div class="mask-duel-track" role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30" id="maskDuelTrack">
+          <div id="maskDuelProgress" class="mask-duel-progress"></div>
+        </div>
+        <button id="maskDuelStart" class="mask-event-cta" type="button">COMMENCER L’ÉPREUVE</button>
+        <div class="mask-duel-outcomes">
+          <button id="maskDuelLoss1" class="mask-event-cta" type="button" disabled>JOUEUR 1 A DÉTOURNÉ LE REGARD</button>
+          <button id="maskDuelLoss2" class="mask-event-cta" type="button" disabled>JOUEUR 2 A DÉTOURNÉ LE REGARD</button>
+          <button id="maskDuelSuccess" class="mask-event-cta mask-duel-success" type="button" disabled>LES DEUX ONT TENU 30 SECONDES</button>
+        </div>
+      </section>
+      <button id="maskDuelSkipAudio" class="mask-event-cta mask-event-skip hidden" type="button">CONTINUER SANS AUDIO</button>
       <div id="maskEventResult" class="mask-event-result hidden">
         <div id="maskEventInventoryLabel" class="mask-event-inventory-label">
           <span class="mask-event-backpack-halo" aria-hidden="true">
