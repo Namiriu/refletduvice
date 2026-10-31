@@ -1438,29 +1438,28 @@
     @media(max-height:550px){.radio-event-content{padding:10px 12px}.radio-event-icon{font-size:26px}.radio-event-signal{margin:3px auto;height:20px}}
     @media(prefers-reduced-motion:reduce){.radio-event-signal i{animation:none}}
 
-    /* MÉTÉO : esthétique atmosphérique minérale, distincte du Masque et des radios */
-    .weather-event-overlay{position:fixed;inset:0;z-index:10130;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 48% 35%,rgba(35,54,69,.97),rgba(7,13,24,.99) 74%);opacity:0;visibility:hidden;pointer-events:none;isolation:isolate;transition:opacity .7s ease,visibility 0s linear .7s}
+    /* MÉTÉO : métal gris et rouille, volontairement sans révélation du phénomène */
+    .weather-event-overlay{position:fixed;inset:0;z-index:10130;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 48% 34%,rgba(51,48,44,.97),rgba(10,10,11,.995) 77%);opacity:0;visibility:hidden;pointer-events:none;isolation:isolate;transition:opacity .7s ease,visibility 0s linear .7s}
     .weather-event-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .6s ease}
     .weather-event-overlay.closing{opacity:0;visibility:visible;pointer-events:none;transition:opacity .7s ease}
-    .weather-event-content{position:relative;width:min(100%,470px);max-height:calc(100dvh - 32px);overflow-y:auto;padding:25px 18px 22px;text-align:center;border:1px solid rgba(150,184,199,.48);border-radius:17px;background:linear-gradient(160deg,rgba(28,44,60,.97),rgba(12,21,33,.97));box-shadow:0 18px 52px rgba(0,0,0,.64),inset 0 0 33px rgba(113,158,186,.08)}
-    .weather-event-kicker{margin:0 0 10px;font:11px var(--font-ui);letter-spacing:2.3px;color:#b9d0df}
-    .weather-event-symbol{font-size:48px;line-height:1.15;filter:drop-shadow(0 0 17px rgba(155,204,233,.36))}
-    .weather-event-heading{margin:7px 0 7px;font:clamp(19px,5vw,26px) var(--font-ui);color:#effaff;letter-spacing:.4px}
-    .weather-event-lines{display:flex;align-items:center;justify-content:center;gap:5px;height:31px;margin:13px auto 12px;opacity:.9}
-    .weather-event-lines i{display:block;width:5px;height:8px;border-radius:5px;background:linear-gradient(#d3eefa,#76afc8);animation:weather-pressure 1.9s ease-in-out infinite}
+    .weather-event-content{position:relative;width:min(100%,470px);max-height:calc(100dvh - 32px);overflow-y:auto;padding:25px 18px 22px;text-align:center;border:1px solid rgba(153,98,66,.7);border-radius:14px;background:linear-gradient(155deg,rgba(37,36,34,.98),rgba(17,18,19,.99));box-shadow:0 18px 52px rgba(0,0,0,.73),inset 0 0 38px rgba(99,57,35,.13)}
+    .weather-event-kicker{margin:0 0 12px;font:clamp(12px,3.2vw,15px) var(--font-ui);letter-spacing:1.8px;color:#d2b49a}
+    .weather-event-symbol{font:42px/1.15 var(--font-ui);color:#9a684a;filter:drop-shadow(0 0 16px rgba(132,67,37,.23))}
+    .weather-event-lines{display:flex;align-items:center;justify-content:center;gap:5px;height:31px;margin:13px auto 12px;opacity:.85}
+    .weather-event-lines i{display:block;width:5px;height:8px;border-radius:5px;background:linear-gradient(#ca986d,#7b4934);animation:weather-pressure 1.9s ease-in-out infinite}
     .weather-event-lines i:nth-child(2){animation-delay:.25s}
     .weather-event-lines i:nth-child(3){animation-delay:.55s}
     .weather-event-lines i:nth-child(4){animation-delay:.9s}
     .weather-event-lines i:nth-child(5){animation-delay:.4s}
     .weather-event-overlay:not(.is-speaking) .weather-event-lines i{animation-play-state:paused;opacity:.35;height:5px}
     @keyframes weather-pressure{0%,100%{height:7px;opacity:.45}45%{height:27px;opacity:1}}
-    .weather-event-status{font:clamp(16px,4vw,20px)/1.45 var(--font-body);color:#d5e3ec;white-space:pre-line;margin:10px 0 13px}
-    .weather-event-result{margin:16px 0 14px;padding:14px 11px;border:1px solid #658297;border-radius:11px;background:rgba(5,17,28,.65)}
-    .weather-event-result strong{display:block;font:clamp(20px,6vw,27px) var(--font-ui);color:#e6f6ff;margin:5px auto 7px}
-    .weather-event-result span{color:#d3e2ea;font-size:17px}
-    .weather-event-btn{min-height:45px;width:100%;padding:10px 14px;border:1px solid #759aae;border-radius:9px;background:#294e63;color:#f4fbff;font:12px var(--font-ui);cursor:pointer;margin:7px 0 0}
-    .weather-event-btn.secondary{background:transparent;border-color:#4d6475;color:#b6cbdb;font-size:11px}
-    @media(max-height:540px){.weather-event-content{padding:12px 15px}.weather-event-symbol{font-size:31px}.weather-event-lines{margin:3px auto;height:21px}}
+    .weather-event-status{font:clamp(16px,4vw,20px)/1.45 var(--font-body);color:#d9d2cc;white-space:pre-line;margin:10px 0 13px}
+    .weather-event-result{margin:16px 0 14px;padding:14px 11px;border:1px solid #715643;border-radius:10px;background:rgba(13,12,11,.78)}
+    .weather-event-result strong{display:block;font:clamp(20px,6vw,27px) var(--font-ui);color:#e9b58d;margin:5px auto 7px}
+    .weather-event-result span{color:#d3c7bf;font-size:17px}
+    .weather-event-btn{min-height:45px;width:100%;padding:10px 14px;border:1px solid #926242;border-radius:9px;background:#593827;color:#f6e6db;font:12px var(--font-ui);cursor:pointer;margin:7px 0 0}
+    .weather-event-btn.secondary{background:transparent;border-color:#605147;color:#bdada2;font-size:11px}
+    @media(max-height:540px){.weather-event-content{padding:12px 15px}.weather-event-symbol{font-size:29px}.weather-event-lines{margin:3px auto;height:21px}}
     @media(prefers-reduced-motion:reduce){.weather-event-lines i{animation:none}}
 
     .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
@@ -1955,15 +1954,14 @@
   <!-- ==================== ANOMALIE MÉTÉOROLOGIQUE ==================== -->
   <div id="weatherEventOverlay" class="weather-event-overlay" role="dialog" aria-modal="true" aria-labelledby="weatherEventHeading" aria-hidden="true">
     <div class="weather-event-content">
-      <p class="weather-event-kicker">PERTURBATION ATMOSPHÉRIQUE</p>
-      <div id="weatherEventSymbol" class="weather-event-symbol" aria-hidden="true">🌫️</div>
-      <h2 id="weatherEventHeading" class="weather-event-heading">ANOMALIE DÉTECTÉE</h2>
+      <h2 id="weatherEventHeading" class="weather-event-kicker">PERTURBATION ATMOSPHÉRIQUE</h2>
+      <div id="weatherEventSymbol" class="weather-event-symbol" aria-hidden="true">◇</div>
       <div class="weather-event-lines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <p id="weatherEventStatus" class="weather-event-status" aria-live="polite">Quelque chose change dans l'atmosphère…</p>
       <button id="weatherEventPlay" class="weather-event-btn hidden" type="button">ÉCOUTER LE NARRATEUR</button>
       <button id="weatherEventSkip" class="weather-event-btn secondary hidden" type="button">CONTINUER SANS AUDIO</button>
       <div id="weatherEventResult" class="weather-event-result hidden">
-        <span id="weatherEventEffect">Instabilité mentale collective</span>
+        <span id="weatherEventEffect">Instabilité mentale</span>
         <strong id="weatherEventChange">+5 %</strong>
         <span id="weatherEventValues">40 % → 45 %</span>
       </div>
