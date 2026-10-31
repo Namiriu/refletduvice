@@ -4578,6 +4578,23 @@ syncMusicForActiveTab();
     }
   }
 
+  function scheduleWeatherUnlockWake() {
+    clearTimeout(weatherReadyTimer);
+    weatherReadyTimer = null;
+    const hasUnplayedWeather = unusedAudioEvents().some(item => item.type === 'meteo');
+    if (!appStarted || !eventSession.active || gameOverShown
+      || state.value >= 100 || eventSession.pendingWeather
+      || eventSession.weatherCount >= WEATHER_MAX_PER_GAME
+      || !hasUnplayedWeather) return;
+
+    const remaining = eventSession.nextWeatherEligibleAt - Date.now();
+    if (remaining <= 0) return;
+    weatherReadyTimer = setTimeout(() => {
+      weatherReadyTimer = null;
+      updateAudioEventClock();
+    }, Math.max(1000, remaining + 50));
+  }
+
   function audioEventClockAllowed() {
     return appStarted
       && eventSession.active
@@ -4596,6 +4613,7 @@ syncMusicForActiveTab();
   }
 
   function updateAudioEventClock() {
+    scheduleWeatherUnlockWake();
     if (!audioEventClockAllowed()) {
       pauseAudioEventClock();
       return;
@@ -4665,6 +4683,9 @@ syncMusicForActiveTab();
     eventSession.active = true;
     // L'introduction est marquée comme jouée avant la lecture : F5 ne la rejoue pas.
     eventSession.introPlayed = true;
+    eventSession.weatherCount = 0;
+    eventSession.nextWeatherEligibleAt = 0;
+    eventSession.pendingWeather = null;
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
     saveAudioEventSession();
@@ -4772,10 +4793,18 @@ syncMusicForActiveTab();
     pauseAudioEventClock();
     dismissMaskEvent(true);
     dismissRadioEvent(true);
+    dismissWeatherEvent(true);
+    clearTimeout(weatherReadyTimer);
+    weatherReadyTimer = null;
+    clearTimeout(weatherDeferredOutcomeTimer);
+    weatherDeferredOutcomeTimer = null;
     eventSession.active = false;
     eventSession.introPlayed = false;
     eventSession.radioMission = null;
     eventSession.lastEventType = null;
+    eventSession.weatherCount = 0;
+    eventSession.nextWeatherEligibleAt = 0;
+    eventSession.pendingWeather = null;
     eventSession.alive = [true, true, true, true];
     eventSession.played = [];
     eventSession.remainingMs = null;
@@ -4786,12 +4815,19 @@ syncMusicForActiveTab();
   function stopAudioEventsForGameOver() {
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
-    if (!eventSession.active && !currentMaskEvent && !currentRadioEvent) return;
+    if (!eventSession.active && !currentMaskEvent && !currentRadioEvent
+      && !currentWeatherEvent && !eventSession.pendingWeather) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
     dismissRadioEvent(true);
+    dismissWeatherEvent(true);
+    clearTimeout(weatherReadyTimer);
+    weatherReadyTimer = null;
+    clearTimeout(weatherDeferredOutcomeTimer);
+    weatherDeferredOutcomeTimer = null;
     eventSession.active = false;
     eventSession.radioMission = null;
+    eventSession.pendingWeather = null;
     eventSession.remainingMs = null;
     saveAudioEventSession();
     renderEventControls();
@@ -5081,6 +5117,11 @@ syncMusicForActiveTab();
 
   function handleAudioEventVisibility() {
     updateAudioEventClock();
+    if (currentWeatherEvent && document.visibilityState === 'hidden'
+      && currentWeatherEvent.audio && !currentWeatherEvent.audio.paused) {
+      currentWeatherEvent.audio.pause();
+      showWeatherAudioFallback('Narration suspendue. Touchez pour reprendre.');
+    }
     if (currentRadioEvent && document.visibilityState === 'hidden'
       && currentRadioEvent.audio
       && !currentRadioEvent.audio.paused) {
@@ -5441,7 +5482,9 @@ syncMusicForActiveTab();
 
     scheduleMaskDisturbance();
 
-    updateAudioEventClock();
+    if (!resumePendingWeatherIfPossible()) {
+      updateAudioEventClock();
+    }
 
     if (
       state.musicOn
@@ -5593,6 +5636,9 @@ syncMusicForActiveTab();
     els.radioEventAccept.addEventListener('click', () => answerRadioCall(true));
     els.radioEventIgnore.addEventListener('click', () => answerRadioCall(false));
     els.radioEventDone.addEventListener('click', finishRadioResolution);
+    els.weatherEventPlay.addEventListener('click', playWeatherNarration);
+    els.weatherEventSkip.addEventListener('click', () => finishWeatherNarration(true));
+    els.weatherEventDone.addEventListener('click', completeWeatherEvent);
 
 
     els.audioToggle
