@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.1 Météo (test)';
+  const VERSION = 'v1.1.2 Cache hors-ligne (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -4363,23 +4363,18 @@ syncMusicForActiveTab();
   }
 
   function registerServiceWorker() {
-    if (
-      !('serviceWorker' in navigator)
-    ) {
-      return;
-    }
+    if (!('serviceWorker' in navigator)) return;
 
-    navigator
-      .serviceWorker
-      .register(
-        './service-worker.js'
-      )
-      .then(
-        registration =>
-          registration
-            .update()
-            .catch(() => {})
-      )
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(async registration => {
+        // Le cache léger de l'interface s'installe d'abord. Les médias lourds
+        // sont préparés ensuite, sans bloquer le fonctionnement hors ligne.
+        registration.update().catch(() => {});
+        const ready = await navigator.serviceWorker.ready;
+        if (navigator.onLine !== false) {
+          ready.active?.postMessage({ type: 'rdv-cache-offline-media' });
+        }
+      })
       .catch(() => {});
   }
 
