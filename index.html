@@ -1383,6 +1383,150 @@
         transition-duration:.01ms!important;
       }
     }
+
+
+    /* =========================================================
+       ÉVÉNEMENTS AUDIO — prototype du Masque
+       ========================================================= */
+    .event-game-card{margin:10px 0;padding:12px 14px 13px;text-align:center}
+    .event-game-heading{color:#e0cdce;font:14px var(--font-ui);letter-spacing:1.1px}
+    .event-game-status{min-height:18px;margin:7px 0 9px;color:#aaa0a3;font-size:14px}
+    .event-game-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    .event-game-btn{min-height:44px;min-width:120px;padding:10px 13px;border:1px solid #68484d;border-radius:9px;background:#332327;color:#f0e6e8;font:12px var(--font-ui);cursor:pointer}
+    .event-game-btn.secondary{border-color:#414147;background:#242429}
+    .event-game-btn:disabled{opacity:.58;cursor:default}
+    .event-players{display:grid;gap:9px}
+    .event-player-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:47px;padding:10px 13px;border:1px solid #414148;border-radius:9px;background:#1e1e22;color:#eee;font:14px var(--font-ui);cursor:pointer}
+    .event-player-row[aria-pressed="true"]{border-color:#7c4148;background:#332027}
+    .event-player-state{font-size:12px;color:#b9d3ba}
+    .event-player-row[aria-pressed="true"] .event-player-state{color:#e5a4a8}
+    .event-player-help{color:#b4adb1;font-size:15px;line-height:1.4;margin:0 0 15px}
+
+    /* Mission radio : un simple onglet latéral pendant le déplacement immédiat */
+    .radio-mission-tab{position:fixed;right:0;top:54%;transform:translateY(-50%);z-index:8800;display:flex;align-items:flex-start;flex-direction:row-reverse;gap:0;max-width:min(93vw,356px);font-family:var(--font-ui)}
+    .radio-mission-tab.is-open{align-items:stretch}
+    .radio-mission-toggle{width:43px;min-height:64px;flex:none;border:1px solid #68877c;border-right:0;border-radius:11px 0 0 11px;background:linear-gradient(160deg,#183b36,#111d20);color:#cbfae5;font-size:22px;cursor:pointer;box-shadow:0 0 21px rgba(72,169,146,.24)}
+    .radio-mission-toggle span{display:block;font-size:17px;line-height:1.2;color:#f3d59a}
+    .radio-mission-panel{width:min(72vw,300px);padding:14px 13px 15px;border:1px solid #658376;border-radius:12px 0 0 12px;background:linear-gradient(145deg,#152722,#0b1213);box-shadow:0 14px 40px rgba(0,0,0,.72)}
+    .radio-mission-tab.is-open .radio-mission-toggle{border-radius:0}
+    .radio-mission-title{margin:0 0 8px;font-size:14px;color:#d7f3e7;letter-spacing:.2px}
+    .radio-mission-text{margin:0 0 12px;font:15px/1.35 var(--font-body);color:#e3e9e7}
+    .radio-mission-actions{display:grid;gap:7px}
+    .radio-mission-actions button{width:100%;min-height:42px;border:1px solid #507d6e;border-radius:7px;background:#23483d;color:#f2f8f4;font:11px var(--font-ui);cursor:pointer}
+    .radio-mission-actions .radio-mission-cancel{background:#292326;border-color:#5b3e45;color:#d6c5c6}
+
+    /* Transmission distincte des apparitions du Masque */
+    .radio-event-overlay{position:fixed;inset:0;z-index:10120;display:flex;align-items:center;justify-content:center;padding:14px;background:radial-gradient(ellipse at 50% 42%,rgba(10,38,31,.98),rgba(2,8,9,.99) 80%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .55s ease,visibility 0s linear .55s}
+    .radio-event-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .45s ease}
+    .radio-event-content{width:min(100%,470px);max-height:calc(100dvh - 28px);overflow-y:auto;padding:21px 18px 20px;text-align:center;border:1px solid #4b8676;border-radius:14px;background:linear-gradient(145deg,#152822,#0b1315);box-shadow:0 0 45px rgba(0,0,0,.7),inset 0 0 24px rgba(43,104,79,.12)}
+    .radio-event-icon{font-size:46px;line-height:1.3;filter:drop-shadow(0 0 10px rgba(89,188,141,.4))}
+    .radio-event-heading{color:#cff8e4;font:clamp(15px,4.3vw,20px) var(--font-ui);letter-spacing:1px;margin:5px 0 9px}
+    .radio-event-signal{display:flex;align-items:center;justify-content:center;height:34px;gap:4px;margin:12px auto}
+    .radio-event-signal i{display:block;width:4px;height:12px;border-radius:3px;background:#71c7a4;animation:radio-signal 1.15s ease-in-out infinite alternate}
+    .radio-event-signal i:nth-child(2){animation-delay:.22s}
+    .radio-event-signal i:nth-child(3){animation-delay:.43s}
+    .radio-event-signal i:nth-child(4){animation-delay:.62s}
+    .radio-event-signal i:nth-child(5){animation-delay:.28s}
+    .radio-event-overlay:not(.is-speaking) .radio-event-signal i{animation-play-state:paused;height:6px;opacity:.5}
+    @keyframes radio-signal{0%{height:7px;opacity:.5}100%{height:29px;opacity:1}}
+    .radio-event-status{font:clamp(15px,4vw,18px)/1.4 var(--font-body);color:#c3d7ca;margin:10px 0 15px;white-space:pre-line}
+    .radio-event-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0 0}
+    .radio-event-btn{min-height:48px;padding:11px 8px;border:1px solid #659a7f;border-radius:9px;background:#1e483c;color:#effff4;font:clamp(10px,2.7vw,12px) var(--font-ui);cursor:pointer}
+    .radio-event-btn.secondary{background:#2b252b;border-color:#63575f}
+    .radio-event-btn.wide{grid-column:1/-1}
+    .radio-event-overlay.is-resolution .radio-event-status{font-size:clamp(16px,4vw,20px)}
+    @media(max-height:550px){.radio-event-content{padding:10px 12px}.radio-event-icon{font-size:26px}.radio-event-signal{margin:3px auto;height:20px}}
+    @media(prefers-reduced-motion:reduce){.radio-event-signal i{animation:none}}
+
+    /* MÉTÉO : esthétique atmosphérique minérale, distincte du Masque et des radios */
+    .weather-event-overlay{position:fixed;inset:0;z-index:10130;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 48% 35%,rgba(35,54,69,.97),rgba(7,13,24,.99) 74%);opacity:0;visibility:hidden;pointer-events:none;isolation:isolate;transition:opacity .7s ease,visibility 0s linear .7s}
+    .weather-event-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .6s ease}
+    .weather-event-overlay.closing{opacity:0;visibility:visible;pointer-events:none;transition:opacity .7s ease}
+    .weather-event-content{position:relative;width:min(100%,470px);max-height:calc(100dvh - 32px);overflow-y:auto;padding:25px 18px 22px;text-align:center;border:1px solid rgba(150,184,199,.48);border-radius:17px;background:linear-gradient(160deg,rgba(28,44,60,.97),rgba(12,21,33,.97));box-shadow:0 18px 52px rgba(0,0,0,.64),inset 0 0 33px rgba(113,158,186,.08)}
+    .weather-event-kicker{margin:0 0 10px;font:11px var(--font-ui);letter-spacing:2.3px;color:#b9d0df}
+    .weather-event-symbol{font-size:48px;line-height:1.15;filter:drop-shadow(0 0 17px rgba(155,204,233,.36))}
+    .weather-event-heading{margin:7px 0 7px;font:clamp(19px,5vw,26px) var(--font-ui);color:#effaff;letter-spacing:.4px}
+    .weather-event-lines{display:flex;align-items:center;justify-content:center;gap:5px;height:31px;margin:13px auto 12px;opacity:.9}
+    .weather-event-lines i{display:block;width:5px;height:8px;border-radius:5px;background:linear-gradient(#d3eefa,#76afc8);animation:weather-pressure 1.9s ease-in-out infinite}
+    .weather-event-lines i:nth-child(2){animation-delay:.25s}
+    .weather-event-lines i:nth-child(3){animation-delay:.55s}
+    .weather-event-lines i:nth-child(4){animation-delay:.9s}
+    .weather-event-lines i:nth-child(5){animation-delay:.4s}
+    .weather-event-overlay:not(.is-speaking) .weather-event-lines i{animation-play-state:paused;opacity:.35;height:5px}
+    @keyframes weather-pressure{0%,100%{height:7px;opacity:.45}45%{height:27px;opacity:1}}
+    .weather-event-status{font:clamp(16px,4vw,20px)/1.45 var(--font-body);color:#d5e3ec;white-space:pre-line;margin:10px 0 13px}
+    .weather-event-result{margin:16px 0 14px;padding:14px 11px;border:1px solid #658297;border-radius:11px;background:rgba(5,17,28,.65)}
+    .weather-event-result strong{display:block;font:clamp(20px,6vw,27px) var(--font-ui);color:#e6f6ff;margin:5px auto 7px}
+    .weather-event-result span{color:#d3e2ea;font-size:17px}
+    .weather-event-btn{min-height:45px;width:100%;padding:10px 14px;border:1px solid #759aae;border-radius:9px;background:#294e63;color:#f4fbff;font:12px var(--font-ui);cursor:pointer;margin:7px 0 0}
+    .weather-event-btn.secondary{background:transparent;border-color:#4d6475;color:#b6cbdb;font-size:11px}
+    @media(max-height:540px){.weather-event-content{padding:12px 15px}.weather-event-symbol{font-size:31px}.weather-event-lines{margin:3px auto;height:21px}}
+    @media(prefers-reduced-motion:reduce){.weather-event-lines i{animation:none}}
+
+    .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
+    .mask-event-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .65s ease}
+    .mask-event-overlay.closing{visibility:visible;opacity:0;pointer-events:none;transition:opacity .7s ease}
+    .utility-controls{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+    .utility-controls .utility-btn{font-size:clamp(9px,2.35vw,12px);padding:7px 3px}
+    .utility-controls .event-test-btn{grid-column:3/-1;min-height:39px;border-color:#634148}
+    .utility-controls .event-test-select{grid-column:1/span 2;min-height:39px;border-color:#634148;color:#f1e5e7;font-family:var(--font-ui);font-size:12px}
+    @media(max-width:340px){.utility-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .mask-event-overlay.has-result .mask-event-portrait{
+      width:min(50vw,180px);
+      height:min(30dvh,193px);
+      margin:0 auto 4px;
+      transition:height .45s ease,width .45s ease,margin .45s ease;
+    }
+    /* La générosité contient peu de texte : le Masque peut rester imposant. */
+    .mask-event-overlay.has-result.has-generosity .mask-event-portrait{
+      width:min(54vw,205px);
+      height:min(33dvh,217px);
+    }
+    /* Le dilemme présente deux décisions, donc on réserve de la place aux boutons. */
+    .mask-event-overlay.has-result.has-choices .mask-event-portrait{
+      width:min(43vw,155px);
+      height:min(26dvh,170px);
+    }
+    .mask-event-overlay.has-choices .mask-event-effect{font-size:clamp(15px,3.6vw,17px);line-height:1.24}
+    .mask-event-overlay.has-result .mask-event-content{padding:3px 8px 9px}
+    .mask-event-overlay.has-result .mask-event-status{font-size:15px;min-height:20px;margin:3px 0 6px}
+    .mask-event-overlay.has-result .mask-event-result{padding:9px 11px}
+    .mask-event-overlay.has-result .mask-event-effect{font-size:clamp(15px,3.8vw,18px);line-height:1.27;margin:3px 0 10px}
+    .mask-event-overlay.has-result .mask-event-inventory-label{margin-bottom:5px}
+    .mask-event-overlay.has-result .mask-event-backpack-halo{flex-basis:43px;width:43px;height:43px}
+    .mask-event-overlay.has-result .mask-event-backpack-halo img{width:29px;height:36px}
+    @media(max-height:520px){
+      .mask-event-overlay.has-result{padding:6px}
+      .mask-event-overlay.has-result .mask-event-content{max-height:calc(100dvh - 12px)}
+      .mask-event-overlay.has-result .mask-event-portrait,
+      .mask-event-overlay.has-result.has-choices .mask-event-portrait{
+        height:min(20dvh,120px);width:min(34vw,118px)
+      }
+      .mask-event-overlay.has-result.has-generosity .mask-event-portrait{
+        height:min(24dvh,140px);width:min(38vw,135px)
+      }
+      .mask-event-overlay.has-result .mask-event-effect{font-size:15px;line-height:1.22}
+      .mask-event-overlay.has-result .mask-event-result{padding:6px 8px}
+    }
+    .mask-event-content{width:min(100%,520px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:10px 12px 25px}
+    .mask-event-kicker{margin:0;color:#b88d92;font:12px var(--font-ui);letter-spacing:2.4px}
+    .mask-event-portrait{display:block;width:min(64vw,230px);height:min(50dvh,330px);object-fit:contain;margin:4px auto 12px;filter:drop-shadow(0 0 18px rgba(125,17,29,.25));animation:mask-event-arrival .8s ease-out both}
+    .mask-event-title{margin:0 0 12px;color:#e9dedf;font:clamp(18px,5vw,25px) var(--font-ui);letter-spacing:.5px}
+    .mask-event-status{min-height:26px;margin:8px 0 15px;color:#c9b9bb;font-size:17px}
+    .mask-event-result{padding:13px 14px;border:1px solid #644247;border-radius:12px;background:rgba(24,16,19,.88)}
+    .mask-event-effect{margin:5px 0 13px;color:#f4e8e8;font-size:20px;line-height:1.4;white-space:pre-line}
+    .mask-event-cta{min-height:46px;padding:10px 16px;border:1px solid #91545c;border-radius:9px;background:#44252b;color:#fff;font:12px var(--font-ui);cursor:pointer}
+    .mask-event-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 10px}
+    .mask-event-choice{font-size:clamp(10px,2.6vw,13px);min-height:51px;padding:9px 7px}
+    .mask-event-choice:first-child{background:#363238;border-color:#77707b}
+    .mask-event-choice:last-child{background:#51212a;border-color:#98434f}
+    .mask-event-skip{display:block;margin:9px auto 0;background:transparent;border-color:#554044;color:#c3adb1;font-size:11px}
+    .mask-event-visually-hidden{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+    .mask-event-inventory-label{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 12px;color:#e8cace;font:clamp(12px,3.4vw,15px) var(--font-ui);letter-spacing:.4px}
+    .mask-event-backpack-halo{display:flex;align-items:center;justify-content:center;flex:0 0 54px;width:54px;height:54px;border:1px solid rgba(156,60,70,.45);border-radius:50%;background:radial-gradient(circle,rgba(151,26,39,.58) 0,rgba(92,16,27,.35) 45%,rgba(22,9,12,.58) 80%);box-shadow:0 0 17px rgba(155,30,42,.20),inset 0 0 11px rgba(169,30,45,.21)}
+    .mask-event-backpack-halo img{width:36px;height:46px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+    @keyframes mask-event-arrival{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+    @media(max-width:420px){.event-game-btn{flex:1 1 125px;font-size:11px}.mask-event-portrait{height:min(46dvh,270px)}}
   </style>
 </head>
 
@@ -1435,6 +1579,14 @@
     <!-- ==================== PARTIE ==================== -->
 
     <section id="tab-partie" class="tab-panel active" role="tabpanel">
+
+      <section id="eventGameCard" class="card event-game-card" aria-labelledby="eventGameHeading">
+        <h2 id="eventGameHeading" class="event-game-heading">DÉBUT DE PARTIE</h2>
+        <p id="eventGameStatus" class="event-game-status">Lancez la partie lorsque tout le monde est prêt.</p>
+        <div class="event-game-actions">
+          <button id="btnStartEvents" class="event-game-btn" type="button">COMMENCER LA PARTIE</button>
+        </div>
+      </section>
 
       <section class="card instability-card">
         <div class="instability-layout">
@@ -1497,6 +1649,16 @@
             aria-pressed="false">
             Plein écran
           </button>
+          <button id="btnPlayers" class="utility-btn" type="button">JOUEURS · 4/4</button>
+          <select id="testMaskEventSelect" class="utility-btn event-test-select hidden" aria-label="Choisir un événement audio pour le test">
+            <option value="masque-001">001 · Le Collectionneur</option>
+            <option value="masque-002">002 · Un élan de générosité</option>
+            <option value="masque-003">003 · Le Prix du sacrifice</option>
+            <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
+            <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
+            <option value="meteo-002">🌧️ Météo 002 · La Pluie à rebours</option>
+          </select>
+          <button id="btnTestMaskEvent" class="utility-btn event-test-btn hidden" type="button">TESTER LE MASQUE</button>
         </div>
       </section>
 
@@ -1744,6 +1906,93 @@
           type="button">
           Fermer
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JOUEURS / VIVANT-MORT ==================== -->
+  <div id="playersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="playersTitle">
+    <div class="modal-inner">
+      <h2 id="playersTitle" class="modal-title">État des joueurs</h2>
+      <p class="event-player-help">Touchez un joueur lors de sa mort ou de sa résurrection. Le Masque ne cible que les personnages vivants.</p>
+      <div id="eventPlayersList" class="event-players"></div>
+      <div class="modal-actions">
+        <button id="playersClose" class="modal-btn" type="button">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MISSION RADIO TEMPORAIRE ==================== -->
+  <aside id="radioMissionTab" class="radio-mission-tab hidden" aria-label="Mission radio active">
+    <button id="radioMissionToggle" class="radio-mission-toggle" type="button" aria-expanded="false" aria-controls="radioMissionPanel" aria-label="Afficher la mission radio">📻<span>!</span></button>
+    <div id="radioMissionPanel" class="radio-mission-panel hidden">
+      <p id="radioMissionTitle" class="radio-mission-title">APPEL EN COURS</p>
+      <p id="radioMissionText" class="radio-mission-text">Rejoignez immédiatement le bâtiment mentionné.</p>
+      <div class="radio-mission-actions">
+        <button id="radioMissionArrived" type="button">NOUS Y SOMMES !</button>
+        <button id="radioMissionAbandon" class="radio-mission-cancel" type="button">ABANDONNER L'APPEL</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== TRANSMISSION RADIO ==================== -->
+  <div id="radioEventOverlay" class="radio-event-overlay" role="dialog" aria-modal="true" aria-labelledby="radioEventHeading" aria-hidden="true">
+    <div class="radio-event-content">
+      <div class="radio-event-icon" aria-hidden="true">📻</div>
+      <h2 id="radioEventHeading" class="radio-event-heading">TRANSMISSION INTERCEPTÉE</h2>
+      <div class="radio-event-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <p id="radioEventStatus" class="radio-event-status" aria-live="polite">Une fréquence inconnue s'active…</p>
+      <div class="radio-event-actions">
+        <button id="radioEventPlay" class="radio-event-btn wide hidden" type="button">ÉCOUTER LA TRANSMISSION</button>
+        <button id="radioEventSkip" class="radio-event-btn secondary wide hidden" type="button">CONTINUER SANS AUDIO</button>
+        <button id="radioEventAccept" class="radio-event-btn hidden" type="button">RÉPONDRE À L'APPEL</button>
+        <button id="radioEventIgnore" class="radio-event-btn secondary hidden" type="button">IGNORER</button>
+        <button id="radioEventDone" class="radio-event-btn wide hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ANOMALIE MÉTÉOROLOGIQUE ==================== -->
+  <div id="weatherEventOverlay" class="weather-event-overlay" role="dialog" aria-modal="true" aria-labelledby="weatherEventHeading" aria-hidden="true">
+    <div class="weather-event-content">
+      <p class="weather-event-kicker">PERTURBATION ATMOSPHÉRIQUE</p>
+      <div id="weatherEventSymbol" class="weather-event-symbol" aria-hidden="true">🌫️</div>
+      <h2 id="weatherEventHeading" class="weather-event-heading">ANOMALIE DÉTECTÉE</h2>
+      <div class="weather-event-lines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <p id="weatherEventStatus" class="weather-event-status" aria-live="polite">Quelque chose change dans l'atmosphère…</p>
+      <button id="weatherEventPlay" class="weather-event-btn hidden" type="button">ÉCOUTER LE NARRATEUR</button>
+      <button id="weatherEventSkip" class="weather-event-btn secondary hidden" type="button">CONTINUER SANS AUDIO</button>
+      <div id="weatherEventResult" class="weather-event-result hidden">
+        <span id="weatherEventEffect">Instabilité mentale collective</span>
+        <strong id="weatherEventChange">+5 %</strong>
+        <span id="weatherEventValues">40 % → 45 %</span>
+      </div>
+      <button id="weatherEventDone" class="weather-event-btn hidden" type="button">CONTINUER LA PARTIE</button>
+    </div>
+  </div>
+
+  <!-- ==================== INTERVENTION DU MASQUE ==================== -->
+  <div id="maskEventOverlay" class="mask-event-overlay" role="dialog" aria-modal="true" aria-labelledby="maskEventTitle" aria-hidden="true">
+    <div class="mask-event-content">
+      
+      <img id="maskEventPortrait" class="mask-event-portrait" src="img/masque0.png" alt="Le Masque">
+      <h2 id="maskEventTitle" class="mask-event-title mask-event-visually-hidden">Le Masque</h2>
+      <p id="maskEventStatus" class="mask-event-status" aria-live="polite">Le Masque prend la parole…</p>
+      <button id="maskEventPlay" class="mask-event-cta hidden" type="button">ÉCOUTER LE MASQUE</button>
+      <button id="maskIntroSkip" class="mask-event-cta mask-event-skip hidden" type="button">PASSER L’INTRODUCTION</button>
+      <div id="maskEventResult" class="mask-event-result hidden">
+        <div id="maskEventInventoryLabel" class="mask-event-inventory-label">
+          <span class="mask-event-backpack-halo" aria-hidden="true">
+            <img src="img/icon-sac-a-dos.svg" alt="">
+          </span>
+          <span>OBJETS DU SAC À DOS</span>
+        </div>
+        <p id="maskEventEffect" class="mask-event-effect"></p>
+        <div id="maskEventChoices" class="mask-event-choices hidden">
+          <button id="maskChoiceSelf" class="mask-event-cta mask-event-choice" type="button">JE ME SACRIFIE</button>
+          <button id="maskChoiceGroup" class="mask-event-cta mask-event-choice" type="button">LE GROUPE PAIE</button>
+        </div>
+        <button id="maskEventDone" class="mask-event-cta" type="button">CONTINUER LA PARTIE</button>
       </div>
     </div>
   </div>
