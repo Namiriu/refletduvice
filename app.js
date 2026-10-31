@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.0 Météo (test)';
+  const VERSION = 'v1.1.1 Météo (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -4933,7 +4933,7 @@ syncMusicForActiveTab();
       const before = running.deferredThreshold[0];
       const after = running.deferredThreshold[1];
       els.maskEventEffect.textContent =
-        'Le Masque a réduit l’Instabilité mentale collective de 5 points.\n\n'
+        'Le Masque a réduit l’Instabilité mentale de 5 %.\n\n'
         + before + '% → ' + after + ' %. Aucun bouton à utiliser.';
     } else if (running.item.id === 'masque-003') {
       els.maskEventEffect.textContent =
@@ -4974,7 +4974,7 @@ syncMusicForActiveTab();
         'Joueur ' + running.player + ' : tu te sacrifies.\n\n'
         + 'Subis 1 blessure et passe ton prochain tour. '
         + 'Appliquez ces deux conséquences sur le plateau.\n\n'
-        + 'L’Instabilité collective ne change pas.';
+        + 'L’Instabilité mentale ne change pas.';
     } else {
       const before = state.value;
       const effect = applyInstabilityDelta(15, {
@@ -4986,7 +4986,7 @@ syncMusicForActiveTab();
       running.deferredGameOver = effect.gameOver;
       els.maskEventEffect.textContent =
         'Joueur ' + running.player + ' : le groupe paie.\n\n'
-        + 'Instabilité collective : ' + before + '% → ' + state.value
+        + 'Instabilité mentale : ' + before + '% → ' + state.value
         + '% (+' + effect.actual + ' points).\n\n'
         + (effect.gameOver
           ? 'Le seuil de 100 % est atteint : la fin de partie sera déclenchée '
@@ -5580,8 +5580,10 @@ syncMusicForActiveTab();
     }
     saveAudioEventSession();
 
-    els.weatherEventSymbol.textContent = item.icon || '🌫️';
-    els.weatherEventHeading.textContent = item.title;
+    // Aucun nom ni pictogramme propre au phénomène avant la narration.
+    // Le nom technique reste réservé aux contrôles du mode test.
+    els.weatherEventSymbol.textContent = '◇';
+    els.weatherEventHeading.textContent = 'PERTURBATION ATMOSPHÉRIQUE';
     els.weatherEventStatus.textContent = 'L’atmosphère semble se déformer…';
     els.weatherEventPlay.classList.add('hidden');
     els.weatherEventSkip.classList.add('hidden');
@@ -5628,7 +5630,7 @@ syncMusicForActiveTab();
     const change = actual > 0 ? '+' + actual : String(actual);
     els.weatherEventStatus.textContent =
       'Le phénomène se dissipe, mais son empreinte demeure.';
-    els.weatherEventEffect.textContent = 'Instabilité mentale collective';
+    els.weatherEventEffect.textContent = 'Instabilité mentale';
     els.weatherEventChange.textContent = change + ' %';
     els.weatherEventValues.textContent = before + ' % → ' + after + ' %'
       + (Math.abs(actual) !== Math.abs(running.item.delta)
