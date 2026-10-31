@@ -5463,6 +5463,258 @@ syncMusicForActiveTab();
   }
 
   // =========================================================
+  // MÉTÉO : NARRATION DU MONDE ET CONSÉQUENCE AUTOMATIQUE
+  // =========================================================
+
+  function getWeatherItem(id) {
+    return AUDIO_EVENTS.find(item => item.type === 'meteo' && item.id === id);
+  }
+
+  function dismissWeatherEvent(immediate = false) {
+    weatherEventToken += 1;
+    if (currentWeatherEvent?.audio) {
+      currentWeatherEvent.audio.pause();
+      currentWeatherEvent.audio.onended = null;
+      currentWeatherEvent.audio.onerror = null;
+    }
+    currentWeatherEvent = null;
+    clearTimeout(weatherClosingTimer);
+    weatherClosingTimer = null;
+    const overlay = els.weatherEventOverlay;
+    overlay.classList.remove('is-speaking');
+    if (immediate || !overlay.classList.contains('show')) {
+      overlay.classList.remove('show', 'closing');
+    } else {
+      overlay.classList.remove('show');
+      overlay.classList.add('closing');
+      weatherClosingTimer = setTimeout(() => {
+        weatherClosingTimer = null;
+        overlay.classList.remove('closing');
+      }, REDUCED_MOTION ? 0 : 740);
+    }
+    overlay.setAttribute('aria-hidden', 'true');
+    els.weatherEventPlay.classList.add('hidden');
+    els.weatherEventSkip.classList.add('hidden');
+    els.weatherEventResult.classList.add('hidden');
+    els.weatherEventDone.classList.add('hidden');
+    specialAudioActive = false;
+    syncAmbientVolume();
+  }
+
+  function showWeatherAudioFallback(message) {
+    if (!currentWeatherEvent || currentWeatherEvent.completed) return;
+    els.weatherEventOverlay.classList.remove('is-speaking');
+    els.weatherEventStatus.textContent = message
+      || 'La narration est interrompue. Touchez pour écouter ou continuer.';
+    els.weatherEventPlay.textContent = 'ÉCOUTER LE NARRATEUR';
+    els.weatherEventPlay.classList.remove('hidden');
+    els.weatherEventSkip.classList.remove('hidden');
+  }
+
+  function playWeatherNarration() {
+    const running = currentWeatherEvent;
+    if (!running || running.completed || !running.audio
+      || document.visibilityState !== 'visible') return;
+    const token = running.token;
+    els.weatherEventPlay.classList.add('hidden');
+    els.weatherEventSkip.classList.add('hidden');
+    els.weatherEventStatus.textContent = 'Une anomalie traverse la ville…';
+    els.weatherEventOverlay.classList.add('is-speaking');
+    running.audio.onended = () => {
+      if (currentWeatherEvent?.token === token) finishWeatherNarration(false);
+    };
+    running.audio.onerror = () => {
+      if (currentWeatherEvent?.token === token) showWeatherAudioFallback();
+    };
+    try {
+      running.audio.play().catch(() => {
+        if (currentWeatherEvent?.token === token) showWeatherAudioFallback();
+      });
+    } catch (_) {
+      showWeatherAudioFallback();
+    }
+  }
+
+  function beginWeatherEvent(item, preview, restoring = false) {
+    if (!item || item.type !== 'meteo' || !eventSession.active
+      || currentMaskEvent || currentRadioEvent || currentWeatherEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || !isPartieTabActive() || document.visibilityState !== 'visible'
+      || state.value >= 100 || livingPlayerNumbers().length === 0) return false;
+
+    if (restoring) {
+      if (!eventSession.pendingWeather
+        || eventSession.pendingWeather.id !== item.id) return false;
+    } else if (!preview && (eventSession.pendingWeather
+      || eventSession.played.includes(item.id)
+      || eventSession.weatherCount >= WEATHER_MAX_PER_GAME
+      || Date.now() < eventSession.nextWeatherEligibleAt)) {
+      return false;
+    } else if (preview && eventSession.pendingWeather) {
+      return false;
+    }
+
+    pauseAudioEventClock();
+    const token = ++weatherEventToken;
+    const audio = new Audio(item.audio);
+    audio.preload = 'auto';
+    audio.volume = 1;
+    currentWeatherEvent = {
+      item, preview, restoring, token, audio, completed: false,
+      savedPreviewDelay: eventSession.remainingMs,
+      deferredTransition: null, deferredGameOver: false
+    };
+
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.weatherCount = Math.min(
+        WEATHER_MAX_PER_GAME, eventSession.weatherCount + 1
+      );
+      eventSession.pendingWeather = {
+        id: item.id, stage: 'playing', before: null, after: null,
+        gameOver: false
+      };
+      eventSession.remainingMs = null;
+    }
+    saveAudioEventSession();
+
+    els.weatherEventSymbol.textContent = item.icon || '🌫️';
+    els.weatherEventHeading.textContent = item.title;
+    els.weatherEventStatus.textContent = 'L’atmosphère semble se déformer…';
+    els.weatherEventPlay.classList.add('hidden');
+    els.weatherEventSkip.classList.add('hidden');
+    els.weatherEventResult.classList.add('hidden');
+    els.weatherEventDone.classList.add('hidden');
+    els.weatherEventOverlay.classList.remove('closing', 'is-speaking');
+    els.weatherEventOverlay.classList.add('show');
+    els.weatherEventOverlay.setAttribute('aria-hidden', 'false');
+    specialAudioActive = true;
+    silenceHauntSounds();
+    syncAmbientVolume();
+    renderEventControls();
+
+    if (restoring) {
+      const pending = eventSession.pendingWeather;
+      if (pending.stage === 'result') {
+        // Une actualisation juste avant la mise à jour de la jauge ne doit
+        // ni annuler ni appliquer deux fois la conséquence.
+        if (state.value === pending.before) {
+          applyInstabilityDelta(item.delta, {
+            source: 'Météo — ' + item.title,
+            deferThreshold: true,
+            deferGameOver: true
+          });
+        }
+        currentWeatherEvent.completed = true;
+        currentWeatherEvent.deferredTransition = [pending.before, pending.after];
+        currentWeatherEvent.deferredGameOver = pending.gameOver;
+        displayWeatherResult(pending.before, pending.after);
+      } else {
+        showWeatherAudioFallback('Narration interrompue : reprenez le bulletin météorologique.');
+      }
+    } else {
+      playWeatherNarration();
+    }
+    return true;
+  }
+
+  function displayWeatherResult(before, after) {
+    const running = currentWeatherEvent;
+    if (!running) return;
+    els.weatherEventOverlay.classList.remove('is-speaking');
+    const actual = after - before;
+    const change = actual > 0 ? '+' + actual : String(actual);
+    els.weatherEventStatus.textContent =
+      'Le phénomène se dissipe, mais son empreinte demeure.';
+    els.weatherEventEffect.textContent = 'Instabilité mentale collective';
+    els.weatherEventChange.textContent = change + ' %';
+    els.weatherEventValues.textContent = before + ' % → ' + after + ' %'
+      + (Math.abs(actual) !== Math.abs(running.item.delta)
+        ? ' (limite de la jauge atteinte)' : '');
+    els.weatherEventPlay.classList.add('hidden');
+    els.weatherEventSkip.classList.add('hidden');
+    els.weatherEventResult.classList.remove('hidden');
+    els.weatherEventDone.classList.remove('hidden');
+    els.weatherEventDone.focus();
+  }
+
+  function finishWeatherNarration(skipped = false) {
+    const running = currentWeatherEvent;
+    if (!running || running.completed) return;
+    running.completed = true;
+    running.audio.pause();
+    running.audio.onended = null;
+    running.audio.onerror = null;
+    const before = state.value;
+    const after = clamp(before + running.item.delta, 0, 100);
+
+    if (!running.preview) {
+      // L'intention de modifier la jauge est enregistrée avant l'application.
+      // Une reprise ne peut donc pas donner deux fois les points.
+      eventSession.pendingWeather = {
+        id: running.item.id, stage: 'result', before, after,
+        gameOver: after >= 100
+      };
+      eventSession.nextWeatherEligibleAt = Date.now() + WEATHER_MIN_GAP_MS;
+      saveAudioEventSession();
+    }
+
+    const effect = applyInstabilityDelta(running.item.delta, {
+      source: 'Météo — ' + running.item.title,
+      deferThreshold: true,
+      deferGameOver: true
+    });
+    running.deferredTransition = [before, state.value];
+    running.deferredGameOver = effect.gameOver;
+    displayWeatherResult(before, state.value);
+  }
+
+  function completeWeatherEvent() {
+    const finished = currentWeatherEvent;
+    if (!finished || !finished.completed) return;
+    const delay = finished.preview
+      ? finished.savedPreviewDelay
+      : randomBetween(...EVENT_NEXT_DELAY);
+    const transition = finished.deferredTransition;
+    const over = finished.deferredGameOver;
+    dismissWeatherEvent();
+    if (!finished.preview) eventSession.pendingWeather = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+
+    // La voix de franchissement de 50 % ou la fin de partie ne se superposent
+    // jamais à la narration météorologique.
+    if (transition || over) {
+      clearTimeout(weatherDeferredOutcomeTimer);
+      weatherDeferredOutcomeTimer = setTimeout(() => {
+        weatherDeferredOutcomeTimer = null;
+        if (transition && state.value === transition[1] && !over) {
+          handleThresholdTransition(transition[0], transition[1]);
+        }
+        if (over) checkGameOver();
+      }, REDUCED_MOTION ? 0 : 790);
+    }
+  }
+
+  function resumePendingWeatherIfPossible() {
+    const pending = eventSession.pendingWeather;
+    if (!pending || !eventSession.active || gameOverShown
+      || state.value >= 100 || document.visibilityState !== 'visible') {
+      return false;
+    }
+    const item = getWeatherItem(pending.id);
+    if (!item) {
+      // Anciens états devenus incompatibles : ne jamais bloquer la partie.
+      eventSession.pendingWeather = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginWeatherEvent(item, false, true);
+  }
+
+  // =========================================================
   // DÉMARRAGE / ÉVÉNEMENTS
   // =========================================================
 
