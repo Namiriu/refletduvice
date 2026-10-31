@@ -5540,7 +5540,9 @@ syncMusicForActiveTab();
       || currentMaskEvent || currentRadioEvent || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
       || !isPartieTabActive() || document.visibilityState !== 'visible'
-      || state.value >= 100 || livingPlayerNumbers().length === 0) return false;
+      || (state.value >= 100 && !(restoring
+        && eventSession.pendingWeather?.stage === 'result'))
+      || livingPlayerNumbers().length === 0) return false;
 
     if (restoring) {
       if (!eventSession.pendingWeather
@@ -5610,7 +5612,7 @@ syncMusicForActiveTab();
         currentWeatherEvent.deferredGameOver = pending.gameOver;
         displayWeatherResult(pending.before, pending.after);
       } else {
-        showWeatherAudioFallback('Narration interrompue : reprenez le bulletin météorologique.');
+        showWeatherAudioFallback('Narration interrompue : reprenez le récit de l’anomalie.');
       }
     } else {
       playWeatherNarration();
@@ -5701,7 +5703,8 @@ syncMusicForActiveTab();
   function resumePendingWeatherIfPossible() {
     const pending = eventSession.pendingWeather;
     if (!pending || !eventSession.active || gameOverShown
-      || state.value >= 100 || document.visibilityState !== 'visible') {
+      || (state.value >= 100 && pending.stage !== 'result')
+      || document.visibilityState !== 'visible') {
       return false;
     }
     const item = getWeatherItem(pending.id);
@@ -5745,7 +5748,7 @@ syncMusicForActiveTab();
     }
 
     if (
-      state.value >= 100
+      state.value >= 100 && !currentWeatherEvent
     ) {
       checkGameOver();
     }
