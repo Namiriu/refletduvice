@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.6 Masque 005 (test)';
+  const VERSION = 'v1.1.7 Masque 005 (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -5523,30 +5523,21 @@ syncMusicForActiveTab();
     gong.volume = 1;
     gong.preload = 'auto';
 
-    // Le gong conserve son long écho, jusqu'à la fin du fichier (~12 s).
-    // Un délai de secours empêche un blocage si le navigateur omet « ended ».
-    r.gongTimer = setTimeout(() => {
-      r.gongTimer = null;
-      if (currentMask05 === r && r.stage === 'gong') playMask05Verdict();
-    }, 14000);
-    gong.onended = () => {
+    // Garder presque tout l'écho, sans attendre les dernières 1,5 s
+    // silencieuses ou très faibles du MP3 de 12 secondes.
+    // Démarrer le délai APRÈS que la lecture est effectivement autorisée.
+    const finishGong = () => {
       if (currentMask05 !== r || r.stage !== 'gong') return;
       clearTimeout(r.gongTimer);
       r.gongTimer = null;
       playMask05Verdict();
     };
-    gong.onerror = () => {
+    gong.onended = finishGong;
+    gong.onerror = finishGong;
+    gong.play().then(() => {
       if (currentMask05 !== r || r.stage !== 'gong') return;
-      clearTimeout(r.gongTimer);
-      r.gongTimer = null;
-      playMask05Verdict();
-    };
-    gong.play().catch(() => {
-      if (currentMask05 !== r || r.stage !== 'gong') return;
-      clearTimeout(r.gongTimer);
-      r.gongTimer = null;
-      playMask05Verdict();
-    });
+      r.gongTimer = setTimeout(finishGong, 10500);
+    }).catch(finishGong);
   }
 
   function playMask05Verdict() {
@@ -5623,8 +5614,7 @@ syncMusicForActiveTab();
         + 'Reportez le soin sur la feuille de personnage.';
     } else {
       els.mask05Outcome.textContent =
-        'MISSION ÉCHOUÉE.\n\n'
-        + 'JOUEUR ' + r.accomplice + ' : passe ton prochain TOUR DE JEU.\n\n'
+        'JOUEUR ' + r.accomplice + ' : passe ton prochain TOUR DE JEU.\n\n'
         + 'Tu ne réalises pas tes actions individuelles de ce tour, '
         + 'mais tu peux toujours participer aux COMBATS '
         + 'déclenchés par tes coéquipiers.\n\n'
