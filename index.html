@@ -1459,6 +1459,28 @@
     @media(max-height:520px){.radio02-content{padding:11px 13px}.radio02-symbol{font-size:25px}.radio02-actions{gap:6px}.radio02-btn{min-height:42px}}
     @media(prefers-reduced-motion:reduce){.radio02-progress{transition:none}}
 
+
+    /* Masque 005 : dialogue privé, mission secrète et horloge non intrusive */
+    .mask05-overlay{position:fixed;inset:0;z-index:10145;display:flex;align-items:center;justify-content:center;padding:12px;background:radial-gradient(circle at 50% 32%,rgba(52,17,29,.97),rgba(6,5,11,.995) 77%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s ease,visibility 0s linear .45s}
+    .mask05-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
+    .mask05-content{width:min(100%,490px);max-height:calc(100dvh - 24px);overflow-y:auto;text-align:center;padding:19px 16px;border:1px solid #85505c;border-radius:15px;background:linear-gradient(145deg,#301923,#100f18);box-shadow:0 20px 65px rgba(0,0,0,.85)}
+    .mask05-portrait{width:min(34vw,128px);max-height:23dvh;object-fit:contain;filter:drop-shadow(0 0 18px rgba(135,48,70,.33));margin:auto}
+    .mask05-heading{font:clamp(15px,4.4vw,20px) var(--font-ui);color:#f4d4dd;letter-spacing:.7px;margin:9px 0 10px}
+    .mask05-status{font:clamp(15px,4vw,19px)/1.4 var(--font-body);color:#eee0e5;white-space:pre-line;margin:12px 0}
+    .mask05-hint{font:clamp(14px,3.8vw,16px)/1.45 var(--font-body);color:#d2bfc6;margin:9px 0}
+    .mask05-actions{display:grid;gap:10px;margin:14px auto 0}
+    .mask05-button{width:100%;min-height:47px;background:#66333f;border:1px solid #ae6c7d;border-radius:8px;color:#fff;font:clamp(11px,3vw,13px)/1.35 var(--font-ui);padding:12px 10px;cursor:pointer}
+    .mask05-button.secondary{background:#2b2632;border-color:#625565}
+    .mask05-button:focus-visible{outline:2px solid #f6c7d2;outline-offset:3px}
+    .mask05-outcome{white-space:pre-line;margin:13px 0;padding:15px;border:1px solid #825663;background:#21171e;border-radius:10px;font:clamp(16px,4.1vw,19px)/1.45 var(--font-body);color:#f0e3e8}
+    .mask05-banner{position:fixed;z-index:9990;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(calc(100% - 28px),370px);padding:11px 16px 10px;border:1px solid #a16e7c;border-radius:12px;background:rgba(35,21,29,.97);box-shadow:0 6px 24px rgba(0,0,0,.55);pointer-events:none;text-align:center}
+    .mask05-banner-title{font:clamp(10px,2.9vw,12px) var(--font-ui);letter-spacing:.5px;color:#eccbd6}
+    .mask05-banner-time{font:clamp(23px,6vw,29px) var(--font-ui);color:#fff;line-height:1.28;margin-top:4px}
+    .mask05-banner-progress{height:4px;background:#4b303c;border-radius:5px;overflow:hidden;margin-top:7px}
+    .mask05-banner-progress>i{display:block;width:100%;height:100%;background:#cc8e9d;transition:width .2s linear}
+    @media(max-height:570px){.mask05-portrait{height:80px}.mask05-content{padding:9px 12px}.mask05-status{margin:5px 0}.mask05-actions{gap:6px}}
+    @media(prefers-reduced-motion:reduce){.mask05-banner-progress>i{transition:none}}
+
     /* MÉTÉO : métal gris et rouille, volontairement sans révélation du phénomène */
     .weather-event-overlay{position:fixed;inset:0;z-index:10130;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 48% 34%,rgba(51,48,44,.97),rgba(10,10,11,.995) 77%);opacity:0;visibility:hidden;pointer-events:none;isolation:isolate;transition:opacity .7s ease,visibility 0s linear .7s}
     .weather-event-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .6s ease}
@@ -1697,6 +1719,7 @@
             <option value="masque-002">002 · Un élan de générosité</option>
             <option value="masque-003">003 · Le Prix du sacrifice</option>
             <option value="masque-004">004 · Le Regard du Vice</option>
+            <option value="masque-005">005 · La Confidence empoisonnée</option>
             <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
             <option value="radio-002">📻 Radio 002 · Le Rapport impossible</option>
             <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
@@ -2037,6 +2060,31 @@
         <span id="weatherEventValues">40 % → 45 %</span>
       </div>
       <button id="weatherEventDone" class="weather-event-btn hidden" type="button">CONTINUER LA PARTIE</button>
+    </div>
+  </div>
+
+  <!-- ==================== MASQUE 005 : CONFIDENCE ==================== -->
+  <div id="mask05Banner" class="mask05-banner hidden" role="status" aria-label="Mission du Masque en cours">
+    <div class="mask05-banner-title">🎭 MISSION DU MASQUE EN COURS</div>
+    <div id="mask05BannerClock" class="mask05-banner-time" role="timer" aria-live="off">05:00</div>
+    <div class="mask05-banner-progress"><i id="mask05BannerProgress"></i></div>
+  </div>
+  <div id="mask05Overlay" class="mask05-overlay" role="dialog" aria-modal="true" aria-labelledby="mask05Heading" aria-hidden="true">
+    <div class="mask05-content">
+      <img id="mask05Portrait" class="mask05-portrait" src="img/masque0.png" alt="Le Masque">
+      <h2 id="mask05Heading" class="mask05-heading">INTERVENTION DU MASQUE</h2>
+      <p id="mask05Status" class="mask05-status" aria-live="polite">Le Masque choisit ses victimes…</p>
+      <p id="mask05Hint" class="mask05-hint hidden"></p>
+      <div id="mask05Outcome" class="mask05-outcome hidden"></div>
+      <div class="mask05-actions">
+        <button id="mask05Private" class="mask05-button hidden" type="button">J’AI LE TÉLÉPHONE — ÉCOUTER LA CONFIDENCE</button>
+        <button id="mask05Start" class="mask05-button hidden" type="button">J’AI COMPRIS — COMMENCER LA MISSION</button>
+        <button id="mask05Success" class="mask05-button hidden" type="button">MISSION ACCOMPLIE</button>
+        <button id="mask05Failure" class="mask05-button secondary hidden" type="button">MISSION ÉCHOUÉE</button>
+        <button id="mask05Play" class="mask05-button hidden" type="button">REPRENDRE L’ENREGISTREMENT</button>
+        <button id="mask05Skip" class="mask05-button secondary hidden" type="button">CONTINUER SANS AUDIO</button>
+        <button id="mask05Done" class="mask05-button hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
     </div>
   </div>
 
