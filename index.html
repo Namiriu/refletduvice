@@ -1438,6 +1438,27 @@
     @media(max-height:550px){.radio-event-content{padding:10px 12px}.radio-event-icon{font-size:26px}.radio-event-signal{margin:3px auto;height:20px}}
     @media(prefers-reduced-motion:reduce){.radio-event-signal i{animation:none}}
 
+
+    /* Radio 002 — interface indépendante, aucun titre révélateur */
+    .radio02-overlay{position:fixed;inset:0;z-index:10125;display:flex;align-items:center;justify-content:center;padding:14px;background:radial-gradient(ellipse at 45% 37%,rgba(12,31,34,.985),rgba(3,9,12,.995) 78%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .5s ease,visibility 0s linear .5s}
+    .radio02-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
+    .radio02-content{width:min(100%,470px);max-height:calc(100dvh - 28px);overflow-y:auto;text-align:center;padding:24px 17px 20px;border:1px solid #4f827c;border-radius:13px;background:linear-gradient(150deg,#142b2b,#0a141b);box-shadow:0 15px 48px rgba(0,0,0,.72)}
+    .radio02-heading{font:clamp(15px,4.2vw,19px) var(--font-ui);letter-spacing:1px;color:#d4f0e4;margin:5px 0 12px}
+    .radio02-symbol{font-size:39px;filter:drop-shadow(0 0 13px rgba(65,158,142,.35))}
+    .radio02-status{font:clamp(16px,4vw,19px)/1.4 var(--font-body);white-space:pre-line;color:#d6e0da;margin:11px 0 16px}
+    .radio02-timer{font:clamp(32px,10vw,48px) var(--font-ui);color:#f0ddd2;letter-spacing:2px;margin:9px auto 7px}
+    .radio02-progress-track{height:7px;overflow:hidden;border-radius:20px;background:#213739;margin:8px 0 14px}
+    .radio02-progress{height:100%;width:100%;background:linear-gradient(90deg,#7fc3ae,#c3a38b);border-radius:20px;transition:width .1s linear}
+    .radio02-note{font:clamp(13px,3.6vw,15px)/1.35 var(--font-body);color:#b8c7c2;margin:10px 0}
+    .radio02-actions{display:grid;gap:9px;margin:12px auto 0}
+    .radio02-btn{width:100%;min-height:46px;border:1px solid #578d7c;border-radius:8px;background:#21463e;color:#f2f7f0;font:clamp(11px,3vw,13px)/1.35 var(--font-ui);cursor:pointer;padding:11px}
+    .radio02-btn.secondary{border-color:#596268;background:#253037;color:#dedcda}
+    .radio02-btn:disabled{opacity:.5;cursor:default}
+    .radio02-effect{white-space:pre-line;padding:15px 13px;margin:11px 0 17px;border:1px solid #527f73;background:#112525;border-radius:10px;color:#e8efe9;font:clamp(16px,4vw,18px)/1.45 var(--font-body)}
+    .radio02-overlay .hidden{display:none!important}
+    @media(max-height:520px){.radio02-content{padding:11px 13px}.radio02-symbol{font-size:25px}.radio02-actions{gap:6px}.radio02-btn{min-height:42px}}
+    @media(prefers-reduced-motion:reduce){.radio02-progress{transition:none}}
+
     /* MÉTÉO : métal gris et rouille, volontairement sans révélation du phénomène */
     .weather-event-overlay{position:fixed;inset:0;z-index:10130;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 48% 34%,rgba(51,48,44,.97),rgba(10,10,11,.995) 77%);opacity:0;visibility:hidden;pointer-events:none;isolation:isolate;transition:opacity .7s ease,visibility 0s linear .7s}
     .weather-event-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .6s ease}
@@ -1677,6 +1698,7 @@
             <option value="masque-003">003 · Le Prix du sacrifice</option>
             <option value="masque-004">004 · Le Regard du Vice</option>
             <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
+            <option value="radio-002">📻 Radio 002 · Le Rapport impossible</option>
             <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
             <option value="meteo-002">🌧️ Météo 002 · La Pluie à rebours</option>
           </select>
@@ -1970,6 +1992,32 @@
         <button id="radioEventAccept" class="radio-event-btn hidden" type="button">RÉPONDRE À L'APPEL</button>
         <button id="radioEventIgnore" class="radio-event-btn secondary hidden" type="button">IGNORER</button>
         <button id="radioEventDone" class="radio-event-btn wide hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RADIO 002 : RAPPORT IMPOSSIBLE ==================== -->
+  <div id="radio02Overlay" class="radio02-overlay" role="dialog" aria-modal="true" aria-labelledby="radio02Heading" aria-hidden="true">
+    <div class="radio02-content">
+      <div class="radio02-symbol" aria-hidden="true">📻</div>
+      <h2 id="radio02Heading" class="radio02-heading">TRANSMISSION INTERCEPTÉE</h2>
+      <p id="radio02Status" class="radio02-status" aria-live="polite">Une fréquence inconnue s'active…</p>
+      <div id="radio02Choices" class="hidden">
+        <div id="radio02Clock" class="radio02-timer" role="timer" aria-live="off">00:15</div>
+        <div id="radio02Track" class="radio02-progress-track" role="progressbar" aria-label="Temps restant pour répondre" aria-valuemin="0" aria-valuemax="15" aria-valuenow="15">
+          <div id="radio02Progress" class="radio02-progress"></div>
+        </div>
+        <p class="radio02-note">Sans réponse, la transmission se poursuivra d'elle-même.</p>
+        <div class="radio02-actions">
+          <button id="radio02Answer" class="radio02-btn" type="button">RÉPONDRE À LA TRANSMISSION</button>
+          <button id="radio02Cut" class="radio02-btn secondary" type="button">COUPER LA COMMUNICATION</button>
+        </div>
+      </div>
+      <div id="radio02Reward" class="radio02-effect hidden"></div>
+      <div class="radio02-actions">
+        <button id="radio02Play" class="radio02-btn hidden" type="button">ÉCOUTER LA TRANSMISSION</button>
+        <button id="radio02Skip" class="radio02-btn secondary hidden" type="button">CONTINUER SANS AUDIO</button>
+        <button id="radio02Done" class="radio02-btn hidden" type="button">CONTINUER LA PARTIE</button>
       </div>
     </div>
   </div>
