@@ -5761,6 +5761,312 @@ syncMusicForActiveTab();
     updateAudioEventClock();
   }
 
+
+  // RADIO 002 : rapport prémonitoire, choix chronométré et effets différés.
+  function dismissRadio02() {
+    radio02Token += 1;
+    const r = currentRadio02;
+    if (r) {
+      if (r.timer !== null) clearInterval(r.timer);
+      if (r.audio) {
+        r.audio.pause();
+        r.audio.onended = null;
+        r.audio.onerror = null;
+      }
+    }
+    currentRadio02 = null;
+    els.radio02Overlay.classList.remove('show');
+    els.radio02Overlay.setAttribute('aria-hidden', 'true');
+    for (const id of ['radio02Choices','radio02Reward','radio02Play',
+      'radio02Skip','radio02Done']) els[id].classList.add('hidden');
+    specialAudioActive = false;
+    syncAmbientVolume();
+    renderEventControls();
+  }
+
+  function beginRadio02(item, preview, restoring = false) {
+    if (item?.id !== 'radio-002' || !eventSession.active
+      || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || document.visibilityState !== 'visible' || !isPartieTabActive()
+      || (state.value >= 100 && !(restoring
+        && eventSession.pendingRadio002?.stage === 'result'))) return false;
+    if (restoring && !eventSession.pendingRadio002) return false;
+    pauseAudioEventClock();
+    const pending = restoring ? eventSession.pendingRadio002 : null;
+    const stage = pending?.stage || 'intro';
+    const choice = pending?.choice ?? null;
+    const audioPath = stage === 'intro'
+      ? item.audio : stage === 'branch' ? item.responses[choice] : null;
+    const audio = audioPath ? new Audio(audioPath) : null;
+    if (audio) { audio.volume = 1; audio.preload = 'auto'; }
+    currentRadio02 = {
+      token: ++radio02Token, item, audio, preview, choice,
+      phase: stage, savedPreviewDelay: eventSession.remainingMs,
+      timer: null, deadline: 0, remainingMs: 15000,
+      before: pending?.before ?? null, after: pending?.after ?? null,
+      deferredTransition: null, deferredGameOver: pending?.gameOver === true
+    };
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.pendingRadio002 = { id: item.id, stage: 'intro', choice: null };
+      eventSession.remainingMs = null;
+    }
+    saveAudioEventSession();
+    els.radio02Heading.textContent = 'TRANSMISSION INTERCEPTÉE';
+    els.radio02Status.textContent = 'Une fréquence inconnue s’active…';
+    for (const id of ['radio02Choices','radio02Reward','radio02Play',
+      'radio02Skip','radio02Done']) els[id].classList.add('hidden');
+    els.radio02Overlay.classList.add('show');
+    els.radio02Overlay.setAttribute('aria-hidden', 'false');
+    specialAudioActive = true;
+    silenceHauntSounds();
+    syncAmbientVolume();
+    renderEventControls();
+
+    if (stage === 'result') {
+      const before = pending.before;
+      const after = pending.after;
+      if (Number.isFinite(before) && Number.isFinite(after)
+        && state.value === before) {
+        applyInstabilityDelta(after - before, {
+          source: 'Radio — Le Rapport impossible',
+          deferThreshold: true, deferGameOver: true
+        });
+      }
+      currentRadio02.before = before;
+      currentRadio02.after = state.value;
+      currentRadio02.deferredTransition = [before, state.value];
+      showRadio02Reward();
+    } else if (stage === 'choices') showRadio02Choices(true);
+    else playRadio02Audio();
+    return true;
+  }
+
+  function showRadio02AudioFallback() {
+    const r = currentRadio02;
+    if (!r || !['intro','branch'].includes(r.phase)) return;
+    els.radio02Status.textContent =
+      'Audio interrompu. Réessayez ou poursuivez sans narration.';
+    els.radio02Play.textContent = 'ÉCOUTER LA TRANSMISSION';
+    els.radio02Play.classList.remove('hidden');
+    els.radio02Skip.classList.remove('hidden');
+  }
+
+  function playRadio02Audio() {
+    const r = currentRadio02;
+    if (!r || !['intro','branch'].includes(r.phase)
+      || !r.audio || document.visibilityState !== 'visible') return;
+    const token = r.token, phase = r.phase;
+    els.radio02Play.classList.add('hidden');
+    els.radio02Skip.classList.add('hidden');
+    els.radio02Status.textContent = phase === 'intro'
+      ? 'Une voix cherche à joindre les survivants…'
+      : 'Le rapport semblait connaître votre réponse…';
+    r.audio.onended = () => {
+      if (currentRadio02?.token !== token || r.phase !== phase) return;
+      if (phase === 'intro') showRadio02Choices();
+      else finishRadio02Branch();
+    };
+    r.audio.onerror = () => {
+      if (currentRadio02?.token === token) showRadio02AudioFallback();
+    };
+    try {
+      r.audio.play().catch(() => {
+        if (currentRadio02?.token === token) showRadio02AudioFallback();
+      });
+    } catch (_) { showRadio02AudioFallback(); }
+  }
+
+  function skipRadio02Audio() {
+    const r = currentRadio02;
+    if (!r || !['intro','branch'].includes(r.phase)) return;
+    r.audio?.pause();
+    if (r.audio) { r.audio.onended = null; r.audio.onerror = null; }
+    if (r.phase === 'intro') showRadio02Choices();
+    else finishRadio02Branch();
+  }
+
+  function renderRadio02Countdown(r) {
+    const remaining = Math.max(0, r.remainingMs);
+    const seconds = Math.ceil(remaining / 1000);
+    els.radio02Clock.textContent = '00:' + String(seconds).padStart(2,'0');
+    els.radio02Progress.style.width = (remaining / 15000 * 100).toFixed(2) + '%';
+    els.radio02Track.setAttribute('aria-valuenow', String(seconds));
+  }
+
+  function pauseRadio02Countdown() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'choices' || r.timer === null) return;
+    r.remainingMs = Math.max(0, r.deadline - performance.now());
+    clearInterval(r.timer);
+    r.timer = null;
+    renderRadio02Countdown(r);
+  }
+
+  function tickRadio02Countdown(token) {
+    const r = currentRadio02;
+    if (!r || r.token !== token || r.phase !== 'choices' || r.timer === null) return;
+    r.remainingMs = Math.max(0, r.deadline - performance.now());
+    renderRadio02Countdown(r);
+    if (r.remainingMs === 0) chooseRadio02('silence');
+  }
+
+  function resumeRadio02Countdown() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'choices' || r.timer !== null
+      || document.visibilityState !== 'visible') return;
+    r.deadline = performance.now() + r.remainingMs;
+    r.timer = setInterval(() => tickRadio02Countdown(r.token), 100);
+    tickRadio02Countdown(r.token);
+  }
+
+  function showRadio02Choices(restoring = false) {
+    const r = currentRadio02;
+    if (!r || (!restoring && r.phase !== 'intro')) return;
+    r.audio?.pause();
+    r.phase = 'choices';
+    r.audio = null;
+    r.remainingMs = 15000;
+    els.radio02Status.textContent = 'Une réponse est attendue.';
+    els.radio02Play.classList.add('hidden');
+    els.radio02Skip.classList.add('hidden');
+    els.radio02Choices.classList.remove('hidden');
+    els.radio02Answer.disabled = false;
+    els.radio02Cut.disabled = false;
+    renderRadio02Countdown(r);
+    if (!r.preview && !restoring) {
+      eventSession.pendingRadio002 = { id: r.item.id, stage: 'choices', choice: null };
+      saveAudioEventSession();
+    }
+    resumeRadio02Countdown();
+  }
+
+  function chooseRadio02(choice) {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'choices'
+      || !['answer','cut','silence'].includes(choice)) return;
+    pauseRadio02Countdown();
+    r.phase = 'branch';
+    r.choice = choice;
+    els.radio02Choices.classList.add('hidden');
+    els.radio02Status.textContent = 'La transmission reprend…';
+    if (!r.preview) {
+      eventSession.pendingRadio002 = { id: r.item.id, stage: 'branch', choice };
+      saveAudioEventSession();
+    }
+    r.audio = new Audio(r.item.responses[choice]);
+    r.audio.volume = 1;
+    r.audio.preload = 'auto';
+    playRadio02Audio();
+  }
+
+  function finishRadio02Branch() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'branch') return;
+    r.audio?.pause();
+    if (r.audio) { r.audio.onended = null; r.audio.onerror = null; }
+    const before = state.value;
+    const delta = r.choice === 'answer' ? 5 : r.choice === 'cut' ? -5 : 0;
+    const after = Math.max(0, Math.min(100, before + delta));
+    if (!r.preview) {
+      eventSession.pendingRadio002 = {
+        id: r.item.id, stage: 'result', choice: r.choice,
+        before, after, gameOver: after >= 100
+      };
+      saveAudioEventSession();
+    }
+    if (delta) {
+      const effect = applyInstabilityDelta(delta, {
+        source: 'Radio — Le Rapport impossible (' + r.choice + ')',
+        deferThreshold: true, deferGameOver: true
+      });
+      r.deferredTransition = [before, state.value];
+      r.deferredGameOver = effect.gameOver;
+    }
+    r.before = before; r.after = state.value; r.phase = 'result';
+    showRadio02Reward();
+  }
+
+  function showRadio02Reward() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'result') return;
+    els.radio02Status.textContent = 'TRANSMISSION TERMINÉE';
+    els.radio02Choices.classList.add('hidden');
+    els.radio02Play.classList.add('hidden');
+    els.radio02Skip.classList.add('hidden');
+    const before = r.before, after = r.after;
+    const actual = after - before;
+    const amount = actual > 0 ? '+' + actual : String(actual);
+    const nl = String.fromCharCode(10,10);
+    if (r.choice === 'answer') {
+      els.radio02Reward.textContent = 'L’anomalie a laissé une trace.' + nl
+        + 'Instabilité mentale : ' + before + ' % → ' + after
+        + ' % (' + amount + ' points).' + nl
+        + 'Le groupe choisit UN joueur vivant qui pioche 1 carte Objet.';
+    } else if (r.choice === 'cut') {
+      els.radio02Reward.textContent =
+        'Le silence revient enfin. Vous reprenez progressivement vos esprits.' + nl
+        + 'Instabilité mentale : ' + before + ' % → ' + after
+        + ' % (' + amount + ' points).';
+    } else {
+      els.radio02Reward.textContent = 'La fréquence est redevenue muette.' + nl
+        + 'Aucun changement d’Instabilité mentale. Aucun Objet à piocher.';
+    }
+    els.radio02Reward.classList.remove('hidden');
+    els.radio02Done.classList.remove('hidden');
+    els.radio02Done.focus();
+  }
+
+  function completeRadio02() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'result') return;
+    const delay = r.preview ? r.savedPreviewDelay : randomBetween(...EVENT_NEXT_DELAY);
+    const transition = r.deferredTransition;
+    const over = r.deferredGameOver;
+    dismissRadio02();
+    if (!r.preview) eventSession.pendingRadio002 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+    if (transition || over) {
+      clearTimeout(radio02DeferredOutcomeTimer);
+      radio02DeferredOutcomeTimer = setTimeout(() => {
+        radio02DeferredOutcomeTimer = null;
+        if (transition && state.value === transition[1] && !over)
+          handleThresholdTransition(transition[0], transition[1]);
+        if (over) checkGameOver();
+      }, REDUCED_MOTION ? 0 : 650);
+    }
+  }
+
+  function handleRadio02Visibility() {
+    const r = currentRadio02;
+    if (!r) return;
+    if (document.visibilityState === 'hidden') {
+      if (r.phase === 'choices') pauseRadio02Countdown();
+      if (r.audio && !r.audio.paused) {
+        r.audio.pause();
+        showRadio02AudioFallback();
+      }
+    } else if (r.phase === 'choices') resumeRadio02Countdown();
+  }
+
+  function resumePendingRadio02IfPossible() {
+    const pending = eventSession.pendingRadio002;
+    if (!pending || !eventSession.active || gameOverShown
+      || document.visibilityState !== 'visible'
+      || (state.value >= 100 && pending.stage !== 'result')) return false;
+    const item = AUDIO_EVENTS.find(entry => entry.id === pending.id);
+    if (!item) {
+      eventSession.pendingRadio002 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginRadio02(item, false, true);
+  }
+
   // =========================================================
   // MÉTÉO : NARRATION DU MONDE ET CONSÉQUENCE AUTOMATIQUE
   // =========================================================
