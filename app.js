@@ -6000,7 +6000,7 @@ syncMusicForActiveTab();
     const amount = actual > 0 ? '+' + actual : String(actual);
     const nl = String.fromCharCode(10,10);
     if (r.choice === 'answer') {
-      els.radio02Reward.textContent = 'L’anomalie a laissé une trace.' + nl
+      els.radio02Reward.textContent = 'Les paroles de l’opérateur continuent de vous hanter.' + nl
         + 'Instabilité mentale : ' + before + ' % → ' + after
         + ' % (' + amount + ' points).' + nl
         + 'Le groupe choisit UN joueur vivant qui pioche 1 carte Objet.';
@@ -6011,7 +6011,7 @@ syncMusicForActiveTab();
         + ' % (' + amount + ' points).';
     } else {
       els.radio02Reward.textContent = 'La fréquence est redevenue muette.' + nl
-        + 'Aucun changement d’Instabilité mentale. Aucun Objet à piocher.';
+        + 'Le silence vous laisse avec davantage de questions que de réponses.';
     }
     els.radio02Reward.classList.remove('hidden');
     els.radio02Done.classList.remove('hidden');
