@@ -1,4 +1,4 @@
-const CACHE = 'instability-v78';
+const CACHE = 'instability-v79';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -127,6 +127,10 @@ const ASSETS = [
   // Première transmission radio : appel monté + résolution narrée
   './audio/events/radio/radio-001-derriere-la-porte.MP3',
   './audio/events/radio/radio-001-resolution-local-vide.mp3',
+  './audio/events/radio/radio-002-rapport-impossible.mp3',
+  './audio/events/radio/radio-002-repondre.mp3',
+  './audio/events/radio/radio-002-couper.mp3',
+  './audio/events/radio/radio-002-silence.mp3',
 
   // Météo — récits finalisés du narrateur avec sound design intégré
   './audio/events/meteo/meteo-001-pression-fantome.mp3',
@@ -274,6 +278,10 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3": "9bc3b59d8ce0adc120b654ea700eeb7df141602e",
   "./audio/events/radio/radio-001-derriere-la-porte.MP3": "f058d8962a4e843d4af550cabc36989d58a29d6b",
   "./audio/events/radio/radio-001-resolution-local-vide.mp3": "9af4f7ee68a2358f9287c91816b201604a34c41e",
+  "./audio/events/radio/radio-002-rapport-impossible.mp3": "550bd2d4e932887bf8a89bf58ac7910951750217",
+  "./audio/events/radio/radio-002-repondre.mp3": "5306f609ea7b4454a269c9c753020c23d6635000",
+  "./audio/events/radio/radio-002-couper.mp3": "1849dd2d6720c8fee15d52052c918fe328087d0e",
+  "./audio/events/radio/radio-002-silence.mp3": "f623407c0e6bb0e89b79ff7ec257d9ca548ca87c",
   "./audio/events/meteo/meteo-001-pression-fantome.mp3": "fe45d827bd3792ce1a14ca66638a18ffafac2f45",
   "./audio/events/meteo/meteo-002-pluie-a-rebours.mp3": "2aa95887633d79f79a6857169d52b194d0101155",
   "./audio/ambient_loop.mp3": "fdb97f1acd6ecd62731f3de9e8c78437cc0dc07b",
