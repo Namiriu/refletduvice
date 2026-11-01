@@ -4978,7 +4978,7 @@ syncMusicForActiveTab();
 
   function beginMaskEvent(item, preview) {
     if (item?.id === 'masque-005') return beginMask05(item, preview);
-    if (!eventSession.active || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
+    if (!eventSession.active || currentMask05 || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || specialAudioActive || anyBlockingModalOpen()) return false;
 
@@ -5299,7 +5299,8 @@ syncMusicForActiveTab();
       if (currentMask05?.token === token && r.audio === sound)
         showMask05AudioFallback();
     };
-    resumeMask05Audio();
+    if (document.visibilityState === 'visible') resumeMask05Audio();
+    else showMask05AudioFallback();
   }
 
   function showMask05AudioFallback() {
@@ -5622,11 +5623,11 @@ syncMusicForActiveTab();
         clearTimeout(r.gongTimer);
         r.gongTimer = null;
         r.audio?.pause();
+        r.audio = null;
         r.stage = 'verdict';
         saveMask05Stage();
         showMask05Overlay();
-        els.mask05Status.textContent = 'Touchez pour écouter le verdict.';
-        els.mask05Play.classList.remove('hidden');
+        els.mask05Status.textContent = 'Verdict suspendu. Revenez à l’application.';
         return;
       }
       if (r.audio && !r.audio.paused) {
@@ -6111,7 +6112,7 @@ syncMusicForActiveTab();
   function beginRadioEvent(item, preview) {
     if (item?.id === 'radio-002') return beginRadio02(item, preview);
     if (!item || item.type !== 'radio' || !eventSession.active
-      || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
+      || currentMask05 || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
       || document.visibilityState !== 'visible'
       || !isPartieTabActive() || state.value >= 100
@@ -6337,7 +6338,7 @@ syncMusicForActiveTab();
 
   function beginRadio02(item, preview, restoring = false) {
     if (item?.id !== 'radio-002' || !eventSession.active
-      || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
+      || currentMask05 || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || (state.value >= 100 && !(restoring
@@ -6693,7 +6694,7 @@ syncMusicForActiveTab();
 
   function beginWeatherEvent(item, preview, restoring = false) {
     if (!item || item.type !== 'meteo' || !eventSession.active
-      || currentMaskEvent || currentRadioEvent || currentWeatherEvent
+      || currentMask05 || currentMaskEvent || currentRadioEvent || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
       || !isPartieTabActive() || document.visibilityState !== 'visible'
       || (state.value >= 100 && !(restoring
