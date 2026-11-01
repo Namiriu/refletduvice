@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.4 Radio 002 (test)';
+  const VERSION = 'v1.1.5 Masque 005 (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -159,6 +159,22 @@ campAudio: $('campAudio'),
     playersClose: $('playersClose'),
     eventPlayersList: $('eventPlayersList'),
     maskEventOverlay: $('maskEventOverlay'),
+    mask05Banner: $('mask05Banner'),
+    mask05BannerClock: $('mask05BannerClock'),
+    mask05BannerProgress: $('mask05BannerProgress'),
+    mask05Overlay: $('mask05Overlay'),
+    mask05Portrait: $('mask05Portrait'),
+    mask05Heading: $('mask05Heading'),
+    mask05Status: $('mask05Status'),
+    mask05Hint: $('mask05Hint'),
+    mask05Outcome: $('mask05Outcome'),
+    mask05Private: $('mask05Private'),
+    mask05Start: $('mask05Start'),
+    mask05Success: $('mask05Success'),
+    mask05Failure: $('mask05Failure'),
+    mask05Play: $('mask05Play'),
+    mask05Skip: $('mask05Skip'),
+    mask05Done: $('mask05Done'),
     maskEventPortrait: $('maskEventPortrait'),
     maskEventTitle: $('maskEventTitle'),
     maskEventStatus: $('maskEventStatus'),
@@ -484,6 +500,18 @@ bestiaireNarration: $('bestiaireNarration'),
       target: 'deux-joueurs-vivants'
     },
     {
+      id: 'masque-005', type: 'masque', title: 'LA CONFIDENCE EMPOISONNÉE',
+      introAudio: 'audio/events/masque/interventions/masque-005-confidence-intro.mp3',
+      cibleAudio: 'audio/events/masque/interventions/masque-005-confidence-cible.mp3',
+      transfertAudio: 'audio/events/masque/interventions/masque-005-confidence-transfert.mp3',
+      secretAudio: 'audio/events/masque/interventions/masque-005-confidence-secrete.mp3',
+      verdictAudio: 'audio/events/masque/interventions/masque-005-confidence-verdict.mp3',
+      successAudio: 'audio/events/masque/interventions/masque-005-confidence-reussite.mp3',
+      failureAudio: 'audio/events/masque/interventions/masque-005-confidence-echec.mp3',
+      gongAudio: 'audio/events/sfx/gong-fin-chronometre.mp3',
+      target: 'deux-joueurs-vivants'
+    },
+    {
       id: 'radio-001',
       type: 'radio',
       title: 'DERRIÈRE LA PORTE',
@@ -513,6 +541,9 @@ bestiaireNarration: $('bestiaireNarration'),
   let eventTimer = null;
   let eventDueAt = null;
   let currentMaskEvent = null;
+  let currentMask05 = null;
+  let mask05Token = 0;
+  const MASK05_MISSION_MS = 5 * 60000;
   let currentRadioEvent = null;
   let radioEventToken = 0;
   let currentRadio02 = null;
@@ -1702,6 +1733,7 @@ function syncAmbientVolume() {
         .contains('show')
       || els.playersModal.classList.contains('show')
       || els.maskEventOverlay.classList.contains('show')
+      || els.mask05Overlay.classList.contains('show')
       || els.radioEventOverlay.classList.contains('show')
       || els.radio02Overlay.classList.contains('show')
       || els.weatherEventOverlay.classList.contains('show')
@@ -4437,6 +4469,7 @@ syncMusicForActiveTab();
       introPlayed: false,
       radioMission: null,
       pendingRadio002: null,
+      pendingMask005: null,
       lastEventType: null,
       weatherCount: 0,
       nextWeatherEligibleAt: 0,
@@ -4489,6 +4522,24 @@ syncMusicForActiveTab();
                 ? saved.pendingRadio002.after : null,
               gameOver: saved.pendingRadio002.gameOver === true
             } : null,
+        pendingMask005: saved.pendingMask005?.id === 'masque-005'
+          && ['public','private-ready','secret','start-ready','mission',
+            'gong','verdict','decision','reaction','result'].includes(saved.pendingMask005.stage)
+          && Number.isInteger(saved.pendingMask005.target)
+          && Number.isInteger(saved.pendingMask005.accomplice)
+          && saved.pendingMask005.target >= 1 && saved.pendingMask005.target <= 4
+          && saved.pendingMask005.accomplice >= 1 && saved.pendingMask005.accomplice <= 4
+          && saved.pendingMask005.target !== saved.pendingMask005.accomplice
+          && [null,'success','failure'].includes(saved.pendingMask005.outcome ?? null)
+          ? {
+              id: 'masque-005',
+              stage: saved.pendingMask005.stage,
+              target: saved.pendingMask005.target,
+              accomplice: saved.pendingMask005.accomplice,
+              deadline: Number.isFinite(saved.pendingMask005.deadline)
+                ? Math.max(0, saved.pendingMask005.deadline) : 0,
+              outcome: saved.pendingMask005.outcome ?? null
+            } : null,
         lastEventType: ['masque', 'radio', 'meteo'].includes(saved.lastEventType)
           ? saved.lastEventType : null,
         weatherCount: Number.isInteger(saved.weatherCount)
@@ -4540,11 +4591,13 @@ syncMusicForActiveTab();
   function eligibleAudioEvents() {
     return unusedAudioEvents().filter(item =>
       state.value >= (item.minInstability || 0)
-      && (item.id !== 'masque-004' || livingPlayerNumbers().length >= 2)
+      && (!['masque-004','masque-005'].includes(item.id)
+        || livingPlayerNumbers().length >= 2)
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel'
         && item.type === 'radio')
       && !eventSession.pendingRadio002
+      && !eventSession.pendingMask005
       && (item.type !== 'meteo'
         || (eventSession.weatherCount < WEATHER_MAX_PER_GAME
           && !eventSession.pendingWeather
@@ -4575,7 +4628,8 @@ syncMusicForActiveTab();
     const testEvent = AUDIO_EVENTS.find(item =>
       item.id === els.testMaskEventSelect.value
     ) || AUDIO_EVENTS[0];
-    const insufficientDuelPlayers = testEvent.id === 'masque-004' && alive < 2;
+    const insufficientDuelPlayers =
+      ['masque-004','masque-005'].includes(testEvent.id) && alive < 2;
     const locked = state.value < (testEvent.minInstability || 0);
     els.btnTestMaskEvent.textContent = insufficientDuelPlayers
       ? 'TEST : 2 VIVANTS MINIMUM'
@@ -4587,6 +4641,8 @@ syncMusicForActiveTab();
     els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
       || currentRadioEvent !== null || currentRadio02 !== null
       || currentWeatherEvent !== null
+      || currentMask05 !== null
+      || eventSession.pendingMask005 !== null
       || eventSession.pendingWeather !== null
       || eventSession.pendingRadio002 !== null || alive === 0
       || state.value >= 100 || locked || insufficientDuelPlayers
@@ -4668,10 +4724,12 @@ syncMusicForActiveTab();
       && document.visibilityState === 'visible'
       && isPartieTabActive()
       && currentMaskEvent === null
+      && currentMask05 === null
       && currentRadioEvent === null
       && currentRadio02 === null
       && currentWeatherEvent === null
       && !eventSession.pendingWeather
+      && !eventSession.pendingMask005
       && !eventSession.pendingRadio002
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel')
@@ -4754,6 +4812,7 @@ syncMusicForActiveTab();
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
     eventSession.pendingRadio002 = null;
+    eventSession.pendingMask005 = null;
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
     saveAudioEventSession();
@@ -4867,6 +4926,7 @@ syncMusicForActiveTab();
     maskDeferredOutcomeTimer = null;
     pauseAudioEventClock();
     dismissMaskEvent(true);
+    dismissMask05();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissWeatherEvent(true);
@@ -4882,6 +4942,7 @@ syncMusicForActiveTab();
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
     eventSession.pendingRadio002 = null;
+    eventSession.pendingMask005 = null;
     eventSession.alive = [true, true, true, true];
     eventSession.played = [];
     eventSession.remainingMs = null;
@@ -4892,11 +4953,12 @@ syncMusicForActiveTab();
   function stopAudioEventsForGameOver() {
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
-    if (!eventSession.active && !currentMaskEvent && !currentRadioEvent
-      && !currentRadio02 && !currentWeatherEvent
+    if (!eventSession.active && !currentMaskEvent && !currentMask05
+      && !currentRadioEvent && !currentRadio02 && !currentWeatherEvent
       && !eventSession.pendingWeather && !eventSession.pendingRadio002) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
+    dismissMask05();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissWeatherEvent(true);
@@ -4908,12 +4970,14 @@ syncMusicForActiveTab();
     eventSession.radioMission = null;
     eventSession.pendingWeather = null;
     eventSession.pendingRadio002 = null;
+    eventSession.pendingMask005 = null;
     eventSession.remainingMs = null;
     saveAudioEventSession();
     renderEventControls();
   }
 
   function beginMaskEvent(item, preview) {
+    if (item?.id === 'masque-005') return beginMask05(item, preview);
     if (!eventSession.active || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || specialAudioActive || anyBlockingModalOpen()) return false;
@@ -5416,6 +5480,7 @@ syncMusicForActiveTab();
       showWeatherAudioFallback('Narration suspendue. Touchez pour reprendre.');
     }
     handleRadio02Visibility();
+    handleMask05Visibility();
     if (currentRadioEvent && document.visibilityState === 'hidden'
       && currentRadioEvent.audio
       && !currentRadioEvent.audio.paused) {
@@ -6344,7 +6409,9 @@ syncMusicForActiveTab();
 
     scheduleMaskDisturbance();
 
-    if (!resumePendingRadio02IfPossible() && !resumePendingWeatherIfPossible()) {
+    if (!resumePendingMask05IfPossible()
+      && !resumePendingRadio02IfPossible()
+      && !resumePendingWeatherIfPossible()) {
       updateAudioEventClock();
     }
 
@@ -6356,6 +6423,7 @@ syncMusicForActiveTab();
 
     if (
       state.value >= 100 && !currentWeatherEvent && !currentRadio02
+      && !currentMask05
     ) {
       checkGameOver();
     }
@@ -6494,6 +6562,13 @@ syncMusicForActiveTab();
     els.maskDuelLoss2.addEventListener('click', () => resolveMaskDuel('second'));
     els.maskDuelSuccess.addEventListener('click', () => resolveMaskDuel('both'));
     els.maskDuelSkipAudio.addEventListener('click', skipMaskDuelReaction);
+    els.mask05Private.addEventListener('click', startMask05Secret);
+    els.mask05Start.addEventListener('click', startMask05Mission);
+    els.mask05Success.addEventListener('click', () => resolveMask05('success'));
+    els.mask05Failure.addEventListener('click', () => resolveMask05('failure'));
+    els.mask05Play.addEventListener('click', resumeMask05Audio);
+    els.mask05Skip.addEventListener('click', skipMask05Audio);
+    els.mask05Done.addEventListener('click', completeMask05);
 
     els.radioMissionToggle.addEventListener('click', toggleRadioMissionPanel);
     els.radioMissionArrived.addEventListener('click', radioMissionArrived);
