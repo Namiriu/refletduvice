@@ -1,4 +1,4 @@
-const CACHE = 'instability-v79';
+const CACHE = 'instability-v80';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -124,6 +124,15 @@ const ASSETS = [
 './audio/events/masque/interventions/masque-004-regard-du-vice-epreuve.mp3',
 './audio/events/masque/interventions/masque-004-regard-du-vice-perdant.mp3',
 './audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3',
+  // Masque 005 — dialogues et gong réutilisable
+  './audio/events/masque/interventions/masque-005-confidence-intro.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-cible.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-transfert.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-secrete.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-verdict.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-reussite.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-echec.mp3',
+  './audio/events/sfx/gong-fin-chronometre.mp3',
   // Première transmission radio : appel monté + résolution narrée
   './audio/events/radio/radio-001-derriere-la-porte.MP3',
   './audio/events/radio/radio-001-resolution-local-vide.mp3',
@@ -276,6 +285,14 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-004-regard-du-vice-epreuve.mp3": "21394f03272827e2846ea6b1927b55558646ba42",
   "./audio/events/masque/interventions/masque-004-regard-du-vice-perdant.mp3": "88e44b914376506ddd478231f7854290693a5a5e",
   "./audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3": "9bc3b59d8ce0adc120b654ea700eeb7df141602e",
+  "./audio/events/masque/interventions/masque-005-confidence-intro.mp3": "d6d39e4d0f7816c295170d22416200987dc89ae2",
+  "./audio/events/masque/interventions/masque-005-confidence-cible.mp3": "a157f63bc4810b24b5d00803945a62c1c71e4b33",
+  "./audio/events/masque/interventions/masque-005-confidence-transfert.mp3": "ccde91162c2cba0f70ace6b8f27c25d01bafb96b",
+  "./audio/events/masque/interventions/masque-005-confidence-secrete.mp3": "5ff59be9860f8f8c87fe90cbd5a83aa5f3237709",
+  "./audio/events/masque/interventions/masque-005-confidence-verdict.mp3": "339ce5ebd03bf0cd05733f5b701be0de3b4fb070",
+  "./audio/events/masque/interventions/masque-005-confidence-reussite.mp3": "48ec07bbc18e41f66de7eb3ea9b17a314617dee0",
+  "./audio/events/masque/interventions/masque-005-confidence-echec.mp3": "31bc495f2853a1aa00bf926c86953f4c6cd16f2e",
+  "./audio/events/sfx/gong-fin-chronometre.mp3": "04009fb2cc462e133b0646d3c92fe47fb85c36df",
   "./audio/events/radio/radio-001-derriere-la-porte.MP3": "f058d8962a4e843d4af550cabc36989d58a29d6b",
   "./audio/events/radio/radio-001-resolution-local-vide.mp3": "9af4f7ee68a2358f9287c91816b201604a34c41e",
   "./audio/events/radio/radio-002-rapport-impossible.mp3": "550bd2d4e932887bf8a89bf58ac7910951750217",
