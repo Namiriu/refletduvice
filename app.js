@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.5 Masque 005 (test)';
+  const VERSION = 'v1.1.6 Masque 005 (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -159,6 +159,8 @@ campAudio: $('campAudio'),
     playersClose: $('playersClose'),
     eventPlayersList: $('eventPlayersList'),
     maskEventOverlay: $('maskEventOverlay'),
+    mask05CancelNotice: $('mask05CancelNotice'),
+    mask05CancelText: $('mask05CancelText'),
     mask05Banner: $('mask05Banner'),
     mask05BannerClock: $('mask05BannerClock'),
     mask05BannerProgress: $('mask05BannerProgress'),
@@ -543,6 +545,7 @@ bestiaireNarration: $('bestiaireNarration'),
   let currentMaskEvent = null;
   let currentMask05 = null;
   let mask05Token = 0;
+  let mask05CancelNoticeTimer = null;
   const MASK05_MISSION_MS = 5 * 60000;
   let currentRadioEvent = null;
   let radioEventToken = 0;
@@ -4667,7 +4670,11 @@ syncMusicForActiveTab();
       label.textContent = alive ? '● VIVANT' : '✕ MORT';
       button.append(name, label);
       button.addEventListener('click', () => {
-        eventSession.alive[index] = !eventSession.alive[index];
+        const wasAlive = eventSession.alive[index];
+        eventSession.alive[index] = !wasAlive;
+        // L'annulation ne concerne QUE les deux participants, pendant
+        // le compte à rebours, et seulement au passage VIVANT → MORT.
+        if (wasAlive) cancelMask05IfParticipantDied(index + 1);
         saveAudioEventSession();
         renderPlayerStatuses();
         renderEventControls();
@@ -4922,6 +4929,7 @@ syncMusicForActiveTab();
   }
 
   function resetAudioEventSession() {
+    hideMask05CancelNotice();
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
     pauseAudioEventClock();
@@ -4951,6 +4959,7 @@ syncMusicForActiveTab();
   }
 
   function stopAudioEventsForGameOver() {
+    hideMask05CancelNotice();
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
     if (!eventSession.active && !currentMaskEvent && !currentMask05
@@ -5181,6 +5190,12 @@ syncMusicForActiveTab();
     saveAudioEventSession();
   }
 
+  function hideMask05CancelNotice() {
+    clearTimeout(mask05CancelNoticeTimer);
+    mask05CancelNoticeTimer = null;
+    els.mask05CancelNotice.classList.add('hidden');
+  }
+
   function mask05Controls() {
     for (const name of ['Private','Start','Success','Failure','Play','Skip','Done']) {
       els['mask05' + name].classList.add('hidden');
@@ -5239,6 +5254,7 @@ syncMusicForActiveTab();
       : remaining[randomBetween(0, remaining.length - 1)];
     if (target === accomplice) return false;
 
+    hideMask05CancelNotice();
     pauseAudioEventClock();
     const previousDelay = eventSession.remainingMs;
     currentMask05 = {
@@ -5617,6 +5633,35 @@ syncMusicForActiveTab();
     els.mask05Outcome.classList.remove('hidden');
     els.mask05Done.classList.remove('hidden');
     els.mask05Done.focus();
+  }
+
+  function cancelMask05IfParticipantDied(player) {
+    const r = currentMask05;
+    // Aucun effet si la mission n'est pas en cours ou si le joueur
+    // décédé n'est ni la cible ni le confident.
+    if (!r || r.stage !== 'mission'
+      || (player !== r.target && player !== r.accomplice)) return false;
+
+    const delay = r.preview
+      ? r.savedPreviewDelay
+      : randomBetween(...EVENT_NEXT_DELAY);
+    dismissMask05();
+    if (!r.preview) eventSession.pendingMask005 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+
+    // Petit message d'information, sans masquer le plateau ni demander
+    // un clic supplémentaire. Il s'efface au bout de huit secondes.
+    hideMask05CancelNotice();
+    els.mask05CancelText.textContent =
+      'JOUEUR ' + player + ' est mort. '
+      + 'La mission est interrompue : ni récompense ni pénalité.';
+    els.mask05CancelNotice.classList.remove('hidden');
+    mask05CancelNoticeTimer = setTimeout(() => {
+      mask05CancelNoticeTimer = null;
+      els.mask05CancelNotice.classList.add('hidden');
+    }, 8000);
+    return true;
   }
 
   function completeMask05() {
