@@ -1461,12 +1461,14 @@
 
 
     /* Masque 005 : dialogue privé, mission secrète et horloge non intrusive */
-    .mask05-overlay{position:fixed;inset:0;z-index:10145;display:flex;align-items:center;justify-content:center;padding:12px;background:radial-gradient(circle at 50% 32%,rgba(52,17,29,.97),rgba(6,5,11,.995) 77%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s ease,visibility 0s linear .45s}
+    .mask05-overlay{position:fixed;inset:0;z-index:10145;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
     .mask05-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
-    .mask05-content{width:min(100%,490px);max-height:calc(100dvh - 24px);overflow-y:auto;text-align:center;padding:19px 16px;border:1px solid #85505c;border-radius:15px;background:linear-gradient(145deg,#301923,#100f18);box-shadow:0 20px 65px rgba(0,0,0,.85)}
-    .mask05-portrait{width:min(34vw,128px);max-height:23dvh;object-fit:contain;filter:drop-shadow(0 0 18px rgba(135,48,70,.33));margin:auto}
+    .mask05-content{width:min(100%,520px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:10px 12px 25px}
+    .mask05-portrait{display:block;width:min(64vw,230px);height:min(50dvh,330px);object-fit:contain;margin:4px auto 12px;filter:drop-shadow(0 0 18px rgba(125,17,29,.25));animation:mask-event-arrival .8s ease-out both}
+    .mask05-overlay.is-interactive .mask05-portrait{width:min(50vw,180px);height:min(30dvh,193px);margin:0 auto 8px}
     .mask05-heading{font:clamp(15px,4.4vw,20px) var(--font-ui);color:#f4d4dd;letter-spacing:.7px;margin:9px 0 10px}
-    .mask05-status{font:clamp(15px,4vw,19px)/1.4 var(--font-body);color:#eee0e5;white-space:pre-line;margin:12px 0}
+    .mask05-status{font:clamp(15px,4vw,19px)/1.4 var(--font-body);color:#c9b9bb;white-space:pre-line;margin:12px 0}
+    .mask05-status:empty{display:none}
     .mask05-hint{font:clamp(14px,3.8vw,16px)/1.45 var(--font-body);color:#d2bfc6;margin:9px 0}
     .mask05-actions{display:grid;gap:10px;margin:14px auto 0}
     .mask05-button{width:100%;min-height:47px;background:#66333f;border:1px solid #ae6c7d;border-radius:8px;color:#fff;font:clamp(11px,3vw,13px)/1.35 var(--font-ui);padding:12px 10px;cursor:pointer}
@@ -1478,7 +1480,7 @@
     .mask05-banner-time{font:clamp(23px,6vw,29px) var(--font-ui);color:#fff;line-height:1.28;margin-top:4px}
     .mask05-banner-progress{height:4px;background:#4b303c;border-radius:5px;overflow:hidden;margin-top:7px}
     .mask05-banner-progress>i{display:block;width:100%;height:100%;background:#cc8e9d;transition:width .2s linear}
-    @media(max-height:570px){.mask05-portrait{height:80px}.mask05-content{padding:9px 12px}.mask05-status{margin:5px 0}.mask05-actions{gap:6px}}
+    @media(max-height:570px){.mask05-portrait{height:min(40dvh,185px)}.mask05-overlay.is-interactive .mask05-portrait{height:min(22dvh,110px)}.mask05-content{padding:9px 12px}.mask05-status{margin:5px 0}.mask05-actions{gap:6px}}
     @media(prefers-reduced-motion:reduce){.mask05-banner-progress>i{transition:none}}
 
     /* MÉTÉO : métal gris et rouille, volontairement sans révélation du phénomène */
