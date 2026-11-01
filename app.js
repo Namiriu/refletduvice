@@ -5489,9 +5489,12 @@ syncMusicForActiveTab();
     clearInterval(r.tickTimer);
     r.tickTimer = null;
     saveMask05Stage();
-    showMask05Overlay();
-    els.mask05Heading.textContent = 'LE TEMPS EST ÉCOULÉ';
-    els.mask05Status.textContent = 'Le Masque revient réclamer son verdict…';
+    // Laisser retentir le gong avant de montrer le Masque.
+    els.mask05Banner.classList.add('hidden');
+    els.mask05Overlay.classList.remove('show');
+    els.mask05Overlay.setAttribute('aria-hidden', 'true');
+    specialAudioActive = true;
+    syncAmbientVolume();
     const gong = new Audio(r.item.gongAudio);
     r.audio = gong;
     r.afterAudio = null;
