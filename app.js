@@ -5192,6 +5192,8 @@ syncMusicForActiveTab();
   function showMask05Overlay() {
     els.mask05Banner.classList.add('hidden');
     els.mask05Overlay.classList.add('show');
+    els.mask05Overlay.classList.toggle('is-interactive',
+      ['private-ready','start-ready','decision','result'].includes(currentMask05?.stage));
     els.mask05Overlay.setAttribute('aria-hidden', 'false');
     specialAudioActive = true;
     syncAmbientVolume();
@@ -5213,7 +5215,7 @@ syncMusicForActiveTab();
     }
     currentMask05 = null;
     els.mask05Banner.classList.add('hidden');
-    els.mask05Overlay.classList.remove('show');
+    els.mask05Overlay.classList.remove('show', 'is-interactive');
     els.mask05Overlay.setAttribute('aria-hidden', 'true');
     mask05Controls();
     specialAudioActive = false;
@@ -5398,7 +5400,7 @@ syncMusicForActiveTab();
     showMask05Overlay();
     els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
     // Volume bas par défaut, sans promettre un vrai mode écouteur.
-    playMask05Audio(r.item.secretAudio, 'Le Masque te parle à voix basse…',
+    playMask05Audio(r.item.secretAudio, '',
       () => showMask05StartReady(), 0.4);
   }
 
@@ -5445,6 +5447,10 @@ syncMusicForActiveTab();
     r.deadline = Date.now() + MASK05_MISSION_MS;
     saveMask05Stage();
     showMask05MissionBanner();
+    // Le clic sur « Commencer la mission » fournit un geste utilisateur :
+    // si le navigateur a interrompu l'ambiance, reprendre le lecteur EXISTANT
+    // sans remettre sa position à zéro.
+    if (state.musicOn) syncMusicForActiveTab();
     runMask05MissionClock();
   }
 
@@ -5501,12 +5507,24 @@ syncMusicForActiveTab();
     gong.volume = 1;
     gong.preload = 'auto';
 
-    // Le MP3 dure ~12 s mais seulement 4-5 s sont audibles.
-    // Le verdict ne doit pas attendre les secondes de silence final.
+    // Le gong conserve son long écho, jusqu'à la fin du fichier (~12 s).
+    // Un délai de secours empêche un blocage si le navigateur omet « ended ».
     r.gongTimer = setTimeout(() => {
       r.gongTimer = null;
       if (currentMask05 === r && r.stage === 'gong') playMask05Verdict();
-    }, 4700);
+    }, 14000);
+    gong.onended = () => {
+      if (currentMask05 !== r || r.stage !== 'gong') return;
+      clearTimeout(r.gongTimer);
+      r.gongTimer = null;
+      playMask05Verdict();
+    };
+    gong.onerror = () => {
+      if (currentMask05 !== r || r.stage !== 'gong') return;
+      clearTimeout(r.gongTimer);
+      r.gongTimer = null;
+      playMask05Verdict();
+    };
     gong.play().catch(() => {
       if (currentMask05 !== r || r.stage !== 'gong') return;
       clearTimeout(r.gongTimer);
@@ -5563,7 +5581,7 @@ syncMusicForActiveTab();
     els.mask05Heading.textContent = 'LA SENTENCE DU MASQUE';
     playMask05Audio(
       r.outcome === 'success' ? r.item.successAudio : r.item.failureAudio,
-      'Le Masque réagit à votre réponse…',
+      '',
       () => showMask05Result()
     );
   }
@@ -5610,6 +5628,8 @@ syncMusicForActiveTab();
     eventSession.remainingMs = delay;
     saveAudioEventSession();
     renderEventControls();
+    // Le clic sur « Continuer la partie » peut également réautoriser le son.
+    if (state.musicOn) syncMusicForActiveTab();
     updateAudioEventClock();
   }
 
