@@ -5165,6 +5165,492 @@ syncMusicForActiveTab();
   }
 
 
+
+  // =========================================================
+  // MASQUE 005 — LA CONFIDENCE EMPOISONNÉE
+  // =========================================================
+
+  function saveMask05Stage() {
+    const r = currentMask05;
+    if (!r || r.preview) return;
+    eventSession.pendingMask005 = {
+      id: r.item.id, stage: r.stage, target: r.target,
+      accomplice: r.accomplice, deadline: r.deadline || 0,
+      outcome: r.outcome || null
+    };
+    saveAudioEventSession();
+  }
+
+  function mask05Controls() {
+    for (const name of ['Private','Start','Success','Failure','Play','Skip','Done']) {
+      els['mask05' + name].classList.add('hidden');
+    }
+    els.mask05Hint.classList.add('hidden');
+    els.mask05Outcome.classList.add('hidden');
+  }
+
+  function showMask05Overlay() {
+    els.mask05Banner.classList.add('hidden');
+    els.mask05Overlay.classList.add('show');
+    els.mask05Overlay.setAttribute('aria-hidden', 'false');
+    specialAudioActive = true;
+    syncAmbientVolume();
+    mask05Controls();
+  }
+
+  function dismissMask05() {
+    mask05Token++;
+    const r = currentMask05;
+    if (r) {
+      clearInterval(r.tickTimer);
+      clearTimeout(r.gapTimer);
+      clearTimeout(r.gongTimer);
+      if (r.audio) {
+        r.audio.pause();
+        r.audio.onended = null;
+        r.audio.onerror = null;
+      }
+    }
+    currentMask05 = null;
+    els.mask05Banner.classList.add('hidden');
+    els.mask05Overlay.classList.remove('show');
+    els.mask05Overlay.setAttribute('aria-hidden', 'true');
+    mask05Controls();
+    specialAudioActive = false;
+    syncAmbientVolume();
+  }
+
+  function beginMask05(item, preview, restoring = false) {
+    if (!item || item.id !== 'masque-005' || !eventSession.active
+      || currentMaskEvent || currentMask05 || currentRadioEvent
+      || currentRadio02 || currentWeatherEvent || specialAudioActive
+      || anyBlockingModalOpen() || !isPartieTabActive()
+      || document.visibilityState !== 'visible' || state.value >= 100) return false;
+
+    const pending = restoring ? eventSession.pendingMask005 : null;
+    if (restoring && (!pending || pending.id !== item.id)) return false;
+    const pool = livingPlayerNumbers();
+    if (!restoring && pool.length < 2) return false;
+    const target = restoring ? pending.target : pool[randomBetween(0, pool.length - 1)];
+    const remaining = pool.filter(p => p !== target);
+    const accomplice = restoring ? pending.accomplice
+      : remaining[randomBetween(0, remaining.length - 1)];
+    if (target === accomplice) return false;
+
+    pauseAudioEventClock();
+    const previousDelay = eventSession.remainingMs;
+    currentMask05 = {
+      item, preview, token: ++mask05Token, target, accomplice,
+      stage: restoring ? pending.stage : 'public',
+      savedPreviewDelay: previousDelay, deadline: pending?.deadline || 0,
+      outcome: pending?.outcome || null,
+      audio: null, afterAudio: null, publicIndex: 0,
+      tickTimer: null, gapTimer: null, gongTimer: null
+    };
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.remainingMs = null;
+      saveMask05Stage();
+    }
+
+    els.mask05Portrait.src = getMaskState(state.value).src;
+    els.mask05Heading.textContent = 'INTERVENTION DU MASQUE';
+    showMask05Overlay();
+    silenceHauntSounds();
+    renderEventControls();
+
+    const r = currentMask05;
+    // Après un rechargement, la confidence ne repart JAMAIS en lecture automatique.
+    if (r.stage === 'public') playMask05PublicPart(0);
+    else if (r.stage === 'private-ready' || r.stage === 'secret') showMask05PrivateReady();
+    else if (r.stage === 'start-ready') showMask05StartReady();
+    else if (r.stage === 'mission') restoreMask05Mission();
+    else if (r.stage === 'gong' || r.stage === 'verdict') playMask05Verdict();
+    else if (r.stage === 'decision') showMask05Decision();
+    else if (r.stage === 'reaction') playMask05Reaction();
+    else if (r.stage === 'result') showMask05Result();
+    return true;
+  }
+
+  function playMask05Audio(src, status, onEnd, volume = 1) {
+    const r = currentMask05;
+    if (!r) return;
+    if (r.audio) {
+      r.audio.pause();
+      r.audio.onended = null;
+      r.audio.onerror = null;
+    }
+    const sound = new Audio(src);
+    sound.preload = 'auto';
+    sound.volume = volume;
+    r.audio = sound;
+    r.afterAudio = onEnd;
+    els.mask05Status.textContent = status;
+    els.mask05Play.classList.add('hidden');
+    els.mask05Skip.classList.add('hidden');
+
+    const token = r.token;
+    sound.onended = () => {
+      if (currentMask05?.token !== token || r.audio !== sound) return;
+      r.afterAudio = null;
+      onEnd();
+    };
+    sound.onerror = () => {
+      if (currentMask05?.token === token && r.audio === sound)
+        showMask05AudioFallback();
+    };
+    resumeMask05Audio();
+  }
+
+  function showMask05AudioFallback() {
+    const r = currentMask05;
+    if (!r || !r.audio) return;
+    els.mask05Play.textContent = 'REPRENDRE L’ENREGISTREMENT';
+    els.mask05Play.classList.remove('hidden');
+    els.mask05Skip.classList.remove('hidden');
+    els.mask05Status.textContent = 'Lecture suspendue. Touchez pour reprendre.';
+  }
+
+  function resumeMask05Audio() {
+    const r = currentMask05;
+    if (!r || !r.audio || document.visibilityState !== 'visible') return;
+    els.mask05Play.classList.add('hidden');
+    els.mask05Skip.classList.add('hidden');
+    r.audio.play().catch(() => {
+      if (currentMask05 === r) showMask05AudioFallback();
+    });
+  }
+
+  function skipMask05Audio() {
+    const r = currentMask05;
+    if (!r || !r.audio || !r.afterAudio) return;
+    const end = r.afterAudio;
+    r.afterAudio = null;
+    r.audio.pause();
+    r.audio.onended = null;
+    r.audio.onerror = null;
+    els.mask05Play.classList.add('hidden');
+    els.mask05Skip.classList.add('hidden');
+    // En cas d'échec audio, le texte de la mission doit rester accessible
+    // au SEUL confident, sans lequel il ne pourrait pas accomplir le défi.
+    if (r.stage === 'secret') showMask05StartReady(true);
+    else end();
+  }
+
+  function playMask05PublicPart(index) {
+    const r = currentMask05;
+    if (!r || r.stage !== 'public') return;
+    clearTimeout(r.gapTimer);
+    const clips = [
+      r.item.introAudio,
+      'audio/events/masque/designations/joueur-' + r.target + '.mp3',
+      r.item.cibleAudio,
+      'audio/events/masque/designations/joueur-' + r.accomplice + '.mp3',
+      r.item.transfertAudio
+    ];
+    if (index >= clips.length) {
+      showMask05PrivateReady();
+      return;
+    }
+    r.publicIndex = index;
+    playMask05Audio(
+      clips[index],
+      index === 1 ? 'Le Masque désigne un survivant…'
+        : index === 3 ? 'Le Masque choisit son confident…'
+        : 'Le Masque s’adresse au groupe…',
+      () => {
+        if (currentMask05 !== r || r.stage !== 'public') return;
+        r.gapTimer = setTimeout(() => {
+          r.gapTimer = null;
+          playMask05PublicPart(index + 1);
+        }, 280);
+      }
+    );
+  }
+
+  function showMask05PrivateReady() {
+    const r = currentMask05;
+    if (!r) return;
+    r.stage = 'private-ready';
+    if (r.audio) r.audio.pause();
+    r.audio = null;
+    r.afterAudio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
+    els.mask05Status.textContent =
+      'JOUEUR ' + r.accomplice + ' : prends le téléphone.\n'
+      + 'Éloigne-toi légèrement des autres survivants.';
+    els.mask05Hint.textContent =
+      'Approche l’appareil de ton oreille et règle son volume au minimum audible. '
+      + 'Le message ne doit être entendu que par toi.';
+    els.mask05Hint.classList.remove('hidden');
+    els.mask05Private.classList.remove('hidden');
+    els.mask05Private.focus();
+  }
+
+  function startMask05Secret() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'private-ready') return;
+    r.stage = 'secret';
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
+    // Volume bas par défaut, sans promettre un vrai mode écouteur.
+    playMask05Audio(r.item.secretAudio, 'Le Masque te parle à voix basse…',
+      () => showMask05StartReady(), 0.4);
+  }
+
+  function showMask05StartReady(audioUnavailable = false) {
+    const r = currentMask05;
+    if (!r) return;
+    r.stage = 'start-ready';
+    if (r.audio) r.audio.pause();
+    r.audio = null;
+    r.afterAudio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
+    els.mask05Status.textContent =
+      'JOUEUR ' + r.accomplice + ' : retourne à la table.\n'
+      + 'La mission commencera lorsque tu confirmeras être prêt.';
+    if (audioUnavailable) {
+      els.mask05Hint.textContent =
+        'MISSION SECRÈTE (à lire seul) : Fais lever entièrement le joueur '
+        + r.target + ' de sa chaise dans les cinq prochaines minutes, '
+        + 'sans dévoiler cet objectif ni employer la force. '
+        + 'Un lever spontané compte également comme une réussite.';
+      els.mask05Hint.classList.remove('hidden');
+    }
+    els.mask05Start.classList.remove('hidden');
+    els.mask05Start.focus();
+  }
+
+  function showMask05MissionBanner() {
+    const r = currentMask05;
+    if (!r) return;
+    els.mask05Overlay.classList.remove('show');
+    els.mask05Overlay.setAttribute('aria-hidden', 'true');
+    els.mask05Banner.classList.remove('hidden');
+    specialAudioActive = false;
+    syncAmbientVolume();
+    updateMask05Countdown();
+  }
+
+  function startMask05Mission() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'start-ready') return;
+    r.stage = 'mission';
+    r.deadline = Date.now() + MASK05_MISSION_MS;
+    saveMask05Stage();
+    showMask05MissionBanner();
+    runMask05MissionClock();
+  }
+
+  function restoreMask05Mission() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    // La durée réelle de la mission continue si l'appli passe en arrière-plan.
+    // À la réouverture, le temps est recalculé à partir de l'échéance sauvegardée.
+    if (!r.deadline) {
+      r.deadline = Date.now() + MASK05_MISSION_MS;
+      saveMask05Stage();
+    }
+    showMask05MissionBanner();
+    runMask05MissionClock();
+  }
+
+  function updateMask05Countdown() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    const remaining = Math.max(0, r.deadline - Date.now());
+    const seconds = Math.ceil(remaining / 1000);
+    const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const ss = String(seconds % 60).padStart(2, '0');
+    els.mask05BannerClock.textContent = mm + ':' + ss;
+    els.mask05BannerProgress.style.width =
+      (remaining / MASK05_MISSION_MS * 100).toFixed(2) + '%';
+    if (!remaining && document.visibilityState === 'visible') beginMask05Gong();
+  }
+
+  function runMask05MissionClock() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    clearInterval(r.tickTimer);
+    r.tickTimer = setInterval(() => updateMask05Countdown(), 250);
+    updateMask05Countdown();
+  }
+
+  function beginMask05Gong() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    r.stage = 'gong';
+    clearInterval(r.tickTimer);
+    r.tickTimer = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'LE TEMPS EST ÉCOULÉ';
+    els.mask05Status.textContent = 'Le Masque revient réclamer son verdict…';
+    const gong = new Audio(r.item.gongAudio);
+    r.audio = gong;
+    r.afterAudio = null;
+    gong.volume = 1;
+    gong.preload = 'auto';
+
+    // Le MP3 dure ~12 s mais seulement 4-5 s sont audibles.
+    // Le verdict ne doit pas attendre les secondes de silence final.
+    r.gongTimer = setTimeout(() => {
+      r.gongTimer = null;
+      if (currentMask05 === r && r.stage === 'gong') playMask05Verdict();
+    }, 4700);
+    gong.play().catch(() => {
+      if (currentMask05 !== r || r.stage !== 'gong') return;
+      clearTimeout(r.gongTimer);
+      r.gongTimer = null;
+      playMask05Verdict();
+    });
+  }
+
+  function playMask05Verdict() {
+    const r = currentMask05;
+    if (!r) return;
+    clearTimeout(r.gongTimer);
+    r.gongTimer = null;
+    r.stage = 'verdict';
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'LE VERDICT DU MASQUE';
+    playMask05Audio(r.item.verdictAudio, 'Le Masque vous interroge…',
+      () => showMask05Decision());
+  }
+
+  function showMask05Decision() {
+    const r = currentMask05;
+    if (!r) return;
+    r.stage = 'decision';
+    r.afterAudio = null;
+    r.audio?.pause();
+    r.audio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'LE VERDICT DU MASQUE';
+    els.mask05Status.textContent =
+      'JOUEUR ' + r.accomplice + ' : as-tu réussi à faire lever le joueur '
+      + r.target + ' dans le temps imparti ?';
+    els.mask05Success.classList.remove('hidden');
+    els.mask05Failure.classList.remove('hidden');
+    els.mask05Success.focus();
+  }
+
+  function resolveMask05(outcome) {
+    const r = currentMask05;
+    if (!r || r.stage !== 'decision'
+      || !['success','failure'].includes(outcome)) return;
+    r.outcome = outcome;
+    playMask05Reaction();
+  }
+
+  function playMask05Reaction() {
+    const r = currentMask05;
+    if (!r || !['success','failure'].includes(r.outcome)) return;
+    r.stage = 'reaction';
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'LA SENTENCE DU MASQUE';
+    playMask05Audio(
+      r.outcome === 'success' ? r.item.successAudio : r.item.failureAudio,
+      'Le Masque réagit à votre réponse…',
+      () => showMask05Result()
+    );
+  }
+
+  function showMask05Result() {
+    const r = currentMask05;
+    if (!r || !['success','failure'].includes(r.outcome)) return;
+    r.stage = 'result';
+    r.audio?.pause();
+    r.audio = null;
+    r.afterAudio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'MISSION DU MASQUE TERMINÉE';
+    els.mask05Status.textContent = 'Le Masque a rendu sa sentence.';
+    if (r.outcome === 'success') {
+      els.mask05Outcome.textContent =
+        'MISSION ACCOMPLIE.\n\n'
+        + 'JOUEUR ' + r.accomplice + ' : récupère 1 PV.\n\n'
+        + 'Si tu es déjà en pleine santé, tu peux offrir ce soin à '
+        + 'un autre survivant vivant de ton choix. '
+        + 'Si tout le monde est en pleine santé, aucun effet.\n\n'
+        + 'Reportez le soin sur la feuille de personnage.';
+    } else {
+      els.mask05Outcome.textContent =
+        'MISSION ÉCHOUÉE.\n\n'
+        + 'JOUEUR ' + r.accomplice + ' : passe ton prochain TOUR DE JEU.\n\n'
+        + 'Tu ne réalises pas tes actions individuelles de ce tour, '
+        + 'mais tu peux toujours participer aux COMBATS '
+        + 'déclenchés par tes coéquipiers.\n\n'
+        + 'Notez cette pénalité pour le prochain tour.';
+    }
+    els.mask05Outcome.classList.remove('hidden');
+    els.mask05Done.classList.remove('hidden');
+    els.mask05Done.focus();
+  }
+
+  function completeMask05() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'result') return;
+    const delay = r.preview ? r.savedPreviewDelay : randomBetween(...EVENT_NEXT_DELAY);
+    dismissMask05();
+    if (!r.preview) eventSession.pendingMask005 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+  }
+
+  function handleMask05Visibility() {
+    const r = currentMask05;
+    if (!r) return;
+    if (r.stage === 'mission') {
+      if (document.visibilityState === 'visible') updateMask05Countdown();
+      return;
+    }
+    if (document.visibilityState === 'hidden') {
+      if (r.stage === 'gong') {
+        // Si l'appli est masquée au moment du gong, le verdict restera accessible.
+        clearTimeout(r.gongTimer);
+        r.gongTimer = null;
+        r.audio?.pause();
+        r.stage = 'verdict';
+        saveMask05Stage();
+        showMask05Overlay();
+        els.mask05Status.textContent = 'Touchez pour écouter le verdict.';
+        els.mask05Play.classList.remove('hidden');
+        return;
+      }
+      if (r.audio && !r.audio.paused) {
+        r.audio.pause();
+        showMask05AudioFallback();
+      }
+    } else if (r.stage === 'verdict' && !r.audio) {
+      playMask05Verdict();
+    }
+  }
+
+  function resumePendingMask05IfPossible() {
+    const pending = eventSession.pendingMask005;
+    if (!pending || !eventSession.active || gameOverShown
+      || state.value >= 100 || document.visibilityState !== 'visible') return false;
+    const item = AUDIO_EVENTS.find(entry => entry.id === pending.id);
+    if (!item) {
+      eventSession.pendingMask005 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginMask05(item, false, true);
+  }
+
   // =========================================================
   // MASQUE 004 — LE REGARD DU VICE : DUEL EN TEMPS RÉEL
   // =========================================================
