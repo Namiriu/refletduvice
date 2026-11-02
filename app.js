@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.7 Masque 005 (test)';
+  const VERSION = 'v1.1.8 Météo 003 (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -537,6 +537,11 @@ bestiaireNarration: $('bestiaireNarration'),
     {
       id: 'meteo-002', type: 'meteo', title: 'LA PLUIE À REBOURS', icon: '🌧️',
       audio: 'audio/events/meteo/meteo-002-pluie-a-rebours.mp3', delta: 5
+    },
+    {
+      id: 'meteo-003', type: 'meteo', title: 'LA FRACTURE DU RÉEL', icon: '◇',
+      audioNormal: 'audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3',
+      audioReflet: 'audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3'
     }
   ];
   const eventSession = readAudioEventSession();
@@ -4558,6 +4563,8 @@ syncMusicForActiveTab();
                 ? saved.pendingWeather.before : null,
               after: Number.isFinite(saved.pendingWeather.after)
                 ? saved.pendingWeather.after : null,
+              fromReflet: typeof saved.pendingWeather.fromReflet === 'boolean'
+                ? saved.pendingWeather.fromReflet : null,
               gameOver: saved.pendingWeather.gameOver === true
             } : null,
         alive: Array.isArray(saved.alive) && saved.alive.length === 4
@@ -6685,6 +6692,13 @@ syncMusicForActiveTab();
     return AUDIO_EVENTS.find(item => item.type === 'meteo' && item.id === id);
   }
 
+  function getWeatherResultValue(item, before, fromReflet) {
+    // La Fracture du Réel force le passage d'un monde à l'autre :
+    // 55 % depuis le normal, 45 % depuis le Reflet, sans +5 % météo.
+    if (item.id === 'meteo-003') return fromReflet ? 45 : 55;
+    return clamp(before + item.delta, 0, 100);
+  }
+
   function dismissWeatherEvent(immediate = false) {
     weatherEventToken += 1;
     if (currentWeatherEvent?.audio) {
@@ -6773,11 +6787,16 @@ syncMusicForActiveTab();
 
     pauseAudioEventClock();
     const token = ++weatherEventToken;
-    const audio = new Audio(item.audio);
+    // Le monde est figé dès le tirage, et conservé si la page est rechargée.
+    const savedOrigin = restoring ? eventSession.pendingWeather?.fromReflet : null;
+    const fromReflet = typeof savedOrigin === 'boolean' ? savedOrigin : isReflet();
+    const audioPath = item.id === 'meteo-003'
+      ? (fromReflet ? item.audioReflet : item.audioNormal) : item.audio;
+    const audio = new Audio(audioPath);
     audio.preload = 'auto';
     audio.volume = 1;
     currentWeatherEvent = {
-      item, preview, restoring, token, audio, completed: false,
+      item, preview, restoring, token, audio, fromReflet, completed: false,
       savedPreviewDelay: eventSession.remainingMs,
       deferredTransition: null, deferredGameOver: false
     };
@@ -6789,7 +6808,7 @@ syncMusicForActiveTab();
       );
       eventSession.pendingWeather = {
         id: item.id, stage: 'playing', before: null, after: null,
-        gameOver: false
+        fromReflet, gameOver: false
       };
       eventSession.remainingMs = null;
     }
@@ -6798,8 +6817,11 @@ syncMusicForActiveTab();
     // Aucun nom ni pictogramme propre au phénomène avant la narration.
     // Le nom technique reste réservé aux contrôles du mode test.
     els.weatherEventSymbol.textContent = '◇';
-    els.weatherEventHeading.textContent = 'PERTURBATION ATMOSPHÉRIQUE';
-    els.weatherEventStatus.textContent = 'L’atmosphère semble se déformer…';
+    els.weatherEventHeading.textContent = item.id === 'meteo-003'
+      ? 'ANOMALIE SISMIQUE' : 'PERTURBATION ATMOSPHÉRIQUE';
+    els.weatherEventStatus.textContent = item.id === 'meteo-003'
+      ? 'Une anomalie se manifeste sous vos pieds…'
+      : 'L’atmosphère semble se déformer…';
     els.weatherEventPlay.classList.add('hidden');
     els.weatherEventSkip.classList.add('hidden');
     els.weatherEventResult.classList.add('hidden');
@@ -6818,7 +6840,7 @@ syncMusicForActiveTab();
         // Une actualisation juste avant la mise à jour de la jauge ne doit
         // ni annuler ni appliquer deux fois la conséquence.
         if (state.value === pending.before) {
-          applyInstabilityDelta(item.delta, {
+          applyInstabilityDelta(pending.after - pending.before, {
             source: 'Météo — ' + item.title,
             deferThreshold: true,
             deferGameOver: true
@@ -6843,12 +6865,17 @@ syncMusicForActiveTab();
     els.weatherEventOverlay.classList.remove('is-speaking');
     const actual = after - before;
     const change = actual > 0 ? '+' + actual : String(actual);
-    els.weatherEventStatus.textContent =
-      'Le phénomène se dissipe, mais son empreinte demeure.';
-    els.weatherEventEffect.textContent = 'Instabilité mentale';
+    const isFracture = running.item.id === 'meteo-003';
+    els.weatherEventStatus.textContent = isFracture
+      ? 'La fracture se referme. La réalité a changé.'
+      : 'Le phénomène se dissipe, mais son empreinte demeure.';
+    els.weatherEventEffect.textContent = isFracture
+      ? (running.fromReflet ? 'RETOUR FORCÉ AU MONDE NORMAL'
+        : 'BASCULEMENT FORCÉ DANS LE REFLET DU VICE')
+      : 'Instabilité mentale';
     els.weatherEventChange.textContent = change + ' %';
     els.weatherEventValues.textContent = before + ' % → ' + after + ' %'
-      + (Math.abs(actual) !== Math.abs(running.item.delta)
+      + (!isFracture && Math.abs(actual) !== Math.abs(running.item.delta)
         ? ' (limite de la jauge atteinte)' : '');
     els.weatherEventPlay.classList.add('hidden');
     els.weatherEventSkip.classList.add('hidden');
@@ -6865,20 +6892,20 @@ syncMusicForActiveTab();
     running.audio.onended = null;
     running.audio.onerror = null;
     const before = state.value;
-    const after = clamp(before + running.item.delta, 0, 100);
+    const after = getWeatherResultValue(running.item, before, running.fromReflet);
 
     if (!running.preview) {
       // L'intention de modifier la jauge est enregistrée avant l'application.
       // Une reprise ne peut donc pas donner deux fois les points.
       eventSession.pendingWeather = {
         id: running.item.id, stage: 'result', before, after,
-        gameOver: after >= 100
+        fromReflet: running.fromReflet, gameOver: after >= 100
       };
       eventSession.nextWeatherEligibleAt = Date.now() + WEATHER_MIN_GAP_MS;
       saveAudioEventSession();
     }
 
-    const effect = applyInstabilityDelta(running.item.delta, {
+    const effect = applyInstabilityDelta(after - before, {
       source: 'Météo — ' + running.item.title,
       deferThreshold: true,
       deferGameOver: true
