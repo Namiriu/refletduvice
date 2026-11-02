@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.8 Météo 003 (test)';
+  const VERSION = 'v1.1.9 Météo 003 (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6867,16 +6867,18 @@ syncMusicForActiveTab();
     const change = actual > 0 ? '+' + actual : String(actual);
     const isFracture = running.item.id === 'meteo-003';
     els.weatherEventStatus.textContent = isFracture
-      ? 'La fracture se referme. La réalité a changé.'
+      ? (running.fromReflet
+        ? 'Vous revenez de force dans le monde normal.'
+        : 'Vous basculez de force dans le Reflet du Vice.')
       : 'Le phénomène se dissipe, mais son empreinte demeure.';
-    els.weatherEventEffect.textContent = isFracture
-      ? (running.fromReflet ? 'RETOUR FORCÉ AU MONDE NORMAL'
-        : 'BASCULEMENT FORCÉ DANS LE REFLET DU VICE')
-      : 'Instabilité mentale';
+    els.weatherEventEffect.textContent = 'Instabilité mentale';
     els.weatherEventChange.textContent = change + ' %';
-    els.weatherEventValues.textContent = before + ' % → ' + after + ' %'
-      + (!isFracture && Math.abs(actual) !== Math.abs(running.item.delta)
-        ? ' (limite de la jauge atteinte)' : '');
+    els.weatherEventValues.classList.toggle('fracture-values', isFracture);
+    els.weatherEventValues.textContent = isFracture
+      ? '(' + before + ' % → ' + after + ' %)'
+      : before + ' % → ' + after + ' %'
+        + (Math.abs(actual) !== Math.abs(running.item.delta)
+          ? ' (limite de la jauge atteinte)' : '');
     els.weatherEventPlay.classList.add('hidden');
     els.weatherEventSkip.classList.add('hidden');
     els.weatherEventResult.classList.remove('hidden');
