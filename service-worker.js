@@ -1,4 +1,4 @@
-const CACHE = 'instability-v82';
+const CACHE = 'instability-v83';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -144,6 +144,8 @@ const ASSETS = [
   // Météo — récits finalisés du narrateur avec sound design intégré
   './audio/events/meteo/meteo-001-pression-fantome.mp3',
   './audio/events/meteo/meteo-002-pluie-a-rebours.mp3',
+  './audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3',
+  './audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3',
 
   // Ambiance
   './audio/ambient_loop.mp3',
@@ -301,6 +303,8 @@ const MEDIA_REVISIONS = {
   "./audio/events/radio/radio-002-silence.mp3": "f623407c0e6bb0e89b79ff7ec257d9ca548ca87c",
   "./audio/events/meteo/meteo-001-pression-fantome.mp3": "fe45d827bd3792ce1a14ca66638a18ffafac2f45",
   "./audio/events/meteo/meteo-002-pluie-a-rebours.mp3": "2aa95887633d79f79a6857169d52b194d0101155",
+  "./audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3": "1967f5cd39d69cac7b61e5a6f93b2ee63b854500",
+  "./audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3": "b8a02d3918d829ddf00bc39a1a3b2c34051919d2",
   "./audio/ambient_loop.mp3": "fdb97f1acd6ecd62731f3de9e8c78437cc0dc07b",
   "./audio/groan.wav": "20913ca3052fa4a40fe7fad2a35a8ec6a56ade79",
   "./audio/ritual_resurrection.wav": "afe2c7123a36e91e478f73825ec2529f5f1f1983",
