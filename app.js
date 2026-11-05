@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.2.0 Météo 004 (test)';
+  const VERSION = 'v1.2.1 Météo 004 — Combustion (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -146,6 +146,8 @@ campAudio: $('campAudio'),
     weather04Overlay: $('weather04Overlay'),
     weather04Stage: $('weather04Stage'),
     weather04Video: $('weather04Video'),
+    weather04Backdrop: $('weather04Backdrop'),
+    weather04Panel: $('weather04Panel'),
     weather04Status: $('weather04Status'),
     weather04Choices: $('weather04Choices'),
     weather04Clock: $('weather04Clock'),
@@ -855,7 +857,7 @@ function syncAmbientVolume() {
   fadeAudioVolume(
     els.ambient,
     specialAudioActive
-      ? DUCK_VOLUME
+      ? (currentWeatherEvent?.isWeather04 ? 0 : DUCK_VOLUME)
       : AMBIENT_VOLUME
   );
 
@@ -3961,7 +3963,9 @@ async function syncMusicForActiveTab() {
     : els.ambient;
   const targetVolume = isBestiaireTabActive()
     ? getBestiaireAmbientTargetVolume()
-    : (specialAudioActive ? DUCK_VOLUME : AMBIENT_VOLUME);
+    : (specialAudioActive
+      ? (currentWeatherEvent?.isWeather04 ? 0 : DUCK_VOLUME)
+      : AMBIENT_VOLUME);
 
   // IMPORTANT : sur mobile, play() doit être appelé directement depuis
   // le clic de l'utilisateur, AVANT tout await, sinon le geste peut
@@ -6886,6 +6890,12 @@ syncMusicForActiveTab();
     els.weather04Overlay.setAttribute('aria-hidden','true');
     els.weather04Stage.className='weather04-stage';
     els.weather04Stage.style.removeProperty('--heart-shock');
+    els.weather04Panel.style.removeProperty('mask-image');
+    els.weather04Panel.style.removeProperty('-webkit-mask-image');
+    els.weather04Panel.style.removeProperty('pointer-events');
+    els.weather04Panel.style.removeProperty('opacity');
+    els.weather04Panel.style.removeProperty('transition');
+    els.weather04Burn.removeAttribute('style');
     for(const id of ['weather04Choices','weather04Sound','weather04Play',
       'weather04Skip','weather04Result','weather04Done','weather04VideoActions'])
       els[id].classList.add('hidden');
@@ -7023,99 +7033,173 @@ syncMusicForActiveTab();
   // Combustion procédurale : une membrane de "papier" craquelle,
   // se consume et ouvre des brèches sur la vidéo derrière elle.
   function w04Burn(){
-    const e=currentWeatherEvent;if(!e?.is04||e.phase!=='reveal')return;
-    const canvas=els.weather04Burn,ctx=canvas.getContext('2d');
-    if(!ctx||REDUCED_MOTION){
-      els.weather04Stage.classList.add('burn-done');return;
-    }
-    const scale=Math.min(window.devicePixelRatio||1,1.35,
-      1400/Math.max(innerWidth,innerHeight));
-    const W=Math.max(1,Math.floor(innerWidth*scale));
-    const H=Math.max(1,Math.floor(innerHeight*scale));
-    canvas.width=W;canvas.height=H;
-    const far=Math.max(W,H),paper=document.createElement('canvas');
-    paper.width=W;paper.height=H;
-    const bg=paper.getContext('2d');
-    const grad=bg.createRadialGradient(W*.5,H*.42,4,W*.5,H*.52,far*.86);
-    grad.addColorStop(0,'#54372c');grad.addColorStop(.51,'#251b1d');
-    grad.addColorStop(1,'#080809');
-    bg.fillStyle=grad;bg.fillRect(0,0,W,H);
-    let rndSeed=57243;
-    const rnd=()=>{rndSeed=rndSeed*16807%2147483647;return rndSeed/2147483647;};
-    for(let i=0;i<1700;i++){
-      bg.fillStyle=i%3?'rgba(239,159,111,.08)':'rgba(0,0,0,.2)';
-      bg.fillRect(rnd()*W,rnd()*H,(.4+rnd()*2)*scale,(.4+rnd()*2)*scale);
-    }
-    const boxW=Math.min(W*.86,460*scale),boxH=Math.min(H*.57,380*scale);
-    const boxX=(W-boxW)/2,boxY=(H-boxH)/2;
-    bg.fillStyle='rgba(16,13,17,.77)';
-    bg.fillRect(boxX,boxY,boxW,boxH);
-    bg.strokeStyle='#9d6146';bg.lineWidth=2*scale;
-    bg.strokeRect(boxX,boxY,boxW,boxH);
-    bg.textAlign='center';bg.fillStyle='#eac6aa';
-    bg.font=Math.floor(17*scale)+'px Georgia,serif';
-    bg.fillText('ANOMALIE INEXPLIQUÉE',W/2,boxY+boxH*.25);
-    bg.font=Math.floor(50*scale)+'px Georgia,serif';
-    bg.fillStyle='#f39b59';bg.fillText('◈',W/2,boxY+boxH*.49);
-    bg.font=Math.floor(15*scale)+'px Georgia,serif';
-    bg.fillStyle='#e4c9b8';
-    bg.fillText('LE SIGNAL NE VOUS APPARTIENT PLUS',W/2,boxY+boxH*.73);
-    const origins=[
-      [.51,.49,0,.6],[.16,.25,.13,2.1],[.81,.69,.18,3.4],
-      [.27,.85,.24,4.7],[.78,.13,.27,5.6],[.07,.57,.35,7.2]
-    ];
-    const start=performance.now(),token=e.token;
-    const animate=now=>{
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const stage=els.weather04Stage,panel=els.weather04Panel;
+    const canvas=els.weather04Burn;
+    const token=e.token;
+    // On ne montre jamais la vidéo avant que la vraie fenêtre soit consumée.
+    function finish(){
       if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
-      const p=Math.min(1,(now-start)/3200);
-      ctx.clearRect(0,0,W,H);ctx.drawImage(paper,0,0);
-      const borders=[];
-      for(const [nx,ny,delay,seed] of origins){
-        const amount=Math.max(0,(p-delay)/(1-delay));
-        if(!amount)continue;
-        const radius=far*amount*.81,path=new Path2D();
-        for(let i=0;i<=140;i++){
-          const ang=i/140*2*Math.PI;
-          const jagged=1+.085*Math.sin(ang*9+seed)
-            +.035*Math.sin(ang*23+seed*3)
-            +.018*Math.sin(ang*39+seed*2);
-          const x=nx*W+Math.cos(ang)*radius*jagged;
-          const y=ny*H+Math.sin(ang)*radius*jagged;
-          if(i===0)path.moveTo(x,y);else path.lineTo(x,y);
+      panel.style.opacity='0';
+      stage.classList.add('burn-done');
+      w04BurnFrame=null;
+      w04Delay=setTimeout(()=>{
+        w04Delay=null;
+        if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+        stage.classList.add('revealing');
+        weather04TryVideo();
+      },350);
+    }
+    const masksSupported=('maskImage' in panel.style)
+      ||('webkitMaskImage' in panel.style);
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    if(!ctx||!masksSupported||REDUCED_MOTION){
+      panel.style.transition='opacity .55s ease';
+      panel.style.opacity='0';
+      w04Delay=setTimeout(()=>{w04Delay=null;finish();},560);
+      return;
+    }
+    const rect=panel.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,1.25);
+    const W=Math.max(1,Math.round(rect.width*dpr));
+    const H=Math.max(1,Math.round(rect.height*dpr));
+    canvas.style.left=rect.left+'px';
+    canvas.style.top=rect.top+'px';
+    canvas.style.width=rect.width+'px';
+    canvas.style.height=rect.height+'px';
+    canvas.width=W;canvas.height=H;
+    panel.style.pointerEvents='none';
+    const mask=document.createElement('canvas');
+    mask.width=W;mask.height=H;
+    const mc=mask.getContext('2d',{willReadFrequently:true});
+    if(!mc){panel.style.opacity='0';finish();return;}
+    const maskPixels=mc.createImageData(W,H);
+    const glowPixels=ctx.createImageData(W,H);
+    const total=W*H,field=new Float32Array(total);
+    // Bruit continu multiéchelle : des micro-brûlures organiques et non
+    // des trous géométriques/rayonnants dessinés à partir de cercles.
+    function hash(x,y){
+      let n=Math.imul(x,374761393)^Math.imul(y,668265263);
+      n=Math.imul(n^(n>>>13),1274126177);
+      return ((n^(n>>>16))>>>0)/4294967295;
+    }
+    function noise(x,y){
+      const ix=Math.floor(x),iy=Math.floor(y);
+      const sx=x-ix,sy=y-iy;
+      const tx=sx*sx*(3-2*sx),ty=sy*sy*(3-2*sy);
+      const a=hash(ix,iy),b=hash(ix+1,iy);
+      const c=hash(ix,iy+1),d=hash(ix+1,iy+1);
+      return (a+(b-a)*tx)*(1-ty)+(c+(d-c)*tx)*ty;
+    }
+    const seeds=[
+      [.05,.17,-.08],[.85,.13,.03],[.12,.74,-.02],
+      [.76,.86,.02],[.46,.43,.12],[.93,.52,.10],
+      [.31,.07,.09],[.35,.92,.08],[.62,.24,.12],
+      [.08,.45,.17],[.58,.71,.13],[.23,.30,.10],
+      [.71,.44,.16],[.43,.63,.17],[.27,.82,.19],
+      [.92,.84,.20],[.13,.90,.17],[.86,.32,.22]
+    ];
+    let lo=Infinity,hi=-Infinity;
+    for(let y=0;y<H;y++){
+      const v=(y+.5)/H;
+      for(let x=0;x<W;x++){
+        const u=(x+.5)/W;
+        const large=noise(u*5.5+7.2,v*6.6+1.8);
+        const mid=noise(u*17.6+10.3,v*19.8+3.1);
+        const fine=noise(u*47.2+4.6,v*43.9+11.7);
+        const warpU=u+(large-.5)*.093+(mid-.5)*.026;
+        const warpV=v+(noise(u*5.5+15.7,v*6.3+9.1)-.5)*.083;
+        let nearest=Infinity;
+        for(const [sx,sy,offset] of seeds){
+          const dist=Math.hypot((warpU-sx)*1.1,(warpV-sy)*.87);
+          nearest=Math.min(nearest,dist+offset);
         }
-        path.closePath();borders.push(path);
-        ctx.save();ctx.globalCompositeOperation='destination-out';
-        ctx.fill(path);ctx.restore();
+        const t=nearest*1.85+(large-.5)*.23
+          +(mid-.5)*.16+(fine-.5)*.062;
+        const ix=y*W+x;
+        field[ix]=t;
+        if(t<lo)lo=t;if(t>hi)hi=t;
       }
-      if(p<.98){
-        for(const line of borders){
-          ctx.lineWidth=22*scale;ctx.strokeStyle='rgba(9,5,5,.92)';
-          ctx.stroke(line);
-          ctx.lineWidth=10*scale;ctx.strokeStyle='#74331e';
-          ctx.stroke(line);
-          ctx.lineWidth=3*scale;ctx.strokeStyle=now%240<130?'#ffb262':'#e5752f';
-          ctx.shadowColor='#ff6c28';ctx.shadowBlur=17*scale;
-          ctx.stroke(line);ctx.shadowBlur=0;
+    }
+    const inv=1/Math.max(.001,hi-lo);
+    for(let i=0;i<total;i++)field[i]=(field[i]-lo)*inv;
+    const start=performance.now(),duration=3450;
+    let lastFrame=-Infinity;
+    function renderFrame(now){
+      if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+      if(now-lastFrame<43){
+        w04BurnFrame=requestAnimationFrame(renderFrame);return;
+      }
+      lastFrame=now;
+      const p=Math.min(1,(now-start)/duration);
+      const threshold=-.012+p*1.035;
+      const m=maskPixels.data,g=glowPixels.data;
+      for(let i=0;i<total;i++){
+        const delta=field[i]-threshold,k=i*4;
+        const alpha=Math.max(0,Math.min(255,Math.round(delta*14200)));
+        m[k]=255;m[k+1]=255;m[k+2]=255;m[k+3]=alpha;
+        // Cendres noires, croûte orange, filet jaune incandescent.
+        let ga=0,r=0,gg=0,b=0;
+        if(delta>-.034&&delta<.063){
+          if(delta<-.013){
+            r=255;gg=65;b=22;
+            ga=80*(delta+.034)/.021;
+          }else if(delta<0){
+            r=255;gg=117;b=37;
+            ga=115+125*(delta+.013)/.013;
+          }else if(delta<.011){
+            r=255;gg=228;b=143;
+            ga=238;
+          }else if(delta<.03){
+            r=235;gg=89;b=32;
+            ga=193*(.03-delta)/.019;
+          }else{
+            r=19;gg=7;b=6;
+            ga=150*(.063-delta)/.033;
+          }
         }
-        for(let i=0;i<40;i++){
-          const x=(i*413+now*.035)%W;
-          const y=(i*233+Math.sin(now*.001+i)*22*scale)%H;
-          ctx.fillStyle=i%5?'rgba(238,97,39,.46)':'rgba(255,203,116,.85)';
-          ctx.fillRect(x,y,(i%3+1)*scale,(i%2+1)*scale);
+        g[k]=r;g[k+1]=gg;g[k+2]=b;
+        g[k+3]=Math.max(0,Math.min(255,Math.round(ga)));
+      }
+      mc.putImageData(maskPixels,0,0);
+      const encoded=mask.toDataURL('image/png');
+      panel.style.maskImage='url("'+encoded+'")';
+      panel.style.webkitMaskImage='url("'+encoded+'")';
+      ctx.putImageData(glowPixels,0,0);
+      // Quelques minuscules braises détachées des bords, pas d'étoiles.
+      if(p<.96){
+        for(let j=0;j<20;j++){
+          const pos=((j*7919+Math.floor(p*600)*409)%total);
+          if(Math.abs(field[pos]-threshold)>.025)continue;
+          ctx.fillStyle=j%4?'rgba(255,112,40,.58)':'rgba(255,223,154,.8)';
+          ctx.fillRect(pos%W,(pos/W|0)-2-j%10,1+j%2,2+j%3);
         }
       }
-      if(p>=1){
-        ctx.clearRect(0,0,W,H);
-        els.weather04Stage.classList.add('burn-done');
-        w04BurnFrame=null;
-      }else w04BurnFrame=requestAnimationFrame(animate);
-    };
-    w04BurnFrame=requestAnimationFrame(animate);
+      if(p>=1){finish();return;}
+      w04BurnFrame=requestAnimationFrame(renderFrame);
+    }
+    w04BurnFrame=requestAnimationFrame(renderFrame);
   }
   function w04SyncVideo(){
     const e=currentWeatherEvent;
     if(!e?.is04||e.phase!=='reveal')return;
-    const time=els.weather04Video.currentTime||0;
+    const video=els.weather04Video;
+    const time=video.currentTime||0;
+    // Une seule lecture vidéo : les images fournissent aussi le fond flouté.
+    if(video.readyState>=2){
+      const canvas=els.weather04Backdrop;
+      if(canvas.width!==384||canvas.height!==240){
+        canvas.width=384;canvas.height=240;
+      }
+      const ctx=canvas.getContext('2d',{alpha:false});
+      if(ctx){
+        const vw=video.videoWidth||736,vh=video.videoHeight||1120;
+        const ratio=Math.min(vw/384,vh/240);
+        const sw=384*ratio,sh=240*ratio;
+        ctx.drawImage(video,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,384,240);
+      }
+    }
     // Deux grandes impulsions observables dans l'animation source.
     const strength=Math.min(1,
       .5*Math.exp(-Math.pow((time-1.8)/.25,2))+
@@ -7129,7 +7213,9 @@ syncMusicForActiveTab();
     const e=currentWeatherEvent;
     if(!e?.is04||e.phase!=='reveal')return;
     const token=e.token,video=els.weather04Video;
-    els.weather04Stage.className='weather04-stage revealing';
+    els.weather04Stage.className=restoring
+      ? 'weather04-stage revealing burn-done'
+      : 'weather04-stage burning';
     els.weather04VideoActions.classList.add('hidden');
     video.playsInline=true;video.muted=false;video.volume=1;
     video.preload='auto';
@@ -7144,15 +7230,13 @@ syncMusicForActiveTab();
       }
     };
     if(restoring){
-      els.weather04Stage.classList.add('burn-done');
+      els.weather04Panel.style.opacity='0';
       els.weather04VideoPlay.classList.remove('hidden');
       els.weather04VideoPlay.textContent='REPRENDRE L’APPARITION';
       els.weather04VideoActions.classList.remove('hidden');
     }else{
+      // Le WebM ne commence qu'APRÈS la disparition de la fenêtre.
       w04Burn();
-      w04Delay=setTimeout(()=>{
-        w04Delay=null;weather04TryVideo();
-      },REDUCED_MOTION?0:900);
     }
     if(!REDUCED_MOTION)w04VideoFrame=requestAnimationFrame(w04SyncVideo);
   }
@@ -7178,6 +7262,12 @@ syncMusicForActiveTab();
   function weather04Result(){
     const e=currentWeatherEvent;if(!e?.is04)return;
     w04StopVisuals();w04StopClock();w04StopAudio();
+    els.weather04Panel.style.removeProperty('opacity');
+    els.weather04Panel.style.removeProperty('mask-image');
+    els.weather04Panel.style.removeProperty('-webkit-mask-image');
+    els.weather04Panel.style.removeProperty('pointer-events');
+    els.weather04Panel.style.removeProperty('transition');
+    els.weather04Burn.removeAttribute('style');
     e.audio?.pause();els.weather04Video.pause();
     e.phase='result';
     // Sauvegarde de l'étape et de la récompense avant l'affichage.
@@ -7230,7 +7320,8 @@ syncMusicForActiveTab();
       if(e.phase==='reveal'){
         els.weather04Video.pause();
         w04StopVisuals();
-        els.weather04Stage.classList.add('burn-done');
+        els.weather04Panel.style.opacity='0';
+        els.weather04Stage.className='weather04-stage revealing burn-done';
         els.weather04VideoActions.classList.remove('hidden');
         els.weather04VideoPlay.classList.remove('hidden');
         els.weather04VideoPlay.textContent='REPRENDRE L’APPARITION';
@@ -7272,6 +7363,9 @@ syncMusicForActiveTab();
       w04Save('intro');
     }
     els.weather04Stage.className='weather04-stage intro';
+    els.weather04Panel.style.removeProperty('opacity');
+    els.weather04Panel.style.removeProperty('mask-image');
+    els.weather04Panel.style.removeProperty('-webkit-mask-image');
     els.weather04Status.textContent='Une sensation inconnue traverse la ville…';
     for(const id of ['weather04Choices','weather04Result','weather04Done',
       'weather04Play','weather04Skip','weather04VideoActions','weather04Sound'])
