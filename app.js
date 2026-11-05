@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.2.1 Météo 004 — Combustion (test)';
+  const VERSION = 'v1.2.2 Météo 004 — Écran entier (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -148,6 +148,7 @@ campAudio: $('campAudio'),
     weather04Video: $('weather04Video'),
     weather04Backdrop: $('weather04Backdrop'),
     weather04Panel: $('weather04Panel'),
+    weather04Surface: $('weather04Surface'),
     weather04Status: $('weather04Status'),
     weather04Choices: $('weather04Choices'),
     weather04Clock: $('weather04Clock'),
@@ -6885,11 +6886,17 @@ syncMusicForActiveTab();
   function weather04CleanUp() {
     w04StopClock();w04StopAudio();w04StopVisuals();
     const v=els.weather04Video;
-    v.pause();v.onended=null;v.onerror=null;v.removeAttribute('src');v.load();
+    v.pause();v.onended=null;v.onerror=null;v.onloadeddata=null;
+    v.removeAttribute('src');v.load();
     els.weather04Overlay.classList.remove('show');
     els.weather04Overlay.setAttribute('aria-hidden','true');
     els.weather04Stage.className='weather04-stage';
     els.weather04Stage.style.removeProperty('--heart-shock');
+    els.weather04Surface.style.removeProperty('mask-image');
+    els.weather04Surface.style.removeProperty('-webkit-mask-image');
+    els.weather04Surface.style.removeProperty('pointer-events');
+    els.weather04Surface.style.removeProperty('opacity');
+    els.weather04Surface.style.removeProperty('transition');
     els.weather04Panel.style.removeProperty('mask-image');
     els.weather04Panel.style.removeProperty('-webkit-mask-image');
     els.weather04Panel.style.removeProperty('pointer-events');
@@ -7035,45 +7042,45 @@ syncMusicForActiveTab();
   function w04Burn(){
     const e=currentWeatherEvent;
     if(!e?.is04||e.phase!=='reveal')return;
-    const stage=els.weather04Stage,panel=els.weather04Panel;
+    const stage=els.weather04Stage,curtain=els.weather04Surface;
     const canvas=els.weather04Burn;
     const token=e.token;
-    // On ne montre jamais la vidéo avant que la vraie fenêtre soit consumée.
+    // Tout l'écran se consume. La première image du WebM est chargée
+    // AVANT le début du feu et apparaît dès la dernière braise.
     function finish(){
       if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
-      panel.style.opacity='0';
-      stage.classList.add('burn-done');
+      curtain.style.opacity='0';
+      stage.classList.add('burn-done','revealing');
       w04BurnFrame=null;
-      w04Delay=setTimeout(()=>{
-        w04Delay=null;
-        if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
-        stage.classList.add('revealing');
-        weather04TryVideo();
-      },350);
+      weather04TryVideo();
     }
-    const masksSupported=('maskImage' in panel.style)
-      ||('webkitMaskImage' in panel.style);
+    const masksSupported=('maskImage' in curtain.style)
+      ||('webkitMaskImage' in curtain.style);
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
     if(!ctx||!masksSupported||REDUCED_MOTION){
-      panel.style.transition='opacity .55s ease';
-      panel.style.opacity='0';
+      curtain.style.transition='opacity .55s ease';
+      curtain.style.opacity='0';
       w04Delay=setTimeout(()=>{w04Delay=null;finish();},560);
       return;
     }
-    const rect=panel.getBoundingClientRect();
-    const dpr=Math.min(window.devicePixelRatio||1,1.25);
-    const W=Math.max(1,Math.round(rect.width*dpr));
-    const H=Math.max(1,Math.round(rect.height*dpr));
+    const rect=curtain.getBoundingClientRect();
+    // Le masque couvre le viewport, mais est calculé à résolution
+    // maîtrisée pour préserver la fluidité sur smartphone/ordinateur.
+    const scale=Math.min(1,
+      Math.sqrt(370000/Math.max(1,rect.width*rect.height)),
+      900/Math.max(1,rect.width));
+    const W=Math.max(1,Math.round(rect.width*scale));
+    const H=Math.max(1,Math.round(rect.height*scale));
     canvas.style.left=rect.left+'px';
     canvas.style.top=rect.top+'px';
     canvas.style.width=rect.width+'px';
     canvas.style.height=rect.height+'px';
     canvas.width=W;canvas.height=H;
-    panel.style.pointerEvents='none';
+    curtain.style.pointerEvents='none';
     const mask=document.createElement('canvas');
     mask.width=W;mask.height=H;
     const mc=mask.getContext('2d',{willReadFrequently:true});
-    if(!mc){panel.style.opacity='0';finish();return;}
+    if(!mc){curtain.style.opacity='0';finish();return;}
     const maskPixels=mc.createImageData(W,H);
     const glowPixels=ctx.createImageData(W,H);
     const total=W*H,field=new Float32Array(total);
@@ -7164,8 +7171,8 @@ syncMusicForActiveTab();
       }
       mc.putImageData(maskPixels,0,0);
       const encoded=mask.toDataURL('image/png');
-      panel.style.maskImage='url("'+encoded+'")';
-      panel.style.webkitMaskImage='url("'+encoded+'")';
+      curtain.style.maskImage='url("'+encoded+'")';
+      curtain.style.webkitMaskImage='url("'+encoded+'")';
       ctx.putImageData(glowPixels,0,0);
       // Quelques minuscules braises détachées des bords, pas d'étoiles.
       if(p<.96){
@@ -7230,13 +7237,35 @@ syncMusicForActiveTab();
       }
     };
     if(restoring){
-      els.weather04Panel.style.opacity='0';
+      els.weather04Surface.style.opacity='0';
       els.weather04VideoPlay.classList.remove('hidden');
       els.weather04VideoPlay.textContent='REPRENDRE L’APPARITION';
       els.weather04VideoActions.classList.remove('hidden');
     }else{
-      // Le WebM ne commence qu'APRÈS la disparition de la fenêtre.
-      w04Burn();
+      // On attend la PREMIÈRE IMAGE DÉCODÉE avant de consumer tout l'écran.
+      // Aucun écran vide après la combustion, même sur connexion lente.
+      const ignite=()=>{
+        if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+        video.onloadeddata=null;
+        if(w04Delay!==null){clearTimeout(w04Delay);w04Delay=null;}
+        els.weather04VideoActions.classList.add('hidden');
+        w04Burn();
+      };
+      if(video.readyState>=2)ignite();
+      else{
+        els.weather04Status.textContent=
+          'Une présence cherche à traverser votre écran…';
+        video.onloadeddata=ignite;
+        w04Delay=setTimeout(()=>{
+          w04Delay=null;
+          if(currentWeatherEvent?.token!==token||e.phase!=='reveal'
+            ||video.readyState>=2)return;
+          els.weather04Status.textContent=
+            'L’apparition tarde à se charger. Vous pouvez poursuivre sans la vidéo.';
+          els.weather04VideoActions.classList.remove('hidden');
+          els.weather04VideoPlay.classList.add('hidden');
+        },7000);
+      }
     }
     if(!REDUCED_MOTION)w04VideoFrame=requestAnimationFrame(w04SyncVideo);
   }
@@ -7262,6 +7291,11 @@ syncMusicForActiveTab();
   function weather04Result(){
     const e=currentWeatherEvent;if(!e?.is04)return;
     w04StopVisuals();w04StopClock();w04StopAudio();
+    els.weather04Surface.style.removeProperty('opacity');
+    els.weather04Surface.style.removeProperty('mask-image');
+    els.weather04Surface.style.removeProperty('-webkit-mask-image');
+    els.weather04Surface.style.removeProperty('pointer-events');
+    els.weather04Surface.style.removeProperty('transition');
     els.weather04Panel.style.removeProperty('opacity');
     els.weather04Panel.style.removeProperty('mask-image');
     els.weather04Panel.style.removeProperty('-webkit-mask-image');
@@ -7319,8 +7353,9 @@ syncMusicForActiveTab();
       }
       if(e.phase==='reveal'){
         els.weather04Video.pause();
+        els.weather04Video.onloadeddata=null;
         w04StopVisuals();
-        els.weather04Panel.style.opacity='0';
+        els.weather04Surface.style.opacity='0';
         els.weather04Stage.className='weather04-stage revealing burn-done';
         els.weather04VideoActions.classList.remove('hidden');
         els.weather04VideoPlay.classList.remove('hidden');
@@ -7363,6 +7398,11 @@ syncMusicForActiveTab();
       w04Save('intro');
     }
     els.weather04Stage.className='weather04-stage intro';
+    els.weather04Surface.style.removeProperty('opacity');
+    els.weather04Surface.style.removeProperty('mask-image');
+    els.weather04Surface.style.removeProperty('-webkit-mask-image');
+    els.weather04Surface.style.removeProperty('pointer-events');
+    els.weather04Surface.style.removeProperty('transition');
     els.weather04Panel.style.removeProperty('opacity');
     els.weather04Panel.style.removeProperty('mask-image');
     els.weather04Panel.style.removeProperty('-webkit-mask-image');
