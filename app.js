@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.9 Météo 003 (test)';
+  const VERSION = 'v1.2.0 Météo 004 (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -143,6 +143,38 @@ campAudio: $('campAudio'),
     radio02Play: $('radio02Play'),
     radio02Skip: $('radio02Skip'),
     radio02Done: $('radio02Done'),
+    weather04Overlay: $('weather04Overlay'),
+    weather04Stage: $('weather04Stage'),
+    weather04Video: $('weather04Video'),
+    weather04Status: $('weather04Status'),
+    weather04Choices: $('weather04Choices'),
+    weather04Clock: $('weather04Clock'),
+    weather04Track: $('weather04Track'),
+    weather04Progress: $('weather04Progress'),
+    weather04Resist: $('weather04Resist'),
+    weather04Cede: $('weather04Cede'),
+    weather04Sound: $('weather04Sound'),
+    weather04Play: $('weather04Play'),
+    weather04Skip: $('weather04Skip'),
+    weather04Result: $('weather04Result'),
+    weather04Done: $('weather04Done'),
+    weather04Burn: $('weather04Burn'),
+    weather04VideoActions: $('weather04VideoActions'),
+    weather04VideoPlay: $('weather04VideoPlay'),
+    weather04VideoSkip: $('weather04VideoSkip'),
+    btnEffects: $('btnEffects'),
+    effectsBanner: $('effectsBanner'),
+    effectsBannerList: $('effectsBannerList'),
+    effectsFeedback: $('effectsFeedback'),
+    effectsAdvance: $('effectsAdvance'),
+    effectsModal: $('effectsModal'),
+    effectsList: $('effectsList'),
+    effectsPreset: $('effectsPreset'),
+    effectsForm: $('effectsForm'),
+    effectsName: $('effectsName'),
+    effectsDuration: $('effectsDuration'),
+    effectsUndo: $('effectsUndo'),
+    effectsClose: $('effectsClose'),
     weatherEventOverlay: $('weatherEventOverlay'),
     weatherEventSymbol: $('weatherEventSymbol'),
     weatherEventHeading: $('weatherEventHeading'),
@@ -542,6 +574,13 @@ bestiaireNarration: $('bestiaireNarration'),
       id: 'meteo-003', type: 'meteo', title: 'LA FRACTURE DU RÉEL', icon: '◇',
       audioNormal: 'audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3',
       audioReflet: 'audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3'
+    },
+    {
+      id: 'meteo-004', type: 'meteo', title: 'LE DERNIER BATTEMENT', icon: '◈',
+      introAudio: 'audio/events/meteo/meteo-004-dernier-battement-intro.mp3',
+      choiceAudio: 'audio/events/meteo/meteo-004-dernier-battement-choix.mp3',
+      resistAudio: 'audio/events/meteo/meteo-004-dernier-battement-resister.mp3',
+      cedeAudio: 'audio/events/meteo/meteo-004-dernier-battement-ceder.mp3'
     }
   ];
   const eventSession = readAudioEventSession();
@@ -1638,6 +1677,116 @@ function syncAmbientVolume() {
       .remove('show');
   }
 
+
+  // =========================================================
+  // EFFETS TEMPORAIRES — une manche = un tour de table complet
+  // =========================================================
+  const EFFECTS_KEY = LSK('effets_temporaires_v1');
+  function readTemporaryEffects() {
+    try {
+      const data=JSON.parse(localStorage.getItem(EFFECTS_KEY)||'{}');
+      const clean=arr=>Array.isArray(arr)?arr.filter(e=>e
+        && typeof e.id==='string' && typeof e.label==='string'
+        && Number.isInteger(e.turns) && e.turns>0 && e.turns<=30)
+        .slice(0,12).map(e=>({id:e.id.slice(0,90),
+          label:e.label.slice(0,80),turns:e.turns})):[];
+      return {items:clean(data.items),previous:Array.isArray(data.previous)
+        ?clean(data.previous):null};
+    } catch (_) { return {items:[],previous:null}; }
+  }
+  const effects=readTemporaryEffects();
+  let effectsFeedbackTimer=null;
+  const saveEffects=()=>{try{
+    localStorage.setItem(EFFECTS_KEY,JSON.stringify(effects));
+  }catch(_){}};
+  function effectsMessage(message) {
+    clearTimeout(effectsFeedbackTimer);
+    els.effectsFeedback.textContent=message;
+    els.effectsFeedback.classList.remove('hidden');
+    effectsFeedbackTimer=setTimeout(()=>els.effectsFeedback.classList.add('hidden'),5500);
+  }
+  function renderTemporaryEffects() {
+    els.effectsBanner.classList.toggle('hidden',effects.items.length===0);
+    els.btnEffects.textContent=effects.items.length
+      ?'⏳ EFFETS · '+effects.items.length:'⏳ EFFETS';
+    els.effectsBannerList.replaceChildren();
+    els.effectsList.replaceChildren();
+    if(!effects.items.length) {
+      const p=document.createElement('p');
+      p.textContent='Aucun effet temporaire en cours.';
+      els.effectsList.appendChild(p);
+    }
+    for(const e of effects.items) {
+      const row=document.createElement('div');row.className='effects-banner-row';
+      const title=document.createElement('span');title.textContent=e.label;
+      const count=document.createElement('b');
+      count.textContent=e.turns+(e.turns===1?' manche':' manches');
+      row.append(title,count);els.effectsBannerList.appendChild(row);
+      const line=document.createElement('div');line.className='effects-line';
+      const label=document.createElement('span');
+      label.textContent=e.label+' — '+count.textContent;
+      const del=document.createElement('button');del.type='button';del.textContent='✕';
+      del.setAttribute('aria-label','Retirer '+e.label);
+      del.addEventListener('click',()=>{
+        effects.previous=effects.items.map(x=>({...x}));
+        effects.items=effects.items.filter(x=>x.id!==e.id);
+        saveEffects();renderTemporaryEffects();
+      });
+      line.append(label,del);els.effectsList.appendChild(line);
+    }
+    els.effectsUndo.disabled=!effects.previous;
+  }
+  function setTemporaryEffect(id,label,turns) {
+    const old=effects.items.find(x=>x.id===id);
+    effects.previous=effects.items.map(x=>({...x}));
+    if(old) old.turns=turns; // Réinitialisation, sans cumul.
+    else if(effects.items.length<12) effects.items.push({id,label,turns});
+    else {effectsMessage('12 effets au maximum.');return false;}
+    saveEffects();renderTemporaryEffects();return true;
+  }
+  function advanceTemporaryEffects() {
+    if(!effects.items.length) return;
+    effects.previous=effects.items.map(x=>({...x}));
+    const ended=effects.items.filter(e=>e.turns===1).map(e=>e.label);
+    effects.items=effects.items.map(e=>({...e,turns:e.turns-1}))
+      .filter(e=>e.turns>0);
+    saveEffects();renderTemporaryEffects();
+    effectsMessage(ended.length
+      ?'Manche terminée. Effet(s) terminé(s) : '+ended.join(', ')
+      :'Une manche complète a été comptabilisée.');
+  }
+  function undoTemporaryEffects() {
+    if(!effects.previous)return;
+    effects.items=effects.previous.map(e=>({...e}));
+    effects.previous=null;saveEffects();renderTemporaryEffects();
+    effectsMessage('Dernière modification annulée.');
+  }
+  function resetTemporaryEffects() {
+    effects.items=[];effects.previous=null;saveEffects();renderTemporaryEffects();
+    clearTimeout(effectsFeedbackTimer);
+    els.effectsFeedback.classList.add('hidden');
+  }
+  function openEffectsModal() {
+    renderTemporaryEffects();els.effectsModal.classList.add('show');
+    els.effectsModal.setAttribute('aria-hidden','false');
+    els.effectsClose.focus();
+  }
+  function closeEffectsModal() {
+    els.effectsModal.classList.remove('show');
+    els.effectsModal.setAttribute('aria-hidden','true');
+  }
+  function addManualEffect() {
+    const label=els.effectsName.value.trim();
+    const turns=Number(els.effectsDuration.value);
+    if(!label || !Number.isInteger(turns)||turns<1||turns>30) {
+      effectsMessage('Nom et durée entre 1 et 30 manches requis.');return;
+    }
+    const id='manuel-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+    if(setTemporaryEffect(id,label,turns)) {
+      els.effectsName.value='';effectsMessage('Effet ajouté : '+label);
+    }
+  }
+
   function showInfo(
     title,
     text
@@ -1745,6 +1894,8 @@ function syncAmbientVolume() {
       || els.radioEventOverlay.classList.contains('show')
       || els.radio02Overlay.classList.contains('show')
       || els.weatherEventOverlay.classList.contains('show')
+      || els.weather04Overlay.classList.contains('show')
+      || els.effectsModal.classList.contains('show')
     );
   }
 
@@ -3687,6 +3838,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair, le Journal, le
       false;
 
     resetAudioEventSession();
+    resetTemporaryEffects();
+    closeEffectsModal();
     syncAmbientVolume();
 
     closeActionModal();
@@ -4555,7 +4708,9 @@ syncMusicForActiveTab();
         nextWeatherEligibleAt: Number.isFinite(saved.nextWeatherEligibleAt)
           ? Math.max(0, saved.nextWeatherEligibleAt) : 0,
         pendingWeather: saved.pendingWeather && typeof saved.pendingWeather.id === 'string'
-          && ['playing', 'result'].includes(saved.pendingWeather.stage)
+          && (saved.pendingWeather.id === 'meteo-004'
+            ? ['intro', 'choices', 'branch', 'reveal', 'result'].includes(saved.pendingWeather.stage)
+            : ['playing', 'result'].includes(saved.pendingWeather.stage))
           ? {
               id: saved.pendingWeather.id,
               stage: saved.pendingWeather.stage,
@@ -4565,7 +4720,12 @@ syncMusicForActiveTab();
                 ? saved.pendingWeather.after : null,
               fromReflet: typeof saved.pendingWeather.fromReflet === 'boolean'
                 ? saved.pendingWeather.fromReflet : null,
-              gameOver: saved.pendingWeather.gameOver === true
+              gameOver: saved.pendingWeather.gameOver === true,
+              choice: ['resist','cede'].includes(saved.pendingWeather.choice)
+                ? saved.pendingWeather.choice : null,
+              remainingMs: Number.isFinite(saved.pendingWeather.remainingMs)
+                ? clamp(saved.pendingWeather.remainingMs,0,15000) : null,
+              rewardApplied: saved.pendingWeather.rewardApplied === true
             } : null,
         alive: Array.isArray(saved.alive) && saved.alive.length === 4
           ? saved.alive.map(value => value === true)
@@ -6026,7 +6186,9 @@ syncMusicForActiveTab();
 
   function handleAudioEventVisibility() {
     updateAudioEventClock();
-    if (currentWeatherEvent && document.visibilityState === 'hidden'
+    if (currentWeatherEvent?.isWeather04) weather04Visibility();
+    if (currentWeatherEvent && !currentWeatherEvent.isWeather04
+      && document.visibilityState === 'hidden'
       && currentWeatherEvent.audio && !currentWeatherEvent.audio.paused) {
       currentWeatherEvent.audio.pause();
       showWeatherAudioFallback('Narration suspendue. Touchez pour reprendre.');
@@ -6688,6 +6850,445 @@ syncMusicForActiveTab();
   // MÉTÉO : NARRATION DU MONDE ET CONSÉQUENCE AUTOMATIQUE
   // =========================================================
 
+
+  // =========================================================
+  // MÉTÉO 004 — LE DERNIER BATTEMENT (identité jamais affichée)
+  // =========================================================
+  const WEATHER04_DURATION=15000;
+  const WEATHER04_VIDEO='bestiaire/videos/gardienne-du-vice.webm';
+  let w04BurnFrame=null, w04VideoFrame=null, w04Delay=null;
+  function w04Save(stage) {
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.preview)return;
+    eventSession.pendingWeather={id:e.item.id,stage,choice:e.choice,
+      remainingMs:stage==='choices'?e.remainingMs:null,rewardApplied:e.applied};
+    saveAudioEventSession();
+  }
+  function w04StopClock() {
+    const e=currentWeatherEvent;
+    if(e?.timer!==null && e?.timer!==undefined){clearInterval(e.timer);e.timer=null;}
+  }
+  function w04StopAudio() {
+    const e=currentWeatherEvent;
+    if(e?.loop){e.loop.pause();try{e.loop.currentTime=0;}catch(_){}}
+  }
+  function w04StopVisuals() {
+    if(w04BurnFrame!==null)cancelAnimationFrame(w04BurnFrame);
+    if(w04VideoFrame!==null)cancelAnimationFrame(w04VideoFrame);
+    if(w04Delay!==null)clearTimeout(w04Delay);
+    w04BurnFrame=null;w04VideoFrame=null;w04Delay=null;
+  }
+  function weather04CleanUp() {
+    w04StopClock();w04StopAudio();w04StopVisuals();
+    const v=els.weather04Video;
+    v.pause();v.onended=null;v.onerror=null;v.removeAttribute('src');v.load();
+    els.weather04Overlay.classList.remove('show');
+    els.weather04Overlay.setAttribute('aria-hidden','true');
+    els.weather04Stage.className='weather04-stage';
+    els.weather04Stage.style.removeProperty('--heart-shock');
+    for(const id of ['weather04Choices','weather04Sound','weather04Play',
+      'weather04Skip','weather04Result','weather04Done','weather04VideoActions'])
+      els[id].classList.add('hidden');
+    els.weather04Burn.width=0;els.weather04Burn.height=0;
+  }
+  function w04Fallback(message) {
+    const e=currentWeatherEvent;
+    if(!e?.is04||!['intro','branch'].includes(e.phase))return;
+    els.weather04Status.textContent=message||
+      'Narration interrompue. Réessayez ou poursuivez sans audio.';
+    els.weather04Play.classList.remove('hidden');
+    els.weather04Skip.classList.remove('hidden');
+  }
+  function weather04PlayNarration(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||!['intro','branch'].includes(e.phase)
+      ||document.visibilityState!=='visible')return;
+    if(!e.audio)return weather04SkipNarration();
+    const phase=e.phase,token=e.token;
+    els.weather04Play.classList.add('hidden');
+    els.weather04Skip.classList.add('hidden');
+    els.weather04Status.textContent=phase==='intro'
+      ?'Une pulsation inconnue traverse la ville…'
+      :e.choice==='resist'?'Vous luttez contre le rythme imposé…'
+        :'Vous abandonnez toute résistance…';
+    e.audio.onended=()=>{
+      if(currentWeatherEvent?.token!==token||e.phase!==phase)return;
+      if(phase==='intro')w04Choices();
+      else w04AfterBranch();
+    };
+    e.audio.onerror=()=>{
+      if(currentWeatherEvent?.token===token)
+        w04Fallback('Audio indisponible. Réessayez ou poursuivez.');
+    };
+    try{e.audio.play().catch(()=>{
+      if(currentWeatherEvent?.token===token)
+        w04Fallback('Lecture bloquée. Touchez pour reprendre.');
+    });}catch(_){w04Fallback();}
+  }
+  function weather04SkipNarration(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||!['intro','branch'].includes(e.phase))return;
+    e.audio?.pause();
+    if(e.audio){e.audio.onended=null;e.audio.onerror=null;}
+    if(e.phase==='intro')w04Choices();
+    else w04AfterBranch();
+  }
+  function w04ClockView(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices')return;
+    const sec=Math.ceil(e.remainingMs/1000);
+    els.weather04Clock.textContent='00:'+String(sec).padStart(2,'0');
+    els.weather04Progress.style.width=(e.remainingMs/WEATHER04_DURATION*100).toFixed(2)+'%';
+    els.weather04Track.setAttribute('aria-valuenow',String(sec));
+  }
+  function weather04TryChoiceAudio(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices'||document.visibilityState!=='visible')return;
+    e.loop.play().then(()=>els.weather04Sound.classList.add('hidden')).catch(()=>{
+      if(currentWeatherEvent?.token===e.token)
+        els.weather04Sound.classList.remove('hidden');
+    });
+  }
+  function w04PauseChoices(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices')return;
+    if(e.timer!==null){
+      e.remainingMs=Math.max(0,e.deadline-performance.now());
+      w04StopClock();w04Save('choices');
+    }
+    w04StopAudio();
+  }
+  function w04ResumeChoices(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices'||e.timer!==null
+      ||document.visibilityState!=='visible')return;
+    if(e.remainingMs<=0)return weather04Choose('resist');
+    e.deadline=performance.now()+e.remainingMs;
+    const token=e.token;let sec=Math.ceil(e.remainingMs/1000);
+    e.timer=setInterval(()=>{
+      if(currentWeatherEvent?.token!==token||e.phase!=='choices')return;
+      e.remainingMs=Math.max(0,e.deadline-performance.now());
+      w04ClockView();
+      const next=Math.ceil(e.remainingMs/1000);
+      if(next!==sec){sec=next;w04Save('choices');}
+      if(e.remainingMs<=0)weather04Choose('resist');
+    },100);
+    weather04TryChoiceAudio();
+  }
+  function w04Choices(restoring=false){
+    const e=currentWeatherEvent;if(!e?.is04)return;
+    e.audio?.pause();e.audio=null;e.phase='choices';
+    e.remainingMs=restoring?Math.max(0,Math.min(WEATHER04_DURATION,e.remainingMs))
+      :WEATHER04_DURATION;
+    if(!e.loop){
+      e.loop=new Audio(e.item.choiceAudio);
+      e.loop.loop=true;e.loop.volume=1;e.loop.preload='auto';
+    }
+    els.weather04Stage.className='weather04-stage choices';
+    els.weather04Status.textContent=
+      'Une cadence étrangère s’impose à vos cœurs. Comment réagissez-vous ?';
+    for(const id of ['weather04Play','weather04Skip','weather04Result',
+      'weather04Done','weather04Sound'])els[id].classList.add('hidden');
+    els.weather04Choices.classList.remove('hidden');
+    w04ClockView();w04Save('choices');w04ResumeChoices();
+  }
+  function weather04Choose(choice){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices'||!['resist','cede'].includes(choice))return;
+    w04PauseChoices();e.choice=choice;e.phase='branch';
+    e.audio=new Audio(choice==='resist'?e.item.resistAudio:e.item.cedeAudio);
+    e.audio.volume=1;e.audio.preload='auto';
+    els.weather04Choices.classList.add('hidden');
+    els.weather04Sound.classList.add('hidden');
+    els.weather04Stage.className='weather04-stage branch';
+    w04Save('branch');
+    if(choice==='cede'){
+      els.weather04Video.src=WEATHER04_VIDEO;
+      els.weather04Video.preload='auto';
+      els.weather04Video.load();
+      ensureRuntimeAsset(WEATHER04_VIDEO).catch(()=>{});
+    }
+    weather04PlayNarration();
+  }
+  function w04AfterBranch(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='branch')return;
+    e.audio?.pause();e.audio=null;
+    if(e.choice==='cede'){
+      e.phase='reveal';w04Save('reveal');w04Reveal();
+    }else weather04Result();
+  }
+
+
+  // Combustion procédurale : une membrane de "papier" craquelle,
+  // se consume et ouvre des brèches sur la vidéo derrière elle.
+  function w04Burn(){
+    const e=currentWeatherEvent;if(!e?.is04||e.phase!=='reveal')return;
+    const canvas=els.weather04Burn,ctx=canvas.getContext('2d');
+    if(!ctx||REDUCED_MOTION){
+      els.weather04Stage.classList.add('burn-done');return;
+    }
+    const scale=Math.min(window.devicePixelRatio||1,1.35,
+      1400/Math.max(innerWidth,innerHeight));
+    const W=Math.max(1,Math.floor(innerWidth*scale));
+    const H=Math.max(1,Math.floor(innerHeight*scale));
+    canvas.width=W;canvas.height=H;
+    const far=Math.max(W,H),paper=document.createElement('canvas');
+    paper.width=W;paper.height=H;
+    const bg=paper.getContext('2d');
+    const grad=bg.createRadialGradient(W*.5,H*.42,4,W*.5,H*.52,far*.86);
+    grad.addColorStop(0,'#54372c');grad.addColorStop(.51,'#251b1d');
+    grad.addColorStop(1,'#080809');
+    bg.fillStyle=grad;bg.fillRect(0,0,W,H);
+    let rndSeed=57243;
+    const rnd=()=>{rndSeed=rndSeed*16807%2147483647;return rndSeed/2147483647;};
+    for(let i=0;i<1700;i++){
+      bg.fillStyle=i%3?'rgba(239,159,111,.08)':'rgba(0,0,0,.2)';
+      bg.fillRect(rnd()*W,rnd()*H,(.4+rnd()*2)*scale,(.4+rnd()*2)*scale);
+    }
+    const boxW=Math.min(W*.86,460*scale),boxH=Math.min(H*.57,380*scale);
+    const boxX=(W-boxW)/2,boxY=(H-boxH)/2;
+    bg.fillStyle='rgba(16,13,17,.77)';
+    bg.fillRect(boxX,boxY,boxW,boxH);
+    bg.strokeStyle='#9d6146';bg.lineWidth=2*scale;
+    bg.strokeRect(boxX,boxY,boxW,boxH);
+    bg.textAlign='center';bg.fillStyle='#eac6aa';
+    bg.font=Math.floor(17*scale)+'px Georgia,serif';
+    bg.fillText('ANOMALIE INEXPLIQUÉE',W/2,boxY+boxH*.25);
+    bg.font=Math.floor(50*scale)+'px Georgia,serif';
+    bg.fillStyle='#f39b59';bg.fillText('◈',W/2,boxY+boxH*.49);
+    bg.font=Math.floor(15*scale)+'px Georgia,serif';
+    bg.fillStyle='#e4c9b8';
+    bg.fillText('LE SIGNAL NE VOUS APPARTIENT PLUS',W/2,boxY+boxH*.73);
+    const origins=[
+      [.51,.49,0,.6],[.16,.25,.13,2.1],[.81,.69,.18,3.4],
+      [.27,.85,.24,4.7],[.78,.13,.27,5.6],[.07,.57,.35,7.2]
+    ];
+    const start=performance.now(),token=e.token;
+    const animate=now=>{
+      if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+      const p=Math.min(1,(now-start)/3200);
+      ctx.clearRect(0,0,W,H);ctx.drawImage(paper,0,0);
+      const borders=[];
+      for(const [nx,ny,delay,seed] of origins){
+        const amount=Math.max(0,(p-delay)/(1-delay));
+        if(!amount)continue;
+        const radius=far*amount*.81,path=new Path2D();
+        for(let i=0;i<=140;i++){
+          const ang=i/140*2*Math.PI;
+          const jagged=1+.085*Math.sin(ang*9+seed)
+            +.035*Math.sin(ang*23+seed*3)
+            +.018*Math.sin(ang*39+seed*2);
+          const x=nx*W+Math.cos(ang)*radius*jagged;
+          const y=ny*H+Math.sin(ang)*radius*jagged;
+          if(i===0)path.moveTo(x,y);else path.lineTo(x,y);
+        }
+        path.closePath();borders.push(path);
+        ctx.save();ctx.globalCompositeOperation='destination-out';
+        ctx.fill(path);ctx.restore();
+      }
+      if(p<.98){
+        for(const line of borders){
+          ctx.lineWidth=22*scale;ctx.strokeStyle='rgba(9,5,5,.92)';
+          ctx.stroke(line);
+          ctx.lineWidth=10*scale;ctx.strokeStyle='#74331e';
+          ctx.stroke(line);
+          ctx.lineWidth=3*scale;ctx.strokeStyle=now%240<130?'#ffb262':'#e5752f';
+          ctx.shadowColor='#ff6c28';ctx.shadowBlur=17*scale;
+          ctx.stroke(line);ctx.shadowBlur=0;
+        }
+        for(let i=0;i<40;i++){
+          const x=(i*413+now*.035)%W;
+          const y=(i*233+Math.sin(now*.001+i)*22*scale)%H;
+          ctx.fillStyle=i%5?'rgba(238,97,39,.46)':'rgba(255,203,116,.85)';
+          ctx.fillRect(x,y,(i%3+1)*scale,(i%2+1)*scale);
+        }
+      }
+      if(p>=1){
+        ctx.clearRect(0,0,W,H);
+        els.weather04Stage.classList.add('burn-done');
+        w04BurnFrame=null;
+      }else w04BurnFrame=requestAnimationFrame(animate);
+    };
+    w04BurnFrame=requestAnimationFrame(animate);
+  }
+  function w04SyncVideo(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const time=els.weather04Video.currentTime||0;
+    // Deux grandes impulsions observables dans l'animation source.
+    const strength=Math.min(1,
+      .5*Math.exp(-Math.pow((time-1.8)/.25,2))+
+      Math.exp(-Math.pow((time-6.3)/.36,2)));
+    els.weather04Stage.style.setProperty('--heart-shock',strength.toFixed(3));
+    w04VideoFrame=requestAnimationFrame(w04SyncVideo);
+  }
+
+
+  function w04Reveal(restoring=false){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const token=e.token,video=els.weather04Video;
+    els.weather04Stage.className='weather04-stage revealing';
+    els.weather04VideoActions.classList.add('hidden');
+    video.playsInline=true;video.muted=false;video.volume=1;
+    video.preload='auto';
+    if(!video.getAttribute('src'))video.src=WEATHER04_VIDEO;
+    video.onended=()=>{
+      if(currentWeatherEvent?.token===token&&e.phase==='reveal')weather04Result();
+    };
+    video.onerror=()=>{
+      if(currentWeatherEvent?.token===token&&e.phase==='reveal'){
+        els.weather04VideoActions.classList.remove('hidden');
+        els.weather04VideoPlay.classList.add('hidden');
+      }
+    };
+    if(restoring){
+      els.weather04Stage.classList.add('burn-done');
+      els.weather04VideoPlay.classList.remove('hidden');
+      els.weather04VideoPlay.textContent='REPRENDRE L’APPARITION';
+      els.weather04VideoActions.classList.remove('hidden');
+    }else{
+      w04Burn();
+      w04Delay=setTimeout(()=>{
+        w04Delay=null;weather04TryVideo();
+      },REDUCED_MOTION?0:900);
+    }
+    if(!REDUCED_MOTION)w04VideoFrame=requestAnimationFrame(w04SyncVideo);
+  }
+  function weather04TryVideo(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const v=els.weather04Video;
+    if(v.error){
+      els.weather04VideoActions.classList.remove('hidden');
+      els.weather04VideoPlay.classList.add('hidden');
+      return;
+    }
+    v.play().then(()=>{
+      if(currentWeatherEvent?.token===e.token)
+        els.weather04VideoActions.classList.add('hidden');
+    }).catch(()=>{
+      if(currentWeatherEvent?.token!==e.token)return;
+      els.weather04VideoActions.classList.remove('hidden');
+      els.weather04VideoPlay.classList.remove('hidden');
+      els.weather04VideoPlay.textContent='TOUCHER POUR RÉVÉLER';
+    });
+  }
+  function weather04Result(){
+    const e=currentWeatherEvent;if(!e?.is04)return;
+    w04StopVisuals();w04StopClock();w04StopAudio();
+    e.audio?.pause();els.weather04Video.pause();
+    e.phase='result';
+    // Sauvegarde de l'étape et de la récompense avant l'affichage.
+    w04Save('result');
+    if(e.choice==='cede'&&!e.applied){
+      setTemporaryEffect('equipements','Équipements et Objets inutilisables',2);
+      e.applied=true;w04Save('result');
+    }
+    e.completed=true;
+    els.weather04Stage.className='weather04-stage result';
+    els.weather04Status.textContent=e.choice==='resist'
+      ?'Vous avez repoussé les pulsations.'
+      :'Le silence revient. Une présence vous a répondu.';
+    els.weather04Result.replaceChildren();
+    const p=document.createElement('p'),b=document.createElement('strong');
+    b.textContent=e.choice==='resist'
+      ?'Chaque survivant perd 1 PV.':'Chaque survivant soigne 1 PV.';
+    p.appendChild(b);els.weather04Result.appendChild(p);
+    const info=document.createElement('p');
+    info.textContent=e.choice==='resist'
+      ?'Cette perte ne peut pas tuer : un survivant à 1 PV conserve son dernier PV.'
+      :'Retournez face cachée tous vos Équipements et Objets. Ils sont inutilisables pendant 2 manches complètes.';
+    els.weather04Result.appendChild(info);
+    for(const id of ['weather04Choices','weather04Play','weather04Skip',
+      'weather04VideoActions'])els[id].classList.add('hidden');
+    els.weather04Result.classList.remove('hidden');
+    els.weather04Done.classList.remove('hidden');
+    els.weather04Done.focus();
+    if(!e.preview){
+      eventSession.nextWeatherEligibleAt=Date.now()+WEATHER_MIN_GAP_MS;
+      saveAudioEventSession();
+    }
+  }
+  function weather04Complete(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||!e.completed)return;
+    const delay=e.preview?e.savedPreviewDelay:randomBetween(...EVENT_NEXT_DELAY);
+    dismissWeatherEvent();
+    if(!e.preview)eventSession.pendingWeather=null;
+    eventSession.remainingMs=delay;
+    saveAudioEventSession();renderEventControls();updateAudioEventClock();
+  }
+  function weather04Visibility(){
+    const e=currentWeatherEvent;if(!e?.is04)return;
+    if(document.visibilityState==='hidden'){
+      if(e.phase==='choices')w04PauseChoices();
+      if(['intro','branch'].includes(e.phase)&&e.audio&&!e.audio.paused){
+        e.audio.pause();w04Fallback('Narration suspendue. Touchez pour reprendre.');
+      }
+      if(e.phase==='reveal'){
+        els.weather04Video.pause();
+        w04StopVisuals();
+        els.weather04Stage.classList.add('burn-done');
+        els.weather04VideoActions.classList.remove('hidden');
+        els.weather04VideoPlay.classList.remove('hidden');
+        els.weather04VideoPlay.textContent='REPRENDRE L’APPARITION';
+      }
+    }else if(e.phase==='choices')w04ResumeChoices();
+  }
+  function beginWeather04(item,preview,restoring=false){
+    if(!item||item.id!=='meteo-004'||!eventSession.active
+      ||currentMask05||currentMaskEvent||currentRadioEvent||currentRadio02
+      ||currentWeatherEvent||specialAudioActive||anyBlockingModalOpen()
+      ||document.visibilityState!=='visible'||!isPartieTabActive()
+      ||state.value>=100||livingPlayerNumbers().length===0)return false;
+    const pending=restoring?eventSession.pendingWeather:null;
+    if(restoring&&(!pending||pending.id!=='meteo-004'))return false;
+    if(!preview&&!restoring&&(eventSession.pendingWeather
+      ||eventSession.played.includes(item.id)
+      ||eventSession.weatherCount>=WEATHER_MAX_PER_GAME
+      ||Date.now()<eventSession.nextWeatherEligibleAt))return false;
+    if(preview&&eventSession.pendingWeather)return false;
+    pauseAudioEventClock();
+    const phase=pending?.stage||'intro',choice=pending?.choice||null;
+    const path=phase==='intro'?item.introAudio
+      :phase==='branch'?(choice==='cede'?item.cedeAudio:item.resistAudio):null;
+    const audio=path?new Audio(path):null;
+    if(audio){audio.preload='auto';audio.volume=1;}
+    currentWeatherEvent={
+      is04:true,isWeather04:true,item,preview,token:++weatherEventToken,
+      phase,choice,audio,loop:null,timer:null,deadline:0,
+      remainingMs:Number.isFinite(pending?.remainingMs)
+        ?Math.max(0,Math.min(WEATHER04_DURATION,pending.remainingMs))
+        :WEATHER04_DURATION,
+      applied:pending?.rewardApplied===true,completed:false,
+      savedPreviewDelay:eventSession.remainingMs
+    };
+    if(!preview&&!restoring){
+      eventSession.played.push(item.id);
+      eventSession.weatherCount=Math.min(WEATHER_MAX_PER_GAME,eventSession.weatherCount+1);
+      eventSession.remainingMs=null;
+      w04Save('intro');
+    }
+    els.weather04Stage.className='weather04-stage intro';
+    els.weather04Status.textContent='Une sensation inconnue traverse la ville…';
+    for(const id of ['weather04Choices','weather04Result','weather04Done',
+      'weather04Play','weather04Skip','weather04VideoActions','weather04Sound'])
+      els[id].classList.add('hidden');
+    els.weather04VideoPlay.classList.remove('hidden');
+    els.weather04Overlay.classList.add('show');
+    els.weather04Overlay.setAttribute('aria-hidden','false');
+    specialAudioActive=true;silenceHauntSounds();syncAmbientVolume();renderEventControls();
+    if(restoring){
+      if(phase==='choices')w04Choices(true);
+      else if(phase==='reveal')w04Reveal(true);
+      else if(phase==='result')weather04Result();
+      else w04Fallback('Reprenez le récit interrompu.');
+    }else weather04PlayNarration();
+    return true;
+  }
+
   function getWeatherItem(id) {
     return AUDIO_EVENTS.find(item => item.type === 'meteo' && item.id === id);
   }
@@ -6700,6 +7301,7 @@ syncMusicForActiveTab();
   }
 
   function dismissWeatherEvent(immediate = false) {
+    if (currentWeatherEvent?.isWeather04) weather04CleanUp();
     weatherEventToken += 1;
     if (currentWeatherEvent?.audio) {
       currentWeatherEvent.audio.pause();
@@ -6765,6 +7367,7 @@ syncMusicForActiveTab();
   }
 
   function beginWeatherEvent(item, preview, restoring = false) {
+    if (item?.id === 'meteo-004') return beginWeather04(item, preview, restoring);
     if (!item || item.type !== 'meteo' || !eventSession.active
       || currentMask05 || currentMaskEvent || currentRadioEvent || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
@@ -7009,6 +7612,27 @@ syncMusicForActiveTab();
         'click',
         openJournal
       );
+    els.btnEffects.addEventListener('click', openEffectsModal);
+    els.effectsClose.addEventListener('click', closeEffectsModal);
+    els.effectsModal.addEventListener('click', e => {
+      if (e.target === els.effectsModal) closeEffectsModal();
+    });
+    els.effectsPreset.addEventListener('click', () =>
+      setTemporaryEffect('equipements', 'Équipements et Objets inutilisables', 2));
+    els.effectsForm.addEventListener('submit', e => {
+      e.preventDefault();
+      addManualEffect();
+    });
+    els.effectsAdvance.addEventListener('click', advanceTemporaryEffects);
+    els.effectsUndo.addEventListener('click', undoTemporaryEffects);
+    els.weather04Resist.addEventListener('click', () => weather04Choose('resist'));
+    els.weather04Cede.addEventListener('click', () => weather04Choose('cede'));
+    els.weather04Sound.addEventListener('click', weather04TryChoiceAudio);
+    els.weather04Play.addEventListener('click', weather04PlayNarration);
+    els.weather04Skip.addEventListener('click', weather04SkipNarration);
+    els.weather04Done.addEventListener('click', weather04Complete);
+    els.weather04VideoPlay.addEventListener('click', weather04TryVideo);
+    els.weather04VideoSkip.addEventListener('click', weather04Result);
 
     els.journalClose
       .addEventListener(
@@ -7262,6 +7886,10 @@ syncMusicForActiveTab();
             return;
           }
 
+          if (els.effectsModal.classList.contains('show')) {
+            closeEffectsModal();
+            return;
+          }
           if (els.playersModal.classList.contains('show')) {
             closePlayersModal();
             return;
@@ -7310,6 +7938,7 @@ syncMusicForActiveTab();
     els.version.textContent =
       VERSION;
 
+    renderTemporaryEffects();
     renderEventControls();
 
     syncAmbientVolume();

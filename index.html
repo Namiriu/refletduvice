@@ -1511,6 +1511,72 @@
     @media(max-height:540px){.weather-event-content{padding:12px 15px}.weather-event-symbol{font-size:29px}.weather-event-lines{margin:3px auto;height:21px}}
     @media(prefers-reduced-motion:reduce){.weather-event-lines i{animation:none}}
 
+    
+    /* Effets temporaires — aucun cinquième bouton dans la rangée utilitaire */
+    .effects-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .effects-heading .actions-title{margin:0}
+    .effects-open,.effects-btn{min-height:38px;padding:9px 11px;border:1px solid #92745e;border-radius:8px;background:#4b3028;color:#f8e8dc;font:clamp(10px,2.6vw,12px) var(--font-ui);cursor:pointer}
+    .effects-btn.secondary{background:#282428;border-color:#64575a}
+    .effects-open:focus-visible,.effects-btn:focus-visible{outline:2px solid #ffcb9c;outline-offset:2px}
+    .effects-banner{border:1px solid #805b48;border-radius:10px;background:linear-gradient(130deg,#332725,#17181b);box-shadow:inset 0 0 22px rgba(190,82,41,.1);padding:12px;margin:13px 0}
+    .effects-banner strong{display:block;color:#eac6a7;font:12px var(--font-ui);margin-bottom:9px}
+    .effects-banner #effectsBannerList{display:grid;gap:8px;font:clamp(14px,3.7vw,17px)/1.3 var(--font-body);color:#f4e8e1;margin-bottom:11px}
+    .effects-banner-row{display:flex;justify-content:space-between;gap:12px}
+    .effects-banner-row b{color:#ffbf93;white-space:nowrap}
+    .effects-banner .effects-btn{width:100%}
+    .effects-feedback{color:#e6bda0;font:14px/1.35 var(--font-body);margin:7px 0}
+    .effects-dialog{max-width:465px;text-align:left}
+    .effects-dialog h2{font:clamp(16px,4vw,20px) var(--font-ui);color:#f1d3bf;margin:0 0 10px}
+    .effects-dialog p{font:14px/1.4 var(--font-body);color:#d0bfb8}
+    .effects-list{display:grid;gap:7px;margin:12px 0}
+    .effects-line{padding:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #67504b;border-radius:8px;background:#251d1d;color:#f1e4dc;font:14px/1.35 var(--font-body)}
+    .effects-line button{background:#37282a;color:#f1d4c8;border:1px solid #775e5b;border-radius:6px;padding:5px 9px;cursor:pointer}
+    .effects-form{display:grid;grid-template-columns:minmax(0,1fr) 78px;gap:8px;margin-top:15px}
+    .effects-form label{grid-column:1/-1;color:#dbc5b8;font:12px var(--font-ui)}
+    .effects-form input{min-width:0;padding:10px;border-radius:7px;border:1px solid #785e54;background:#171719;color:#fff;font:15px var(--font-body)}
+    .effects-form .effects-btn{grid-column:1/-1}
+    .effects-bottom{display:flex;gap:9px;margin-top:15px}
+    .effects-bottom button{flex:1;min-width:0}
+    .effects-dialog .hidden,.effects-banner.hidden{display:none!important}
+
+    /* MÉTÉO 004 : intrusion organique, puis dévoration de l'interface */
+    .weather04-overlay{position:fixed;inset:0;z-index:10200;opacity:0;visibility:hidden;pointer-events:none;background:#080708;isolation:isolate;transition:opacity .55s ease,visibility 0s linear .55s}
+    .weather04-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .38s ease}
+    .weather04-stage{--heart-shock:0;position:relative;height:100%;width:100%;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#30201d 0%,#161114 50%,#050608 100%)}
+    .weather04-stage::before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:repeating-linear-gradient(104deg,transparent 0 53px,rgba(255,129,73,.025) 54px 55px),radial-gradient(circle at center,rgba(174,68,34,.13),transparent 61%)}
+    .weather04-panel{position:relative;z-index:4;width:min(92vw,470px);max-height:calc(100dvh - 28px);overflow-y:auto;text-align:center;padding:clamp(16px,4vw,27px);border:1px solid #85523a;border-radius:13px;background:linear-gradient(150deg,rgba(42,30,30,.99),rgba(16,15,19,.98));box-shadow:0 15px 65px rgba(0,0,0,.75),inset 0 0 35px rgba(183,71,30,.15);transition:opacity .25s ease}
+    .weather04-panel h2{color:#d7ad92;font:clamp(12px,3vw,15px) var(--font-ui);letter-spacing:1.8px;margin:0 0 14px}
+    .weather04-heart{width:78px;height:78px;border-radius:50%;margin:10px auto 15px;border:1px solid #81462e;background:radial-gradient(circle,rgba(239,119,56,.63),rgba(149,52,27,.13) 24%,rgba(23,12,16,.6) 63%,transparent 73%);box-shadow:inset 0 0 24px rgba(247,97,37,.16),0 0 23px rgba(227,93,45,.27)}
+    .weather04-heart::after{content:"";display:block;border:1px solid #9b593c;border-radius:50%;width:55%;height:55%;margin:22%}
+    .weather04-stage.choices .weather04-heart{animation:weather04-beat 1.65s ease-in-out infinite}
+    .weather04-stage.choices .weather04-panel{animation:weather04-glow 1.65s ease-in-out infinite}
+    @keyframes weather04-beat{0%,100%{transform:scale(1)}13%{transform:scale(1.16)}24%{transform:scale(1.04)}38%{transform:scale(1.1)}55%{transform:scale(1)}}
+    @keyframes weather04-glow{0%,100%{box-shadow:0 15px 65px rgba(0,0,0,.75),0 0 8px rgba(179,64,27,.13)}14%,39%{box-shadow:0 15px 65px rgba(0,0,0,.75),0 0 39px rgba(226,83,42,.41)}}
+    #weather04Status{font:clamp(16px,4.3vw,21px)/1.45 var(--font-body);color:#ead8cf;white-space:pre-line;margin:11px 0 13px}
+    #weather04Clock{font:clamp(36px,10vw,54px) var(--font-ui);color:#ffc298;text-shadow:0 0 24px rgba(208,83,42,.33)}
+    .weather04-track{height:6px;border-radius:20px;background:#382421;margin:8px 0 15px;overflow:hidden}
+    .weather04-track i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#864632,#ffba7d)}
+    #weather04Choices p{color:#c6ada2;font:14px/1.3 var(--font-body)}
+    .weather04-buttons{display:grid;gap:9px;margin-top:13px}
+    .weather04-buttons button,.weather04-video-actions button{width:100%;min-height:48px;border-radius:9px;padding:10px 14px;border:1px solid #a36c4c;background:#653d2b;color:#f9eae0;font:clamp(11px,3vw,13px) var(--font-ui);cursor:pointer}
+    .weather04-buttons button.secondary,.weather04-video-actions button.secondary{background:#29242a;border-color:#66575d}
+    .weather04-buttons button:focus-visible,.weather04-video-actions button:focus-visible{outline:2px solid #f8caa9;outline-offset:3px}
+    .weather04-result{border:1px solid #805740;border-radius:10px;padding:13px 10px;background:#21191a;margin:13px 0;font:clamp(16px,4vw,19px)/1.5 var(--font-body);color:#efe2da}
+    .weather04-result strong{color:#f5c19f}
+    .weather04-result p{margin:6px 0}
+    .weather04-vision{position:absolute;z-index:2;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,#351713,#080608 72%);opacity:0}
+    .weather04-vision video{display:block;width:100%;height:100%;object-fit:contain;transform:scale(calc(1 + var(--heart-shock)*.015));filter:brightness(calc(1 + var(--heart-shock)*.15))}
+    .weather04-vision::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:calc(.13 + var(--heart-shock)*.38);background:radial-gradient(ellipse at 50% 45%,rgba(255,123,45,.22),transparent 63%);mix-blend-mode:screen}
+    .weather04-stage.revealing .weather04-vision{opacity:1}
+    .weather04-stage.revealing .weather04-panel{opacity:0;pointer-events:none}
+    .weather04-burn{position:absolute;z-index:6;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity .35s ease}
+    .weather04-stage.revealing .weather04-burn{opacity:1}
+    .weather04-stage.burn-done .weather04-burn{opacity:0}
+    .weather04-video-actions{position:absolute;z-index:7;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(90vw,380px);display:grid;gap:8px}
+    .weather04-overlay .hidden{display:none!important}
+    @media(max-height:530px){.weather04-panel{padding:12px 16px}.weather04-heart{height:44px;width:44px;margin:4px auto}.weather04-buttons button{min-height:42px}}
+    @media(prefers-reduced-motion:reduce){.weather04-stage.choices .weather04-heart,.weather04-stage.choices .weather04-panel{animation:none}.weather04-vision video{transform:none}}
+
     .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
     .mask-event-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .65s ease}
     .mask-event-overlay.closing{visibility:visible;opacity:0;pointer-events:none;transition:opacity .7s ease}
@@ -1731,13 +1797,23 @@
             <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
             <option value="meteo-002">🌧️ Météo 002 · La Pluie à rebours</option>
             <option value="meteo-003">◇ Météo 003 · La Fracture du Réel</option>
+            <option value="meteo-004">◈ Météo 004 · Le Dernier Battement</option>
           </select>
           <button id="btnTestMaskEvent" class="utility-btn event-test-btn hidden" type="button">TESTER LE MASQUE</button>
         </div>
       </section>
 
       <section class="card actions-card">
-        <h2 class="actions-title">ACTIONS SPÉCIALES</h2>
+        <div class="effects-heading">
+          <h2 class="actions-title">ACTIONS SPÉCIALES</h2>
+          <button id="btnEffects" class="effects-open" type="button">⏳ EFFETS</button>
+        </div>
+        <div id="effectsBanner" class="effects-banner hidden" role="status">
+          <strong>⏳ EFFETS TEMPORAIRES</strong>
+          <div id="effectsBannerList"></div>
+          <button id="effectsAdvance" class="effects-btn" type="button">TERMINER UNE MANCHE</button>
+        </div>
+        <p id="effectsFeedback" class="effects-feedback hidden" role="status"></p>
 
         <div class="action-block">
           <div class="action-header">
@@ -1879,7 +1955,7 @@
       </div>
     </section>
 
-    <div id="version">v1.1.9 Météo 003 (test)</div>
+    <div id="version">v1.2.0 Météo 004 (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -1918,6 +1994,27 @@
 
   <!-- Narration dynamique du Bestiaire -->
   <audio id="bestiaireNarration" preload="metadata"></audio>
+
+
+  <!-- ==================== SUIVI DES MANCHES ==================== -->
+  <div id="effectsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="effectsTitle" aria-hidden="true">
+    <div class="modal-inner effects-dialog">
+      <h2 id="effectsTitle">⏳ Effets temporaires</h2>
+      <p>Une manche = un tour de table complet. Comptez deux manches complètes APRÈS l'apparition.</p>
+      <div id="effectsList" class="effects-list"></div>
+      <button id="effectsPreset" class="effects-btn" type="button">🔒 Équipements et Objets inutilisables · 2 manches</button>
+      <form id="effectsForm" class="effects-form" autocomplete="off">
+        <label for="effectsName">Ajouter un effet personnalisé</label>
+        <input id="effectsName" type="text" maxlength="80" placeholder="Nom de l'effet" required aria-label="Nom de l'effet" />
+        <input id="effectsDuration" type="number" value="2" min="1" max="30" required aria-label="Durée en manches" />
+        <button class="effects-btn" type="submit">AJOUTER</button>
+      </form>
+      <div class="effects-bottom">
+        <button id="effectsUndo" class="effects-btn secondary" type="button">↶ ANNULER</button>
+        <button id="effectsClose" class="effects-btn secondary" type="button">FERMER</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== JOURNAL ==================== -->
 
@@ -2048,6 +2145,40 @@
         <button id="radio02Play" class="radio02-btn hidden" type="button">ÉCOUTER LA TRANSMISSION</button>
         <button id="radio02Skip" class="radio02-btn secondary hidden" type="button">CONTINUER SANS AUDIO</button>
         <button id="radio02Done" class="radio02-btn hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MÉTÉO 004 : le nom et l'identité de la présence restent secrets -->
+  <div id="weather04Overlay" class="weather04-overlay" role="dialog" aria-modal="true" aria-labelledby="weather04Heading" aria-hidden="true">
+    <div id="weather04Stage" class="weather04-stage">
+      <div class="weather04-vision" aria-hidden="true"><video id="weather04Video" playsinline preload="none"></video></div>
+      <div class="weather04-panel">
+        <h2 id="weather04Heading">ANOMALIE INEXPLIQUÉE</h2>
+        <div class="weather04-heart" aria-hidden="true"></div>
+        <p id="weather04Status" aria-live="polite">Une sensation inconnue traverse la ville…</p>
+        <div id="weather04Choices" class="hidden">
+          <div id="weather04Clock" role="timer" aria-live="off">00:15</div>
+          <div id="weather04Track" class="weather04-track" role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="15" aria-valuenow="15"><i id="weather04Progress"></i></div>
+          <p>Décidez ensemble. Sans réponse, vous résisterez par instinct.</p>
+          <div class="weather04-buttons">
+            <button id="weather04Resist" type="button">RÉSISTER À L'APPEL</button>
+            <button id="weather04Cede" type="button">CÉDER AUX PULSATIONS</button>
+            <button id="weather04Sound" class="secondary hidden" type="button">🔊 ACTIVER LES BATTEMENTS</button>
+          </div>
+        </div>
+        <div id="weather04Result" class="weather04-result hidden" role="status"></div>
+        <div class="weather04-buttons">
+          <button id="weather04Play" class="hidden" type="button">REPRENDRE LA NARRATION</button>
+          <button id="weather04Skip" class="secondary hidden" type="button">CONTINUER SANS AUDIO</button>
+          <button id="weather04Done" class="hidden" type="button">CONTINUER LA PARTIE</button>
+        </div>
+      </div>
+      <canvas id="weather04Burn" class="weather04-burn" aria-hidden="true"></canvas>
+      <div id="weather04VideoActions" class="weather04-video-actions hidden">
+        <button id="weather04VideoPlay" type="button">TOUCHER POUR RÉVÉLER</button>
+        <button id="weather04VideoSkip" class="secondary" type="button">CONTINUER SANS L'ANIMATION</button>
       </div>
     </div>
   </div>

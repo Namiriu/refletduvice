@@ -1,4 +1,4 @@
-const CACHE = 'instability-v84';
+const CACHE = 'instability-v85';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -146,6 +146,11 @@ const ASSETS = [
   './audio/events/meteo/meteo-002-pluie-a-rebours.mp3',
   './audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3',
   './audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-intro.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-choix.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-resister.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-ceder.mp3',
+  './bestiaire/videos/gardienne-du-vice.webm',
 
   // Ambiance
   './audio/ambient_loop.mp3',
@@ -305,6 +310,11 @@ const MEDIA_REVISIONS = {
   "./audio/events/meteo/meteo-002-pluie-a-rebours.mp3": "2aa95887633d79f79a6857169d52b194d0101155",
   "./audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3": "1967f5cd39d69cac7b61e5a6f93b2ee63b854500",
   "./audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3": "b8a02d3918d829ddf00bc39a1a3b2c34051919d2",
+  "./audio/events/meteo/meteo-004-dernier-battement-intro.mp3": "44f443f9a2e9c647eeb5d1b21bfb1f5066b56aaf",
+  "./audio/events/meteo/meteo-004-dernier-battement-choix.mp3": "3ee606109f086ac563d4a98f011ac662ba132b98",
+  "./audio/events/meteo/meteo-004-dernier-battement-resister.mp3": "fde6dc4e22f84ebaf86b4053f26ddf52e9a87525",
+  "./audio/events/meteo/meteo-004-dernier-battement-ceder.mp3": "bbb22ccdd5a8f8a4615ebfbae755b462fb225a43",
+  "./bestiaire/videos/gardienne-du-vice.webm": "401df951c8f4e6f7c47aa1f46a116149a49c606b",
   "./audio/ambient_loop.mp3": "fdb97f1acd6ecd62731f3de9e8c78437cc0dc07b",
   "./audio/groan.wav": "20913ca3052fa4a40fe7fad2a35a8ec6a56ade79",
   "./audio/ritual_resurrection.wav": "afe2c7123a36e91e478f73825ec2529f5f1f1983",
