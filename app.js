@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.3.1 RADIO-003 — Réglages (test)';
+  const VERSION = 'v1.3.2 RADIO-003 — Résultat (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -7279,8 +7279,12 @@ syncMusicForActiveTab();
       :r.outcome==='timeout'
         ?'Temps écoulé. L’Instabilité globale du groupe augmente de 5 points.'
         :'Mauvaise réponse. L’Instabilité globale du groupe augmente de 5 points.';
-    els.radio03Reward.textContent=message+'\n\nSéquence : '+correct+
-      (r.outcome==='success'?'':'\nInstabilité : '+r.before+' % → '+r.after+' %.');
+    // En cas de réussite, ne pas révéler une solution que le groupe connaît déjà.
+    // En cas d'échec ou de temps écoulé, indiquer clairement la bonne suite.
+    const correction=r.outcome==='success'?''
+      :'\n\nLa bonne séquence était : '+correct+
+        '\nInstabilité : '+r.before+' % → '+r.after+' %.';
+    els.radio03Reward.textContent=message+correction;
     els.radio03Reward.classList.remove('hidden');
     els.radio03Done.classList.remove('hidden');
     els.radio03Done.focus();
