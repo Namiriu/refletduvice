@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.2.3 Météo 004 — Révélation (test)';
+  const VERSION = 'v1.2.4 Météo 004 — Voix et révélation (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6860,8 +6860,11 @@ syncMusicForActiveTab();
   // MÉTÉO 004 — LE DERNIER BATTEMENT (identité jamais affichée)
   // =========================================================
   const WEATHER04_DURATION=15000;
+  // Décalage testable : la combustion commence avant la fin du MP3 « Céder ».
+  const WEATHER04_REVEAL_LEAD_SECONDS=2.0;
   const WEATHER04_VIDEO='bestiaire/videos/gardienne-du-vice.webm';
   let w04BurnFrame=null, w04VideoFrame=null, w04Delay=null, w04AutoplayTimer=null;
+  let w04VolumeFadeFrame=null;
   function w04Save(stage) {
     const e=currentWeatherEvent;
     if(!e?.is04||e.preview)return;
@@ -6882,7 +6885,9 @@ syncMusicForActiveTab();
     if(w04VideoFrame!==null)cancelAnimationFrame(w04VideoFrame);
     if(w04Delay!==null)clearTimeout(w04Delay);
     if(w04AutoplayTimer!==null)clearTimeout(w04AutoplayTimer);
+    if(w04VolumeFadeFrame!==null)cancelAnimationFrame(w04VolumeFadeFrame);
     w04BurnFrame=null;w04VideoFrame=null;w04Delay=null;w04AutoplayTimer=null;
+    w04VolumeFadeFrame=null;
   }
   function weather04CleanUp() {
     w04StopClock();w04StopAudio();w04StopVisuals();
@@ -6929,10 +6934,28 @@ syncMusicForActiveTab();
       ?'Une pulsation inconnue traverse la ville…'
       :e.choice==='resist'?'Vous luttez contre le rythme imposé…'
         :'Vous abandonnez toute résistance…';
+    // Pendant la conclusion B, le récit continue sous la combustion :
+    // seule la transition démarre plus tôt, sans couper le narrateur.
+    e.audio.ontimeupdate=()=>{
+      if(currentWeatherEvent?.token!==token||phase!=='branch'
+        ||e.choice!=='cede'||e.phase!=='branch')return;
+      const duration=e.audio?.duration;
+      const position=e.audio?.currentTime;
+      if(Number.isFinite(duration)&&duration>0&&Number.isFinite(position)
+        &&duration-position<=WEATHER04_REVEAL_LEAD_SECONDS){
+        w04AfterBranch(true);
+      }
+    };
     e.audio.onended=()=>{
-      if(currentWeatherEvent?.token!==token||e.phase!==phase)return;
-      if(phase==='intro')w04Choices();
-      else w04AfterBranch();
+      if(currentWeatherEvent?.token!==token)return;
+      if(phase==='intro'&&e.phase==='intro')w04Choices();
+      else if(phase==='branch'){
+        if(e.phase==='branch')w04AfterBranch(); // secours si le MP3 n'a pas de durée.
+        else if(e.phase==='reveal'){
+          e.audio=null;
+          w04RestoreRevealVolume();
+        }
+      }
     };
     e.audio.onerror=()=>{
       if(currentWeatherEvent?.token===token)
@@ -7028,13 +7051,35 @@ syncMusicForActiveTab();
     }
     weather04PlayNarration();
   }
-  function w04AfterBranch(){
+  function w04AfterBranch(keepNarration=false){
     const e=currentWeatherEvent;
     if(!e?.is04||e.phase!=='branch')return;
-    e.audio?.pause();e.audio=null;
+    if(keepNarration&&e.choice==='cede'){
+      // Le MP3 finit normalement sa dernière phrase, sans déclencher
+      // à nouveau la révélation quand son événement ended se produit.
+      if(e.audio)e.audio.ontimeupdate=null;
+    }else{
+      e.audio?.pause();
+      e.audio=null;
+    }
     if(e.choice==='cede'){
       e.phase='reveal';w04Save('reveal');w04Reveal();
     }else weather04Result();
+  }
+  function w04RestoreRevealVolume(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const video=els.weather04Video;
+    if(w04VolumeFadeFrame!==null)cancelAnimationFrame(w04VolumeFadeFrame);
+    const start=video.volume,at=performance.now(),token=e.token;
+    const fade=now=>{
+      if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+      const p=Math.max(0,Math.min(1,(now-at)/480));
+      video.volume=Math.min(1,start+(1-start)*p);
+      if(p<1)w04VolumeFadeFrame=requestAnimationFrame(fade);
+      else w04VolumeFadeFrame=null;
+    };
+    w04VolumeFadeFrame=requestAnimationFrame(fade);
   }
 
 
@@ -7236,7 +7281,9 @@ syncMusicForActiveTab();
       ? 'weather04-stage revealing burn-done'
       : 'weather04-stage burning';
     els.weather04VideoActions.classList.add('hidden');
-    video.playsInline=true;video.muted=false;video.volume=1;
+    video.playsInline=true;video.muted=false;
+    // Éviter que le premier grondement du WebM masque « C'est le sien ».
+    video.volume=e.audio&&!e.audio.paused?0.12:1;
     video.preload='auto';
     if(!video.getAttribute('src'))video.src=WEATHER04_VIDEO;
     video.onended=()=>{
@@ -7378,6 +7425,7 @@ syncMusicForActiveTab();
         e.audio.pause();w04Fallback('Narration suspendue. Touchez pour reprendre.');
       }
       if(e.phase==='reveal'){
+        e.audio?.pause();
         els.weather04Video.pause();
         els.weather04Video.onloadeddata=null;
         w04StopVisuals();
