@@ -1,4 +1,4 @@
-const CACHE = 'instability-v89';
+const CACHE = 'instability-v90';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -140,6 +140,22 @@ const ASSETS = [
   './audio/events/radio/radio-002-repondre.mp3',
   './audio/events/radio/radio-002-couper.mp3',
   './audio/events/radio/radio-002-silence.mp3',
+  // RADIO-003 : sanctuaire, prise de contrôle du Masque et voix TV variables
+  './audio/events/radio/radio-003-transmission.mp3',
+  './audio/events/radio/radio-003-ambiance-sanctuaire.mp3',
+  './audio/events/radio/radio-003-brouillage.mp3',
+  './audio/events/radio/radio-003-masque-intro.mp3',
+  './audio/events/radio/radio-003-masque-epreuve.mp3',
+  './audio/events/radio/radio-003-masque-reussite.mp3',
+  './audio/events/radio/radio-003-masque-echec.mp3',
+  './audio/events/sfx/rouge-normal.mp3',
+  './audio/events/sfx/rouge-telephone.mp3',
+  './audio/events/sfx/bleu-normal.mp3',
+  './audio/events/sfx/bleu-telephone.mp3',
+  './audio/events/sfx/vert-normal.mp3',
+  './audio/events/sfx/vert-telephone.mp3',
+  './audio/events/sfx/jaune-normal.mp3',
+  './audio/events/sfx/jaune-telephone.mp3',
 
   // Météo — récits finalisés du narrateur avec sound design intégré
   './audio/events/meteo/meteo-001-pression-fantome.mp3',
@@ -306,6 +322,21 @@ const MEDIA_REVISIONS = {
   "./audio/events/radio/radio-002-repondre.mp3": "5306f609ea7b4454a269c9c753020c23d6635000",
   "./audio/events/radio/radio-002-couper.mp3": "1849dd2d6720c8fee15d52052c918fe328087d0e",
   "./audio/events/radio/radio-002-silence.mp3": "f623407c0e6bb0e89b79ff7ec257d9ca548ca87c",
+  "./audio/events/radio/radio-003-transmission.mp3": "72ed5ab4cd63725493d6266cc73d845e83b3def7",
+  "./audio/events/radio/radio-003-ambiance-sanctuaire.mp3": "51981e2934382091b0e4eefc68b5dba0c611efb5",
+  "./audio/events/radio/radio-003-brouillage.mp3": "e73f52b867364fe2974510697e9830a091b4e910",
+  "./audio/events/radio/radio-003-masque-intro.mp3": "83b14ef411306f1de451983943f8e2abe68a108c",
+  "./audio/events/radio/radio-003-masque-epreuve.mp3": "d2a1bb53c280f545ccf9404373d6c53272ec2ae6",
+  "./audio/events/radio/radio-003-masque-reussite.mp3": "11a9f667db71e4f7f24196b0c27bd28252a03057",
+  "./audio/events/radio/radio-003-masque-echec.mp3": "d63b284c26a3c89a59503a031f8690682495f678",
+  "./audio/events/sfx/rouge-normal.mp3": "fa37000e6dbcf6e36899a6509de8abc0936e3fda",
+  "./audio/events/sfx/rouge-telephone.mp3": "7f1ac4dde6ef914b122134a3d76be8dfe8b9e395",
+  "./audio/events/sfx/bleu-normal.mp3": "fbbec89e175a4474473f0422bb9a5febdce50dab",
+  "./audio/events/sfx/bleu-telephone.mp3": "3833153d67a6fb2258cf1bf16fce5796f5182542",
+  "./audio/events/sfx/vert-normal.mp3": "a77f86a4290b4cd6eaf668f31ba76eeadec2c6eb",
+  "./audio/events/sfx/vert-telephone.mp3": "4db04ebe42d0848cc2d8e49ef4d19482e379eb19",
+  "./audio/events/sfx/jaune-normal.mp3": "e2a2b2a63c6bb2226c4a58a0205a83d7c78e8d83",
+  "./audio/events/sfx/jaune-telephone.mp3": "cfbae60d6a165763a617f38c0509c97f5203b215",
   "./audio/events/meteo/meteo-001-pression-fantome.mp3": "fe45d827bd3792ce1a14ca66638a18ffafac2f45",
   "./audio/events/meteo/meteo-002-pluie-a-rebours.mp3": "2aa95887633d79f79a6857169d52b194d0101155",
   "./audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3": "1967f5cd39d69cac7b61e5a6f93b2ee63b854500",

@@ -1460,6 +1460,44 @@
     @media(prefers-reduced-motion:reduce){.radio02-progress{transition:none}}
 
 
+
+    /* RADIO-003 : transmission sans divulgâcher l'épreuve d'attention. */
+    .radio03-overlay{position:fixed;inset:0;z-index:10132;display:grid;place-items:center;padding:14px;background:radial-gradient(ellipse at 50% 40%,rgba(13,36,35,.985),rgba(4,8,13,.995) 80%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .48s ease,visibility 0s linear .48s}
+    .radio03-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .36s ease}
+    .radio03-content{width:min(100%,510px);max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(15px,4vw,25px);border:1px solid #4a8379;border-radius:14px;text-align:center;background:linear-gradient(150deg,#122b2b,#0a1219);box-shadow:0 0 56px rgba(0,0,0,.75)}
+    .radio03-icon{font-size:42px;margin:0 0 5px;filter:drop-shadow(0 0 12px rgba(68,193,142,.25))}
+    .radio03-heading{font:clamp(14px,4vw,19px) var(--font-ui);color:#bce8dc;letter-spacing:1.2px;margin:8px 0 13px}
+    .radio03-status{font:clamp(16px,4.4vw,20px)/1.45 var(--font-body);color:#e1e8e2;white-space:pre-line;margin:14px 0}
+    .radio03-signal{height:31px;display:flex;gap:5px;justify-content:center;align-items:center;margin:10px 0}
+    .radio03-signal i{width:4px;height:7px;border-radius:4px;background:#73bdac;opacity:.6}
+    .radio03-overlay.is-speaking .radio03-signal i{animation:radio-signal .8s ease-in-out infinite alternate}
+    .radio03-signal i:nth-child(2){animation-delay:.15s}.radio03-signal i:nth-child(3){animation-delay:.3s}.radio03-signal i:nth-child(4){animation-delay:.45s}.radio03-signal i:nth-child(5){animation-delay:.6s}
+    .radio03-overlay.is-hijacked{background:radial-gradient(ellipse at 50% 35%,rgba(43,15,22,.98),rgba(7,4,10,.995) 83%)}
+    .radio03-overlay.is-hijacked .radio03-content{border-color:#81505c;background:linear-gradient(145deg,#261821,#111019)}
+    .radio03-overlay.is-hijacked .radio03-heading{color:#ead1d7}
+    .radio03-overlay.is-hijacked .radio03-signal i{background:#d28389}
+    .radio03-challenge{margin:14px 0}
+    .radio03-timer{font:clamp(37px,10vw,52px) var(--font-ui);color:#e5baae;letter-spacing:2px}
+    .radio03-track{height:7px;border-radius:8px;background:#3a2830;overflow:hidden;margin:7px 0 13px}
+    .radio03-progress{height:100%;width:100%;background:linear-gradient(90deg,#c87583,#f1bfaa);transition:width .1s linear}
+    .radio03-note{font:14px/1.35 var(--font-body);color:#dfbfc6;margin:8px 0 12px}
+    .radio03-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:12px 0 16px}
+    .radio03-slot{display:grid;place-items:center;min-height:51px;padding:5px 1px;border:1px dashed #7a5661;border-radius:7px;background:#171920;color:#9c8f96;font:clamp(10px,2.2vw,13px) var(--font-ui);overflow-wrap:anywhere}
+    .radio03-slot.filled{border:1px solid #b78991;background:#3a2934;color:#fff}
+    .radio03-palette{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+    .radio03-color,.radio03-btn{min-height:47px;padding:10px 8px;border-radius:8px;border:1px solid #a27a86;background:#4f3140;color:#fff;font:clamp(11px,3vw,13px) var(--font-ui);cursor:pointer}
+    .radio03-color.rouge{border-color:#c86c74}.radio03-color.bleu{border-color:#668bbb}.radio03-color.jaune{border-color:#cbb279}.radio03-color.vert{border-color:#6ca687}
+    .radio03-color::before{content:"";display:inline-block;width:10px;height:10px;margin-right:8px;border-radius:50%;background:currentColor}
+    .radio03-color.rouge::before{background:#e55e69}.radio03-color.bleu::before{background:#5ba6ed}.radio03-color.jaune::before{background:#f0c45b}.radio03-color.vert::before{background:#6ec798}
+    .radio03-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    .radio03-btn.wide{grid-column:1/-1}.radio03-btn.secondary{background:#27232b;border-color:#5c555d}
+    .radio03-btn:disabled{opacity:.45;cursor:not-allowed}
+    .radio03-btn:focus-visible,.radio03-color:focus-visible{outline:2px solid #ffccbe;outline-offset:2px}
+    .radio03-reward{font:clamp(15px,4.2vw,19px)/1.45 var(--font-body);white-space:pre-line;color:#f2e0dc;background:#241a21;border:1px solid #855865;border-radius:10px;padding:16px 10px;margin:12px 0}
+    .radio03-overlay .hidden{display:none!important}
+    @media(max-height:530px){.radio03-content{padding:10px 13px}.radio03-icon{font-size:28px}.radio03-slot{min-height:36px}.radio03-color,.radio03-btn{min-height:42px}}
+    @media(prefers-reduced-motion:reduce){.radio03-signal i{animation:none!important}.radio03-progress{transition:none}}
+
     /* Masque 005 : dialogue privé, mission secrète et horloge non intrusive */
     .mask05-overlay{position:fixed;inset:0;z-index:10145;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
     .mask05-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
@@ -1798,6 +1836,7 @@
             <option value="masque-005">005 · La Confidence empoisonnée</option>
             <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
             <option value="radio-002">📻 Radio 002 · Le Rapport impossible</option>
+            <option value="radio-003">📻 Radio 003 · Vous écoutiez ?</option>
             <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
             <option value="meteo-002">🌧️ Météo 002 · La Pluie à rebours</option>
             <option value="meteo-003">◇ Météo 003 · La Fracture du Réel</option>
@@ -1959,7 +1998,7 @@
       </div>
     </section>
 
-    <div id="version">v1.2.4 Météo 004 — Voix et révélation (test)</div>
+    <div id="version">v1.3.0 RADIO-003 — Test</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2153,6 +2192,34 @@
     </div>
   </div>
 
+
+
+  <!-- RADIO-003 : le titre et le défi restent cachés jusqu'au piratage du Masque. -->
+  <div id="radio03Overlay" class="radio03-overlay" role="dialog" aria-modal="true" aria-labelledby="radio03Heading" aria-hidden="true">
+    <div class="radio03-content">
+      <div class="radio03-icon" aria-hidden="true">📻</div>
+      <h2 id="radio03Heading" class="radio03-heading">TRANSMISSION INTERCEPTÉE</h2>
+      <div class="radio03-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <p id="radio03Status" class="radio03-status" aria-live="polite">Une fréquence inconnue s’active…</p>
+      <div id="radio03Challenge" class="radio03-challenge hidden">
+        <div id="radio03Clock" class="radio03-timer" role="timer" aria-live="off">00:20</div>
+        <div id="radio03Track" class="radio03-track" role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="20" aria-valuenow="20"><div id="radio03Progress" class="radio03-progress"></div></div>
+        <p class="radio03-note">Une seule tentative. Aucune réécoute possible.</p>
+        <div id="radio03Slots" class="radio03-slots" aria-label="Séquence saisie"></div>
+        <div id="radio03Palette" class="radio03-palette" aria-label="Choisir les couleurs"></div>
+        <div class="radio03-actions">
+          <button id="radio03Undo" class="radio03-btn secondary" type="button">EFFACER LA DERNIÈRE</button>
+          <button id="radio03Confirm" class="radio03-btn" type="button" disabled>VALIDER LA SÉQUENCE</button>
+        </div>
+      </div>
+      <div id="radio03Reward" class="radio03-reward hidden" role="status"></div>
+      <div class="radio03-actions">
+        <button id="radio03Play" class="radio03-btn wide hidden" type="button">REPRENDRE L’AUDIO</button>
+        <button id="radio03Cancel" class="radio03-btn secondary wide hidden" type="button">ANNULER SANS SANCTION</button>
+        <button id="radio03Done" class="radio03-btn wide hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MÉTÉO 004 : le nom et l'identité de la présence restent secrets -->
   <div id="weather04Overlay" class="weather04-overlay" role="dialog" aria-modal="true" aria-labelledby="weather04Heading" aria-hidden="true">
