@@ -1566,12 +1566,12 @@
     .weather04-result{border:1px solid #805740;border-radius:10px;padding:13px 10px;background:#21191a;margin:13px 0;font:clamp(16px,4vw,19px)/1.5 var(--font-body);color:#efe2da}
     .weather04-result strong{color:#f5c19f}
     .weather04-result p{margin:6px 0}
-    /* L'apparition n'est permise qu'APRÈS la disparition réelle de la fenêtre. */
+    /* Sous l'interface : la présence apparaît dans les trous de combustion. */
     .weather04-vision{position:absolute;z-index:2;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,#351713,#080608 72%);opacity:0;transition:opacity .12s linear;pointer-events:none}
     .weather04-vision canvas{position:absolute;z-index:0;inset:-8%;width:116%;height:116%;object-fit:cover;filter:blur(32px) brightness(.37) saturate(.9);transform:scale(1.05);opacity:.85}
     .weather04-vision video{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:contain;transform:scale(calc(1 + var(--heart-shock)*.012));filter:brightness(calc(1 + var(--heart-shock)*.15)) drop-shadow(0 0 25px rgba(143,51,37,.27))}
     .weather04-vision::after{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;opacity:calc(.13 + var(--heart-shock)*.38);background:radial-gradient(ellipse at 50% 45%,rgba(255,123,45,.22),transparent 63%);mix-blend-mode:screen}
-    .weather04-stage.revealing .weather04-vision{opacity:1}
+    .weather04-stage.burning .weather04-vision,.weather04-stage.revealing .weather04-vision{opacity:1}
     .weather04-stage.revealing .weather04-surface{opacity:0;pointer-events:none}
     .weather04-burn{position:absolute;z-index:6;inset:0;width:1px;height:1px;pointer-events:none;opacity:0;transition:opacity .12s ease;filter:drop-shadow(0 0 7px rgba(246,101,30,.75))}
     .weather04-stage.burning .weather04-burn{opacity:1}
@@ -1959,7 +1959,7 @@
       </div>
     </section>
 
-    <div id="version">v1.2.2 Météo 004 — Écran entier (test)</div>
+    <div id="version">v1.2.3 Météo 004 — Révélation (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->

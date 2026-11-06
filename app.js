@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.2.2 Météo 004 — Écran entier (test)';
+  const VERSION = 'v1.2.3 Météo 004 — Révélation (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6861,7 +6861,7 @@ syncMusicForActiveTab();
   // =========================================================
   const WEATHER04_DURATION=15000;
   const WEATHER04_VIDEO='bestiaire/videos/gardienne-du-vice.webm';
-  let w04BurnFrame=null, w04VideoFrame=null, w04Delay=null;
+  let w04BurnFrame=null, w04VideoFrame=null, w04Delay=null, w04AutoplayTimer=null;
   function w04Save(stage) {
     const e=currentWeatherEvent;
     if(!e?.is04||e.preview)return;
@@ -6881,7 +6881,8 @@ syncMusicForActiveTab();
     if(w04BurnFrame!==null)cancelAnimationFrame(w04BurnFrame);
     if(w04VideoFrame!==null)cancelAnimationFrame(w04VideoFrame);
     if(w04Delay!==null)clearTimeout(w04Delay);
-    w04BurnFrame=null;w04VideoFrame=null;w04Delay=null;
+    if(w04AutoplayTimer!==null)clearTimeout(w04AutoplayTimer);
+    w04BurnFrame=null;w04VideoFrame=null;w04Delay=null;w04AutoplayTimer=null;
   }
   function weather04CleanUp() {
     w04StopClock();w04StopAudio();w04StopVisuals();
@@ -7045,14 +7046,25 @@ syncMusicForActiveTab();
     const stage=els.weather04Stage,curtain=els.weather04Surface;
     const canvas=els.weather04Burn;
     const token=e.token;
-    // Tout l'écran se consume. La première image du WebM est chargée
-    // AVANT le début du feu et apparaît dès la dernière braise.
+    // Le WebM est visible sous chaque trou dès la première brûlure.
+    // Le son/la vidéo démarrent au bout de 500 ms, pendant la combustion.
     function finish(){
       if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
       curtain.style.opacity='0';
       stage.classList.add('burn-done','revealing');
       w04BurnFrame=null;
-      weather04TryVideo();
+      // À la fin du feu, la lecture est déjà en cours. Si le navigateur
+      // refuse l'autoplay, on attend ici pour proposer une action manuelle.
+      if(e.videoError){
+        els.weather04VideoActions.classList.remove('hidden');
+        els.weather04VideoPlay.classList.add('hidden');
+      }else if(e.videoAutoplayBlocked){
+        els.weather04VideoActions.classList.remove('hidden');
+        els.weather04VideoPlay.classList.remove('hidden');
+        els.weather04VideoPlay.textContent='TOUCHER POUR RÉVÉLER';
+      }else if(els.weather04Video.paused && w04AutoplayTimer===null){
+        weather04TryVideo();
+      }
     }
     const masksSupported=('maskImage' in curtain.style)
       ||('webkitMaskImage' in curtain.style);
@@ -7232,8 +7244,11 @@ syncMusicForActiveTab();
     };
     video.onerror=()=>{
       if(currentWeatherEvent?.token===token&&e.phase==='reveal'){
-        els.weather04VideoActions.classList.remove('hidden');
-        els.weather04VideoPlay.classList.add('hidden');
+        e.videoError=true;
+        if(els.weather04Stage.classList.contains('burn-done')){
+          els.weather04VideoActions.classList.remove('hidden');
+          els.weather04VideoPlay.classList.add('hidden');
+        }
       }
     };
     if(restoring){
@@ -7250,6 +7265,13 @@ syncMusicForActiveTab();
         if(w04Delay!==null){clearTimeout(w04Delay);w04Delay=null;}
         els.weather04VideoActions.classList.add('hidden');
         w04Burn();
+        // La combustion dure 3,45 s : la vidéo joue dès 0,5 s.
+        // On conserve la première image visible sous le masque avant cela.
+        w04AutoplayTimer=setTimeout(()=>{
+          w04AutoplayTimer=null;
+          if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+          weather04TryVideo();
+        },500);
       };
       if(video.readyState>=2)ignite();
       else{
@@ -7279,10 +7301,14 @@ syncMusicForActiveTab();
       return;
     }
     v.play().then(()=>{
-      if(currentWeatherEvent?.token===e.token)
-        els.weather04VideoActions.classList.add('hidden');
+      if(currentWeatherEvent?.token!==e.token)return;
+      e.videoAutoplayBlocked=false;
+      els.weather04VideoActions.classList.add('hidden');
     }).catch(()=>{
       if(currentWeatherEvent?.token!==e.token)return;
+      e.videoAutoplayBlocked=true;
+      // Pas de bouton pendant la combustion, pour préserver la surprise.
+      if(!els.weather04Stage.classList.contains('burn-done'))return;
       els.weather04VideoActions.classList.remove('hidden');
       els.weather04VideoPlay.classList.remove('hidden');
       els.weather04VideoPlay.textContent='TOUCHER POUR RÉVÉLER';
@@ -7389,6 +7415,7 @@ syncMusicForActiveTab();
         ?Math.max(0,Math.min(WEATHER04_DURATION,pending.remainingMs))
         :WEATHER04_DURATION,
       applied:pending?.rewardApplied===true,completed:false,
+      videoAutoplayBlocked:false,videoError:false,
       savedPreviewDelay:eventSession.remainingMs
     };
     if(!preview&&!restoring){
