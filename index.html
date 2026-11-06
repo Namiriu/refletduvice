@@ -1466,6 +1466,11 @@
     .radio03-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .36s ease}
     .radio03-content{width:min(100%,510px);max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(15px,4vw,25px);border:1px solid #4a8379;border-radius:14px;text-align:center;background:linear-gradient(150deg,#122b2b,#0a1219);box-shadow:0 0 56px rgba(0,0,0,.75)}
     .radio03-icon{font-size:42px;margin:0 0 5px;filter:drop-shadow(0 0 12px rgba(68,193,142,.25))}
+    /* Portrait du Masque : centré pendant la prise de contrôle de la radio. */
+    .radio03-mask-image{display:block;width:min(64vw,250px);height:min(42dvh,315px);object-fit:contain;margin:6px auto 12px;filter:drop-shadow(0 0 23px rgba(177,34,66,.34));animation:mask-event-arrival .75s ease-out both}
+    .radio03-overlay.has-mask .radio03-icon,.radio03-overlay.has-mask .radio03-signal{display:none}
+    .radio03-overlay.is-interactive .radio03-mask-image{width:min(35vw,130px);height:min(18dvh,115px);margin:2px auto 5px}
+    @media(max-height:550px){.radio03-mask-image{height:min(31dvh,150px)}.radio03-overlay.is-interactive .radio03-mask-image{height:min(17dvh,85px)}}
     .radio03-heading{font:clamp(14px,4vw,19px) var(--font-ui);color:#bce8dc;letter-spacing:1.2px;margin:8px 0 13px}
     .radio03-status{font:clamp(16px,4.4vw,20px)/1.45 var(--font-body);color:#e1e8e2;white-space:pre-line;margin:14px 0}
     .radio03-signal{height:31px;display:flex;gap:5px;justify-content:center;align-items:center;margin:10px 0}
@@ -1998,7 +2003,7 @@
       </div>
     </section>
 
-    <div id="version">v1.3.0 RADIO-003 — Test</div>
+    <div id="version">v1.3.1 RADIO-003 — Réglages (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2200,10 +2205,11 @@
       <div class="radio03-icon" aria-hidden="true">📻</div>
       <h2 id="radio03Heading" class="radio03-heading">TRANSMISSION INTERCEPTÉE</h2>
       <div class="radio03-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <img id="radio03MaskImage" class="radio03-mask-image hidden" alt="Le Masque" aria-hidden="true">
       <p id="radio03Status" class="radio03-status" aria-live="polite">Une fréquence inconnue s’active…</p>
       <div id="radio03Challenge" class="radio03-challenge hidden">
-        <div id="radio03Clock" class="radio03-timer" role="timer" aria-live="off">00:20</div>
-        <div id="radio03Track" class="radio03-track" role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="20" aria-valuenow="20"><div id="radio03Progress" class="radio03-progress"></div></div>
+        <div id="radio03Clock" class="radio03-timer" role="timer" aria-live="off">00:30</div>
+        <div id="radio03Track" class="radio03-track" role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30"><div id="radio03Progress" class="radio03-progress"></div></div>
         <p class="radio03-note">Une seule tentative. Aucune réécoute possible.</p>
         <div id="radio03Slots" class="radio03-slots" aria-label="Séquence saisie"></div>
         <div id="radio03Palette" class="radio03-palette" aria-label="Choisir les couleurs"></div>

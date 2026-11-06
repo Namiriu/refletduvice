@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.3.0 RADIO-003 — Test';
+  const VERSION = 'v1.3.1 RADIO-003 — Réglages (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -144,6 +144,8 @@ campAudio: $('campAudio'),
     radio02Skip: $('radio02Skip'),
     radio02Done: $('radio02Done'),
     radio03Overlay: $('radio03Overlay'),
+    radio03Heading: $('radio03Heading'),
+    radio03MaskImage: $('radio03MaskImage'),
     radio03Status: $('radio03Status'),
     radio03Clock: $('radio03Clock'),
     radio03Track: $('radio03Track'),
@@ -612,10 +614,11 @@ bestiaireNarration: $('bestiaireNarration'),
   ];
   // Les constantes de RADIO-003 doivent exister AVANT la lecture du stockage.
   const RADIO03_COLORS = ['rouge','bleu','vert','jaune'];
-  const RADIO03_CHOICE_MS = 20000;
+  const RADIO03_CHOICE_MS = 30000;
   const RADIO03_COLOR_DELAY = 5; // HTMLMediaElement.currentTime est en secondes.
   const RADIO03_COLOR_GAP = 330;
   const RADIO03_CYCLE_GAP = 2800;
+  const RADIO03_GONG_DELAY_MS = 10500; // Même réglage que MASQUE-005.
   const eventSession = readAudioEventSession();
   let eventTimer = null;
   let eventDueAt = null;
@@ -4725,7 +4728,7 @@ syncMusicForActiveTab();
             } : null,
         pendingRadio003: saved.pendingRadio003?.id === 'radio-003'
           && ['transmission','glitch','maskintro','designation','maskepreuve',
-            'choices','reaction','result','cancelled'].includes(saved.pendingRadio003.stage)
+            'choices','gong','reaction','result','cancelled'].includes(saved.pendingRadio003.stage)
           && Array.isArray(saved.pendingRadio003.sequence)
           && saved.pendingRadio003.sequence.length === 5
           && saved.pendingRadio003.sequence.every(c=>RADIO03_COLORS.includes(c))
@@ -6956,6 +6959,9 @@ syncMusicForActiveTab();
   }
   function radio03StopAudio(r){
     if(!r)return;
+    if(r.gongTimer!==null&&r.gongTimer!==undefined){
+      clearTimeout(r.gongTimer);r.gongTimer=null;
+    }
     if(r.audio){
       r.audio.onended=null;r.audio.onerror=null;r.audio.ontimeupdate=null;
       r.audio.pause();r.audio=null;
@@ -6972,17 +6978,29 @@ syncMusicForActiveTab();
     const r=currentRadio03;
     if(r){radio03StopTimer(r);radio03StopAudio(r);}
     currentRadio03=null;
-    els.radio03Overlay.classList.remove('show','is-speaking','is-hijacked');
+    els.radio03Overlay.classList.remove('show','is-speaking','is-hijacked',
+      'has-mask','is-interactive');
+    els.radio03MaskImage.classList.add('hidden');
     els.radio03Overlay.setAttribute('aria-hidden','true');
     for(const id of ['radio03Challenge','radio03Reward','radio03Play',
       'radio03Cancel','radio03Done'])els[id].classList.add('hidden');
     specialAudioActive=false;syncAmbientVolume();renderEventControls();
+  }
+  function radio03UpdatePortrait(stage){
+    const hasMask=['maskintro','designation','maskepreuve','choices','reaction'].includes(stage);
+    els.radio03Heading.textContent=stage==='transmission'
+      ?'TRANSMISSION INTERCEPTÉE':'TRANSMISSION INTERROMPUE';
+    els.radio03MaskImage.classList.toggle('hidden',!hasMask);
+    els.radio03Overlay.classList.toggle('has-mask',hasMask);
+    els.radio03Overlay.classList.toggle('is-interactive',stage==='choices');
+    if(hasMask)els.radio03MaskImage.src=getMaskState(state.value).src;
   }
   function radio03Stage(stage){
     const r=currentRadio03;if(!r)return;
     radio03StopAudio(r);r.stage=stage;
     els.radio03Overlay.classList.toggle('is-hijacked',
       !['transmission','glitch'].includes(stage));
+    radio03UpdatePortrait(stage);
     for(const id of ['radio03Challenge','radio03Reward','radio03Play',
       'radio03Cancel','radio03Done'])els[id].classList.add('hidden');
     els.radio03Overlay.classList.remove('is-speaking');
@@ -7014,7 +7032,10 @@ syncMusicForActiveTab();
     if(!r||r.stage!=='transmission'||!r.colorsStarted
       ||document.visibilityState!=='visible')return;
     const audio=new Audio('audio/events/sfx/'+color+'-'+variation+'.mp3');
-    audio.volume=.42;audio.preload='auto';r.colorAudio=audio;
+    // Rehaussement important après écoute sur téléphone (0,42 était inaudible).
+    // Garder une petite marge pour la version normale, la version filtrée à 100 %.
+    audio.volume=variation==='telephone'?1:.95;
+    audio.preload='auto';r.colorAudio=audio;
     const token=r.token;
     audio.onended=()=>{
       if(currentRadio03?.token!==token||r.colorAudio!==audio
@@ -7065,7 +7086,7 @@ syncMusicForActiveTab();
     };
     if(!r.ambience){
       r.ambience=new Audio(r.item.ambience);r.ambience.preload='auto';
-      r.ambience.loop=true;r.ambience.volume=.18;
+      r.ambience.loop=true;r.ambience.volume=.12;
     }
     els.radio03Status.textContent='Une voix apparaît au milieu des parasites…';
     els.radio03Play.classList.add('hidden');
@@ -7086,7 +7107,8 @@ syncMusicForActiveTab();
     const r=currentRadio03;
     if(!r||document.visibilityState!=='visible')return;
     const stage=r.stage;
-    const path=stage==='glitch'?r.item.glitch:
+    const path=stage==='gong'?'audio/events/sfx/gong-fin-chronometre.mp3':
+      stage==='glitch'?r.item.glitch:
       stage==='maskintro'?r.item.maskIntro:
       stage==='designation'?'audio/events/masque/designations/joueur-'+r.target+'.mp3':
       stage==='maskepreuve'?r.item.maskChallenge:
@@ -7099,19 +7121,32 @@ syncMusicForActiveTab();
         if(currentRadio03?.token===token&&r.stage===stage&&r.audio===audio)
           radio03Advance();
       };
-      audio.onerror=radio03CancelWithoutPenalty;
+      audio.onerror=stage==='gong'
+        ?()=>{if(currentRadio03?.token===token&&r.stage===stage)radio03Advance();}
+        :radio03CancelWithoutPenalty;
     }
-    els.radio03Status.textContent=stage==='glitch'
-      ?'La fréquence se brouille violemment…':
-      stage==='maskintro'?'Une voix familière prend le contrôle de la transmission…':
-      stage==='designation'?'Le Masque désigne un survivant…':
-      stage==='maskepreuve'?'Le Masque impose ses règles…':
+    els.radio03Status.textContent=stage==='gong'
+      ?'TEMPS ÉCOULÉ… LE VERDICT APPROCHE.':
+      stage==='glitch'?'La fréquence se brouille violemment…':
+      stage==='maskintro'?'Le Masque interrompt la transmission…':
+      stage==='designation'?'Le Masque choisit sa victime…':
+      stage==='maskepreuve'?'Le Masque s’adresse à sa victime…':
       'Le Masque rend son verdict…';
     els.radio03Play.classList.add('hidden');
     els.radio03Cancel.classList.add('hidden');
     els.radio03Overlay.classList.add('is-speaking');
-    try{r.audio.play().catch(()=>radio03AudioBlocked('Lecture bloquée. Touchez pour reprendre.'));}
-    catch(_){radio03AudioBlocked();}
+    const blocked=()=>radio03AudioBlocked('Lecture bloquée. Touchez pour reprendre.');
+    try{
+      r.audio.play().then(()=>{
+        if(stage!=='gong'||currentRadio03?.token!==r.token
+          ||r.stage!=='gong'||r.gongTimer!==null)return;
+        // Comme MASQUE-005 : le Masque revient après 10,5 s de résonance.
+        r.gongTimer=setTimeout(()=>{
+          r.gongTimer=null;
+          if(currentRadio03?.token===r.token&&r.stage==='gong')radio03Advance();
+        },RADIO03_GONG_DELAY_MS);
+      }).catch(blocked);
+    }catch(_){blocked();}
   }
   function radio03Advance(){
     const r=currentRadio03;if(!r)return;
@@ -7131,6 +7166,8 @@ syncMusicForActiveTab();
       radio03Stage('maskepreuve');radio03PlaySegment();
     }else if(r.stage==='maskepreuve'){
       radio03Stage('choices');radio03ShowChoices();
+    }else if(r.stage==='gong'){
+      radio03Stage('reaction');radio03PlaySegment();
     }else if(r.stage==='reaction')radio03Finalize();
   }
   function radio03RenderChoices(){
@@ -7209,16 +7246,20 @@ syncMusicForActiveTab();
   function radio03Resolve(outcome){
     const r=currentRadio03;if(!r||r.stage!=='choices')return;
     radio03StopTimer(r);r.deadline=0;r.outcome=outcome;
-    radio03Stage('reaction');radio03PlaySegment();
+    if(outcome==='timeout'){
+      r.remainingMs=0;
+      radio03Stage('gong');
+    }else radio03Stage('reaction');
+    radio03PlaySegment();
   }
   function radio03Finalize(){
     const r=currentRadio03;if(!r||r.stage!=='reaction')return;
     r.before=state.value;
-    r.after=r.preview?r.before:clamp(r.before+(r.outcome==='success'?0:5),0,100);
+    r.after=clamp(r.before+(r.outcome==='success'?0:5),0,100);
     r.gameOver=r.after>=100;
     // Écrire le résultat AVANT le changement de jauge : restauration idempotente.
     radio03Stage('result');
-    if(!r.preview&&r.after!==r.before){
+    if(r.after!==r.before){
       const effect=applyInstabilityDelta(5,{
         source:'Radio — Vous écoutiez ?',deferThreshold:true,deferGameOver:true
       });
@@ -7239,8 +7280,7 @@ syncMusicForActiveTab();
         ?'Temps écoulé. L’Instabilité globale du groupe augmente de 5 points.'
         :'Mauvaise réponse. L’Instabilité globale du groupe augmente de 5 points.';
     els.radio03Reward.textContent=message+'\n\nSéquence : '+correct+
-      (r.outcome==='success'?'':'\nInstabilité : '+r.before+' % → '+r.after+' %.')+
-      (r.preview?'\n\nMode test : jauge et récompenses inchangées.':'');
+      (r.outcome==='success'?'':'\nInstabilité : '+r.before+' % → '+r.after+' %.');
     els.radio03Reward.classList.remove('hidden');
     els.radio03Done.classList.remove('hidden');
     els.radio03Done.focus();
@@ -7249,8 +7289,8 @@ syncMusicForActiveTab();
     const r=currentRadio03;
     if(!r||!['result','cancelled'].includes(r.stage))return;
     const delay=r.preview?r.savedPreviewDelay:randomBetween(...EVENT_NEXT_DELAY);
-    const over=r.stage==='result'&&!r.preview&&r.gameOver;
-    const transition=r.stage==='result'&&!r.preview
+    const over=r.stage==='result'&&r.gameOver;
+    const transition=r.stage==='result'
       &&Number.isFinite(r.before)&&Number.isFinite(r.after)
       &&r.after!==r.before?[r.before,r.after]:null;
     dismissRadio03();
@@ -7277,6 +7317,9 @@ syncMusicForActiveTab();
     const r=currentRadio03;if(!r)return;
     if(document.visibilityState==='hidden'){
       if(r.stage==='choices')radio03PauseTimer();
+      if(r.stage==='gong'&&r.gongTimer!==null){
+        clearTimeout(r.gongTimer);r.gongTimer=null;
+      }
       if(r.audio&&!r.audio.paused){
         r.audio.pause();radio03StopBackground(r);
         radio03AudioBlocked('Lecture suspendue. Touchez pour reprendre.');
@@ -7286,7 +7329,12 @@ syncMusicForActiveTab();
   function radio03OnPageHide(){
     const r=currentRadio03;if(!r)return;
     if(r.stage==='choices')radio03PauseTimer();
-    else if(r.audio){r.audio.pause();radio03StopBackground(r);}
+    else if(r.audio){
+      if(r.stage==='gong'&&r.gongTimer!==null){
+        clearTimeout(r.gongTimer);r.gongTimer=null;
+      }
+      r.audio.pause();radio03StopBackground(r);
+    }
   }
   function beginRadio03(item,preview,restoring=false){
     const pending=restoring?eventSession.pendingRadio003:null;
@@ -7313,7 +7361,7 @@ syncMusicForActiveTab();
       remainingMs:pending?.remainingMs??RADIO03_CHOICE_MS,
       deadline:pending?.deadline||0,
       audio:null,ambience:null,colorAudio:null,
-      colorTimer:null,colorIndex:0,colorsStarted:false,timer:null
+      colorTimer:null,colorIndex:0,colorsStarted:false,timer:null,gongTimer:null
     };
     currentRadio03=r;
     if(!preview&&!restoring){
@@ -7325,6 +7373,7 @@ syncMusicForActiveTab();
       'radio03Cancel','radio03Done'])els[id].classList.add('hidden');
     els.radio03Overlay.classList.toggle('is-hijacked',
       !['transmission','glitch'].includes(stage));
+    radio03UpdatePortrait(stage);
     els.radio03Overlay.classList.add('show');
     els.radio03Overlay.setAttribute('aria-hidden','false');
     specialAudioActive=true;silenceHauntSounds();syncAmbientVolume();
