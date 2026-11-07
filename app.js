@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.1.3 Masque 004 (test)';
+  const VERSION = 'v1.4.0 MASQUE-006 — Comptine (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -130,6 +130,70 @@ campAudio: $('campAudio'),
     radioEventAccept: $('radioEventAccept'),
     radioEventIgnore: $('radioEventIgnore'),
     radioEventDone: $('radioEventDone'),
+    radio02Overlay: $('radio02Overlay'),
+    radio02Heading: $('radio02Heading'),
+    radio02Status: $('radio02Status'),
+    radio02Choices: $('radio02Choices'),
+    radio02Clock: $('radio02Clock'),
+    radio02Track: $('radio02Track'),
+    radio02Progress: $('radio02Progress'),
+    radio02Answer: $('radio02Answer'),
+    radio02Cut: $('radio02Cut'),
+    radio02Reward: $('radio02Reward'),
+    radio02Play: $('radio02Play'),
+    radio02Skip: $('radio02Skip'),
+    radio02Done: $('radio02Done'),
+    radio03Overlay: $('radio03Overlay'),
+    radio03Heading: $('radio03Heading'),
+    radio03MaskImage: $('radio03MaskImage'),
+    radio03Status: $('radio03Status'),
+    radio03Clock: $('radio03Clock'),
+    radio03Track: $('radio03Track'),
+    radio03Progress: $('radio03Progress'),
+    radio03Challenge: $('radio03Challenge'),
+    radio03Slots: $('radio03Slots'),
+    radio03Palette: $('radio03Palette'),
+    radio03Undo: $('radio03Undo'),
+    radio03Confirm: $('radio03Confirm'),
+    radio03Reward: $('radio03Reward'),
+    radio03Play: $('radio03Play'),
+    radio03Cancel: $('radio03Cancel'),
+    radio03Done: $('radio03Done'),
+    weather04Overlay: $('weather04Overlay'),
+    weather04Stage: $('weather04Stage'),
+    weather04Video: $('weather04Video'),
+    weather04Backdrop: $('weather04Backdrop'),
+    weather04Panel: $('weather04Panel'),
+    weather04Surface: $('weather04Surface'),
+    weather04Status: $('weather04Status'),
+    weather04Choices: $('weather04Choices'),
+    weather04Clock: $('weather04Clock'),
+    weather04Track: $('weather04Track'),
+    weather04Progress: $('weather04Progress'),
+    weather04Resist: $('weather04Resist'),
+    weather04Cede: $('weather04Cede'),
+    weather04Sound: $('weather04Sound'),
+    weather04Play: $('weather04Play'),
+    weather04Skip: $('weather04Skip'),
+    weather04Result: $('weather04Result'),
+    weather04Done: $('weather04Done'),
+    weather04Burn: $('weather04Burn'),
+    weather04VideoActions: $('weather04VideoActions'),
+    weather04VideoPlay: $('weather04VideoPlay'),
+    weather04VideoSkip: $('weather04VideoSkip'),
+    btnEffects: $('btnEffects'),
+    effectsBanner: $('effectsBanner'),
+    effectsBannerList: $('effectsBannerList'),
+    effectsFeedback: $('effectsFeedback'),
+    effectsAdvance: $('effectsAdvance'),
+    effectsModal: $('effectsModal'),
+    effectsList: $('effectsList'),
+    effectsPreset: $('effectsPreset'),
+    effectsForm: $('effectsForm'),
+    effectsName: $('effectsName'),
+    effectsDuration: $('effectsDuration'),
+    effectsUndo: $('effectsUndo'),
+    effectsClose: $('effectsClose'),
     weatherEventOverlay: $('weatherEventOverlay'),
     weatherEventSymbol: $('weatherEventSymbol'),
     weatherEventHeading: $('weatherEventHeading'),
@@ -146,6 +210,34 @@ campAudio: $('campAudio'),
     playersClose: $('playersClose'),
     eventPlayersList: $('eventPlayersList'),
     maskEventOverlay: $('maskEventOverlay'),
+    mask05CancelNotice: $('mask05CancelNotice'),
+    mask05CancelText: $('mask05CancelText'),
+    mask05Banner: $('mask05Banner'),
+    mask05BannerClock: $('mask05BannerClock'),
+    mask05BannerProgress: $('mask05BannerProgress'),
+    mask05Overlay: $('mask05Overlay'),
+    mask05Portrait: $('mask05Portrait'),
+    mask05Heading: $('mask05Heading'),
+    mask05Status: $('mask05Status'),
+    mask05Hint: $('mask05Hint'),
+    mask05Outcome: $('mask05Outcome'),
+    mask05Private: $('mask05Private'),
+    mask05Start: $('mask05Start'),
+    mask05Success: $('mask05Success'),
+    mask05Failure: $('mask05Failure'),
+    mask05Play: $('mask05Play'),
+    mask05Skip: $('mask05Skip'),
+    mask05Done: $('mask05Done'),
+    mask06Overlay: $('mask06Overlay'),
+    mask06Portrait: $('mask06Portrait'),
+    mask06Status: $('mask06Status'),
+    mask06Choices: $('mask06Choices'),
+    mask06Yes: $('mask06Yes'),
+    mask06No: $('mask06No'),
+    mask06Result: $('mask06Result'),
+    mask06Play: $('mask06Play'),
+    mask06Skip: $('mask06Skip'),
+    mask06Done: $('mask06Done'),
     maskEventPortrait: $('maskEventPortrait'),
     maskEventTitle: $('maskEventTitle'),
     maskEventStatus: $('maskEventStatus'),
@@ -471,6 +563,26 @@ bestiaireNarration: $('bestiaireNarration'),
       target: 'deux-joueurs-vivants'
     },
     {
+      id: 'masque-005', type: 'masque', title: 'LA CONFIDENCE EMPOISONNÉE',
+      introAudio: 'audio/events/masque/interventions/masque-005-confidence-intro.mp3',
+      cibleAudio: 'audio/events/masque/interventions/masque-005-confidence-cible.mp3',
+      transfertAudio: 'audio/events/masque/interventions/masque-005-confidence-transfert.mp3',
+      secretAudio: 'audio/events/masque/interventions/masque-005-confidence-secrete.mp3',
+      verdictAudio: 'audio/events/masque/interventions/masque-005-confidence-verdict.mp3',
+      successAudio: 'audio/events/masque/interventions/masque-005-confidence-reussite.mp3',
+      failureAudio: 'audio/events/masque/interventions/masque-005-confidence-echec.mp3',
+      gongAudio: 'audio/events/sfx/gong-fin-chronometre.mp3',
+      target: 'deux-joueurs-vivants'
+    },
+    {
+      id: 'masque-006', type: 'masque', title: 'LA COMPTINE DES OUBLIÉS',
+      introAudio: 'audio/events/masque/interventions/masque-006-intro.mp3',
+      songAudio: 'audio/events/masque/interventions/masque-006-comptine.MP3',
+      questionAudio: 'audio/events/masque/interventions/masque-006-question.mp3',
+      yesAudio: 'audio/events/masque/interventions/masque-006-oui.mp3',
+      noAudio: 'audio/events/masque/interventions/masque-006-non.mp3'
+    },
+    {
       id: 'radio-001',
       type: 'radio',
       title: 'DERRIÈRE LA PORTE',
@@ -479,20 +591,71 @@ bestiaireNarration: $('bestiaireNarration'),
       resolutionAudio: 'audio/events/radio/radio-001-resolution-local-vide.mp3'
     },
     {
+      id: 'radio-002', type: 'radio', title: 'LE RAPPORT IMPOSSIBLE',
+      audio: 'audio/events/radio/radio-002-rapport-impossible.mp3',
+      responses: {
+        answer: 'audio/events/radio/radio-002-repondre.mp3',
+        cut: 'audio/events/radio/radio-002-couper.mp3',
+        silence: 'audio/events/radio/radio-002-silence.mp3'
+      }
+    },
+    {
+      id:'radio-003',type:'radio',title:'VOUS ÉCOUTIEZ ?',
+      transmission:'audio/events/radio/radio-003-transmission.mp3',
+      ambience:'audio/events/radio/radio-003-ambiance-sanctuaire.mp3',
+      glitch:'audio/events/radio/radio-003-brouillage.mp3',
+      maskIntro:'audio/events/radio/radio-003-masque-intro.mp3',
+      maskChallenge:'audio/events/radio/radio-003-masque-epreuve.mp3',
+      success:'audio/events/radio/radio-003-masque-reussite.mp3',
+      failure:'audio/events/radio/radio-003-masque-echec.mp3'
+    },
+    {
       id: 'meteo-001', type: 'meteo', title: 'LA PRESSION FANTÔME', icon: '🌫️',
       audio: 'audio/events/meteo/meteo-001-pression-fantome.mp3', delta: 5
     },
     {
       id: 'meteo-002', type: 'meteo', title: 'LA PLUIE À REBOURS', icon: '🌧️',
       audio: 'audio/events/meteo/meteo-002-pluie-a-rebours.mp3', delta: 5
+    },
+    {
+      id: 'meteo-003', type: 'meteo', title: 'LA FRACTURE DU RÉEL', icon: '◇',
+      audioNormal: 'audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3',
+      audioReflet: 'audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3'
+    },
+    {
+      id: 'meteo-004', type: 'meteo', title: 'LE DERNIER BATTEMENT', icon: '◈',
+      introAudio: 'audio/events/meteo/meteo-004-dernier-battement-intro.mp3',
+      choiceAudio: 'audio/events/meteo/meteo-004-dernier-battement-choix.mp3',
+      resistAudio: 'audio/events/meteo/meteo-004-dernier-battement-resister.mp3',
+      cedeAudio: 'audio/events/meteo/meteo-004-dernier-battement-ceder.mp3'
     }
   ];
+  // Les constantes de RADIO-003 doivent exister AVANT la lecture du stockage.
+  const RADIO03_COLORS = ['rouge','bleu','vert','jaune'];
+  const RADIO03_CHOICE_MS = 30000;
+  const RADIO03_COLOR_DELAY = 5; // HTMLMediaElement.currentTime est en secondes.
+  const RADIO03_COLOR_GAP = 330;
+  const RADIO03_CYCLE_GAP = 2800;
+  const RADIO03_GONG_DELAY_MS = 10500; // Même réglage que MASQUE-005.
   const eventSession = readAudioEventSession();
   let eventTimer = null;
   let eventDueAt = null;
   let currentMaskEvent = null;
+  let currentMask05 = null;
+  let mask05Token = 0;
+  let currentMask06 = null;
+  let mask06Token = 0;
+  let mask06DeferredOutcomeTimer = null;
+  let mask05CancelNoticeTimer = null;
+  const MASK05_MISSION_MS = 5 * 60000;
   let currentRadioEvent = null;
   let radioEventToken = 0;
+  let currentRadio02 = null;
+  let radio02Token = 0;
+  let currentRadio03 = null;
+  let radio03Token = 0;
+  let radio03DeferredOutcomeTimer = null;
+  let radio02DeferredOutcomeTimer = null;
   let currentWeatherEvent = null;
   let weatherEventToken = 0;
   let weatherReadyTimer = null;
@@ -752,7 +915,7 @@ function syncAmbientVolume() {
   fadeAudioVolume(
     els.ambient,
     specialAudioActive
-      ? DUCK_VOLUME
+      ? (currentWeatherEvent?.isWeather04 ? 0 : DUCK_VOLUME)
       : AMBIENT_VOLUME
   );
 
@@ -1574,6 +1737,116 @@ function syncAmbientVolume() {
       .remove('show');
   }
 
+
+  // =========================================================
+  // EFFETS TEMPORAIRES — une manche = un tour de table complet
+  // =========================================================
+  const EFFECTS_KEY = LSK('effets_temporaires_v1');
+  function readTemporaryEffects() {
+    try {
+      const data=JSON.parse(localStorage.getItem(EFFECTS_KEY)||'{}');
+      const clean=arr=>Array.isArray(arr)?arr.filter(e=>e
+        && typeof e.id==='string' && typeof e.label==='string'
+        && Number.isInteger(e.turns) && e.turns>0 && e.turns<=30)
+        .slice(0,12).map(e=>({id:e.id.slice(0,90),
+          label:e.label.slice(0,80),turns:e.turns})):[];
+      return {items:clean(data.items),previous:Array.isArray(data.previous)
+        ?clean(data.previous):null};
+    } catch (_) { return {items:[],previous:null}; }
+  }
+  const effects=readTemporaryEffects();
+  let effectsFeedbackTimer=null;
+  const saveEffects=()=>{try{
+    localStorage.setItem(EFFECTS_KEY,JSON.stringify(effects));
+  }catch(_){}};
+  function effectsMessage(message) {
+    clearTimeout(effectsFeedbackTimer);
+    els.effectsFeedback.textContent=message;
+    els.effectsFeedback.classList.remove('hidden');
+    effectsFeedbackTimer=setTimeout(()=>els.effectsFeedback.classList.add('hidden'),5500);
+  }
+  function renderTemporaryEffects() {
+    els.effectsBanner.classList.toggle('hidden',effects.items.length===0);
+    els.btnEffects.textContent=effects.items.length
+      ?'⏳ EFFETS · '+effects.items.length:'⏳ EFFETS';
+    els.effectsBannerList.replaceChildren();
+    els.effectsList.replaceChildren();
+    if(!effects.items.length) {
+      const p=document.createElement('p');
+      p.textContent='Aucun effet temporaire en cours.';
+      els.effectsList.appendChild(p);
+    }
+    for(const e of effects.items) {
+      const row=document.createElement('div');row.className='effects-banner-row';
+      const title=document.createElement('span');title.textContent=e.label;
+      const count=document.createElement('b');
+      count.textContent=e.turns+(e.turns===1?' manche':' manches');
+      row.append(title,count);els.effectsBannerList.appendChild(row);
+      const line=document.createElement('div');line.className='effects-line';
+      const label=document.createElement('span');
+      label.textContent=e.label+' — '+count.textContent;
+      const del=document.createElement('button');del.type='button';del.textContent='✕';
+      del.setAttribute('aria-label','Retirer '+e.label);
+      del.addEventListener('click',()=>{
+        effects.previous=effects.items.map(x=>({...x}));
+        effects.items=effects.items.filter(x=>x.id!==e.id);
+        saveEffects();renderTemporaryEffects();
+      });
+      line.append(label,del);els.effectsList.appendChild(line);
+    }
+    els.effectsUndo.disabled=!effects.previous;
+  }
+  function setTemporaryEffect(id,label,turns) {
+    const old=effects.items.find(x=>x.id===id);
+    effects.previous=effects.items.map(x=>({...x}));
+    if(old) old.turns=turns; // Réinitialisation, sans cumul.
+    else if(effects.items.length<12) effects.items.push({id,label,turns});
+    else {effectsMessage('12 effets au maximum.');return false;}
+    saveEffects();renderTemporaryEffects();return true;
+  }
+  function advanceTemporaryEffects() {
+    if(!effects.items.length) return;
+    effects.previous=effects.items.map(x=>({...x}));
+    const ended=effects.items.filter(e=>e.turns===1).map(e=>e.label);
+    effects.items=effects.items.map(e=>({...e,turns:e.turns-1}))
+      .filter(e=>e.turns>0);
+    saveEffects();renderTemporaryEffects();
+    effectsMessage(ended.length
+      ?'Manche terminée. Effet(s) terminé(s) : '+ended.join(', ')
+      :'Une manche complète a été comptabilisée.');
+  }
+  function undoTemporaryEffects() {
+    if(!effects.previous)return;
+    effects.items=effects.previous.map(e=>({...e}));
+    effects.previous=null;saveEffects();renderTemporaryEffects();
+    effectsMessage('Dernière modification annulée.');
+  }
+  function resetTemporaryEffects() {
+    effects.items=[];effects.previous=null;saveEffects();renderTemporaryEffects();
+    clearTimeout(effectsFeedbackTimer);
+    els.effectsFeedback.classList.add('hidden');
+  }
+  function openEffectsModal() {
+    renderTemporaryEffects();els.effectsModal.classList.add('show');
+    els.effectsModal.setAttribute('aria-hidden','false');
+    els.effectsClose.focus();
+  }
+  function closeEffectsModal() {
+    els.effectsModal.classList.remove('show');
+    els.effectsModal.setAttribute('aria-hidden','true');
+  }
+  function addManualEffect() {
+    const label=els.effectsName.value.trim();
+    const turns=Number(els.effectsDuration.value);
+    if(!label || !Number.isInteger(turns)||turns<1||turns>30) {
+      effectsMessage('Nom et durée entre 1 et 30 manches requis.');return;
+    }
+    const id='manuel-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+    if(setTemporaryEffect(id,label,turns)) {
+      els.effectsName.value='';effectsMessage('Effet ajouté : '+label);
+    }
+  }
+
   function showInfo(
     title,
     text
@@ -1677,8 +1950,14 @@ function syncAmbientVolume() {
         .contains('show')
       || els.playersModal.classList.contains('show')
       || els.maskEventOverlay.classList.contains('show')
+      || els.mask05Overlay.classList.contains('show')
+      || els.mask06Overlay.classList.contains('show')
       || els.radioEventOverlay.classList.contains('show')
+      || els.radio02Overlay.classList.contains('show')
+      || els.radio03Overlay.classList.contains('show')
       || els.weatherEventOverlay.classList.contains('show')
+      || els.weather04Overlay.classList.contains('show')
+      || els.effectsModal.classList.contains('show')
     );
   }
 
@@ -3621,6 +3900,8 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair, le Journal, le
       false;
 
     resetAudioEventSession();
+    resetTemporaryEffects();
+    closeEffectsModal();
     syncAmbientVolume();
 
     closeActionModal();
@@ -3742,7 +4023,9 @@ async function syncMusicForActiveTab() {
     : els.ambient;
   const targetVolume = isBestiaireTabActive()
     ? getBestiaireAmbientTargetVolume()
-    : (specialAudioActive ? DUCK_VOLUME : AMBIENT_VOLUME);
+    : (specialAudioActive
+      ? (currentWeatherEvent?.isWeather04 ? 0 : DUCK_VOLUME)
+      : AMBIENT_VOLUME);
 
   // IMPORTANT : sur mobile, play() doit être appelé directement depuis
   // le clic de l'utilisateur, AVANT tout await, sinon le geste peut
@@ -4410,6 +4693,10 @@ syncMusicForActiveTab();
       active: false,
       introPlayed: false,
       radioMission: null,
+      pendingRadio002: null,
+      pendingRadio003: null,
+      pendingMask005: null,
+      pendingMask006: null,
       lastEventType: null,
       weatherCount: 0,
       nextWeatherEligibleAt: 0,
@@ -4448,6 +4735,79 @@ syncMusicForActiveTab();
                   ) : []
               }
             : null,
+        pendingRadio002: saved.pendingRadio002
+          && saved.pendingRadio002.id === 'radio-002'
+          && ['intro', 'choices', 'branch', 'result'].includes(saved.pendingRadio002.stage)
+          && [null, 'answer', 'cut', 'silence'].includes(saved.pendingRadio002.choice)
+          ? {
+              id: 'radio-002',
+              stage: saved.pendingRadio002.stage,
+              choice: saved.pendingRadio002.choice,
+              before: Number.isFinite(saved.pendingRadio002.before)
+                ? saved.pendingRadio002.before : null,
+              after: Number.isFinite(saved.pendingRadio002.after)
+                ? saved.pendingRadio002.after : null,
+              gameOver: saved.pendingRadio002.gameOver === true
+            } : null,
+        pendingRadio003: saved.pendingRadio003?.id === 'radio-003'
+          && ['transmission','glitch','maskintro','designation','maskepreuve',
+            'choices','gong','reaction','result','cancelled'].includes(saved.pendingRadio003.stage)
+          && Array.isArray(saved.pendingRadio003.sequence)
+          && saved.pendingRadio003.sequence.length === 5
+          && saved.pendingRadio003.sequence.every(c=>RADIO03_COLORS.includes(c))
+          ? {
+              id:'radio-003',stage:saved.pendingRadio003.stage,
+              sequence:saved.pendingRadio003.sequence.slice(),
+              target:Number.isInteger(saved.pendingRadio003.target)
+                && saved.pendingRadio003.target>=1&&saved.pendingRadio003.target<=4
+                  ? saved.pendingRadio003.target : null,
+              guess:Array.isArray(saved.pendingRadio003.guess)
+                ? saved.pendingRadio003.guess.filter(c=>RADIO03_COLORS.includes(c)).slice(0,5):[],
+              outcome:['success','failure','timeout'].includes(saved.pendingRadio003.outcome)
+                ? saved.pendingRadio003.outcome : null,
+              remainingMs:Number.isFinite(saved.pendingRadio003.remainingMs)
+                ? clamp(saved.pendingRadio003.remainingMs,0,RADIO03_CHOICE_MS):RADIO03_CHOICE_MS,
+              deadline:Number.isFinite(saved.pendingRadio003.deadline)
+                ? Math.max(0,saved.pendingRadio003.deadline):0,
+              before:Number.isFinite(saved.pendingRadio003.before)
+                ? saved.pendingRadio003.before:null,
+              after:Number.isFinite(saved.pendingRadio003.after)
+                ? saved.pendingRadio003.after:null,
+              gameOver:saved.pendingRadio003.gameOver===true
+            }:null,
+        pendingMask005: saved.pendingMask005?.id === 'masque-005'
+          && ['public','private-ready','secret','start-ready','mission',
+            'gong','verdict','decision','reaction','result'].includes(saved.pendingMask005.stage)
+          && Number.isInteger(saved.pendingMask005.target)
+          && Number.isInteger(saved.pendingMask005.accomplice)
+          && saved.pendingMask005.target >= 1 && saved.pendingMask005.target <= 4
+          && saved.pendingMask005.accomplice >= 1 && saved.pendingMask005.accomplice <= 4
+          && saved.pendingMask005.target !== saved.pendingMask005.accomplice
+          && [null,'success','failure'].includes(saved.pendingMask005.outcome ?? null)
+          ? {
+              id: 'masque-005',
+              stage: saved.pendingMask005.stage,
+              target: saved.pendingMask005.target,
+              accomplice: saved.pendingMask005.accomplice,
+              deadline: Number.isFinite(saved.pendingMask005.deadline)
+                ? Math.max(0, saved.pendingMask005.deadline) : 0,
+              outcome: saved.pendingMask005.outcome ?? null
+            } : null,
+        pendingMask006: saved.pendingMask006?.id === 'masque-006'
+          && ['intro','song','question','choices','reaction','result'].includes(saved.pendingMask006.stage)
+          && [null,'yes','no'].includes(saved.pendingMask006.choice ?? null)
+          && (!['reaction','result'].includes(saved.pendingMask006.stage)
+            || ['yes','no'].includes(saved.pendingMask006.choice))
+          ? {
+              id: 'masque-006',
+              stage: saved.pendingMask006.stage,
+              choice: saved.pendingMask006.choice ?? null,
+              before: Number.isFinite(saved.pendingMask006.before)
+                ? saved.pendingMask006.before : null,
+              after: Number.isFinite(saved.pendingMask006.after)
+                ? saved.pendingMask006.after : null,
+              gameOver: saved.pendingMask006.gameOver === true
+            } : null,
         lastEventType: ['masque', 'radio', 'meteo'].includes(saved.lastEventType)
           ? saved.lastEventType : null,
         weatherCount: Number.isInteger(saved.weatherCount)
@@ -4455,7 +4815,9 @@ syncMusicForActiveTab();
         nextWeatherEligibleAt: Number.isFinite(saved.nextWeatherEligibleAt)
           ? Math.max(0, saved.nextWeatherEligibleAt) : 0,
         pendingWeather: saved.pendingWeather && typeof saved.pendingWeather.id === 'string'
-          && ['playing', 'result'].includes(saved.pendingWeather.stage)
+          && (saved.pendingWeather.id === 'meteo-004'
+            ? ['intro', 'choices', 'branch', 'reveal', 'result'].includes(saved.pendingWeather.stage)
+            : ['playing', 'result'].includes(saved.pendingWeather.stage))
           ? {
               id: saved.pendingWeather.id,
               stage: saved.pendingWeather.stage,
@@ -4463,7 +4825,14 @@ syncMusicForActiveTab();
                 ? saved.pendingWeather.before : null,
               after: Number.isFinite(saved.pendingWeather.after)
                 ? saved.pendingWeather.after : null,
-              gameOver: saved.pendingWeather.gameOver === true
+              fromReflet: typeof saved.pendingWeather.fromReflet === 'boolean'
+                ? saved.pendingWeather.fromReflet : null,
+              gameOver: saved.pendingWeather.gameOver === true,
+              choice: ['resist','cede'].includes(saved.pendingWeather.choice)
+                ? saved.pendingWeather.choice : null,
+              remainingMs: Number.isFinite(saved.pendingWeather.remainingMs)
+                ? clamp(saved.pendingWeather.remainingMs,0,15000) : null,
+              rewardApplied: saved.pendingWeather.rewardApplied === true
             } : null,
         alive: Array.isArray(saved.alive) && saved.alive.length === 4
           ? saved.alive.map(value => value === true)
@@ -4499,10 +4868,15 @@ syncMusicForActiveTab();
   function eligibleAudioEvents() {
     return unusedAudioEvents().filter(item =>
       state.value >= (item.minInstability || 0)
-      && (item.id !== 'masque-004' || livingPlayerNumbers().length >= 2)
+      && (!['masque-004','masque-005'].includes(item.id)
+        || livingPlayerNumbers().length >= 2)
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel'
         && item.type === 'radio')
+      && !eventSession.pendingRadio002
+      && !eventSession.pendingRadio003
+      && !eventSession.pendingMask005
+      && !eventSession.pendingMask006
       && (item.type !== 'meteo'
         || (eventSession.weatherCount < WEATHER_MAX_PER_GAME
           && !eventSession.pendingWeather
@@ -4533,7 +4907,8 @@ syncMusicForActiveTab();
     const testEvent = AUDIO_EVENTS.find(item =>
       item.id === els.testMaskEventSelect.value
     ) || AUDIO_EVENTS[0];
-    const insufficientDuelPlayers = testEvent.id === 'masque-004' && alive < 2;
+    const insufficientDuelPlayers =
+      ['masque-004','masque-005'].includes(testEvent.id) && alive < 2;
     const locked = state.value < (testEvent.minInstability || 0);
     els.btnTestMaskEvent.textContent = insufficientDuelPlayers
       ? 'TEST : 2 VIVANTS MINIMUM'
@@ -4543,8 +4918,16 @@ syncMusicForActiveTab();
         : testEvent.type === 'meteo' ? 'TESTER LA MÉTÉO'
         : 'TESTER LE MASQUE';
     els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
-      || currentRadioEvent !== null || currentWeatherEvent !== null
-      || eventSession.pendingWeather !== null || alive === 0
+      || currentRadioEvent !== null || currentRadio02 !== null
+      || currentRadio03 !== null
+      || currentWeatherEvent !== null
+      || currentMask05 !== null
+      || currentMask06 !== null
+      || eventSession.pendingMask005 !== null
+      || eventSession.pendingMask006 !== null
+      || eventSession.pendingWeather !== null
+      || eventSession.pendingRadio002 !== null
+      || eventSession.pendingRadio003 !== null || alive === 0
       || state.value >= 100 || locked || insufficientDuelPlayers
       || (testEvent.type === 'radio' && eventSession.radioMission
           && eventSession.radioMission.stage !== 'travel');
@@ -4567,7 +4950,11 @@ syncMusicForActiveTab();
       label.textContent = alive ? '● VIVANT' : '✕ MORT';
       button.append(name, label);
       button.addEventListener('click', () => {
-        eventSession.alive[index] = !eventSession.alive[index];
+        const wasAlive = eventSession.alive[index];
+        eventSession.alive[index] = !wasAlive;
+        // L'annulation ne concerne QUE les deux participants, pendant
+        // le compte à rebours, et seulement au passage VIVANT → MORT.
+        if (wasAlive) cancelMask05IfParticipantDied(index + 1);
         saveAudioEventSession();
         renderPlayerStatuses();
         renderEventControls();
@@ -4624,9 +5011,17 @@ syncMusicForActiveTab();
       && document.visibilityState === 'visible'
       && isPartieTabActive()
       && currentMaskEvent === null
+      && currentMask05 === null
+      && currentMask06 === null
       && currentRadioEvent === null
+      && currentRadio02 === null
+      && currentRadio03 === null
       && currentWeatherEvent === null
       && !eventSession.pendingWeather
+      && !eventSession.pendingMask005
+      && !eventSession.pendingMask006
+      && !eventSession.pendingRadio002
+      && !eventSession.pendingRadio003
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel')
       && livingPlayerNumbers().length > 0
@@ -4707,6 +5102,10 @@ syncMusicForActiveTab();
     eventSession.weatherCount = 0;
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
+    eventSession.pendingRadio002 = null;
+    eventSession.pendingRadio003 = null;
+    eventSession.pendingMask005 = null;
+    eventSession.pendingMask006 = null;
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
     saveAudioEventSession();
@@ -4816,11 +5215,20 @@ syncMusicForActiveTab();
   }
 
   function resetAudioEventSession() {
+    clearTimeout(mask06DeferredOutcomeTimer);
+    mask06DeferredOutcomeTimer = null;
+    clearTimeout(radio03DeferredOutcomeTimer);
+    radio03DeferredOutcomeTimer=null;
+    hideMask05CancelNotice();
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
     pauseAudioEventClock();
     dismissMaskEvent(true);
+    dismissMask05();
+    dismissMask06();
     dismissRadioEvent(true);
+    dismissRadio02();
+    dismissRadio03();
     dismissWeatherEvent(true);
     clearTimeout(weatherReadyTimer);
     weatherReadyTimer = null;
@@ -4833,6 +5241,10 @@ syncMusicForActiveTab();
     eventSession.weatherCount = 0;
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
+    eventSession.pendingRadio002 = null;
+    eventSession.pendingRadio003 = null;
+    eventSession.pendingMask005 = null;
+    eventSession.pendingMask006 = null;
     eventSession.alive = [true, true, true, true];
     eventSession.played = [];
     eventSession.remainingMs = null;
@@ -4841,13 +5253,24 @@ syncMusicForActiveTab();
   }
 
   function stopAudioEventsForGameOver() {
+    clearTimeout(mask06DeferredOutcomeTimer);
+    mask06DeferredOutcomeTimer = null;
+    clearTimeout(radio03DeferredOutcomeTimer);
+    radio03DeferredOutcomeTimer=null;
+    hideMask05CancelNotice();
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
-    if (!eventSession.active && !currentMaskEvent && !currentRadioEvent
-      && !currentWeatherEvent && !eventSession.pendingWeather) return;
+    if (!eventSession.active && !currentMaskEvent && !currentMask05 && !currentMask06
+      && !eventSession.pendingMask006 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
+      && !eventSession.pendingWeather && !eventSession.pendingRadio002
+      && !eventSession.pendingRadio003) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
+    dismissMask05();
+    dismissMask06();
     dismissRadioEvent(true);
+    dismissRadio02();
+    dismissRadio03();
     dismissWeatherEvent(true);
     clearTimeout(weatherReadyTimer);
     weatherReadyTimer = null;
@@ -4856,13 +5279,19 @@ syncMusicForActiveTab();
     eventSession.active = false;
     eventSession.radioMission = null;
     eventSession.pendingWeather = null;
+    eventSession.pendingRadio002 = null;
+    eventSession.pendingRadio003 = null;
+    eventSession.pendingMask005 = null;
+    eventSession.pendingMask006 = null;
     eventSession.remainingMs = null;
     saveAudioEventSession();
     renderEventControls();
   }
 
   function beginMaskEvent(item, preview) {
-    if (!eventSession.active || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
+    if (item?.id === 'masque-005') return beginMask05(item, preview);
+    if (item?.id === 'masque-006') return beginMask06(item, preview);
+    if (!eventSession.active || currentMask05 || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || specialAudioActive || anyBlockingModalOpen()) return false;
 
@@ -5048,6 +5477,879 @@ syncMusicForActiveTab();
     els.maskEventDone.focus();
   }
 
+
+
+  // =========================================================
+  // MASQUE 005 — LA CONFIDENCE EMPOISONNÉE
+  // =========================================================
+
+  function saveMask05Stage() {
+    const r = currentMask05;
+    if (!r || r.preview) return;
+    eventSession.pendingMask005 = {
+      id: r.item.id, stage: r.stage, target: r.target,
+      accomplice: r.accomplice, deadline: r.deadline || 0,
+      outcome: r.outcome || null
+    };
+    saveAudioEventSession();
+  }
+
+  function hideMask05CancelNotice() {
+    clearTimeout(mask05CancelNoticeTimer);
+    mask05CancelNoticeTimer = null;
+    els.mask05CancelNotice.classList.add('hidden');
+  }
+
+  function mask05Controls() {
+    for (const name of ['Private','Start','Success','Failure','Play','Skip','Done']) {
+      els['mask05' + name].classList.add('hidden');
+    }
+    els.mask05Hint.classList.add('hidden');
+    els.mask05Outcome.classList.add('hidden');
+  }
+
+  function showMask05Overlay() {
+    els.mask05Banner.classList.add('hidden');
+    els.mask05Overlay.classList.add('show');
+    els.mask05Overlay.classList.toggle('is-interactive',
+      ['private-ready','start-ready','decision','result'].includes(currentMask05?.stage));
+    els.mask05Overlay.setAttribute('aria-hidden', 'false');
+    specialAudioActive = true;
+    syncAmbientVolume();
+    mask05Controls();
+  }
+
+  function dismissMask05() {
+    mask05Token++;
+    const r = currentMask05;
+    if (r) {
+      clearInterval(r.tickTimer);
+      clearTimeout(r.gapTimer);
+      clearTimeout(r.gongTimer);
+      if (r.audio) {
+        r.audio.pause();
+        r.audio.onended = null;
+        r.audio.onerror = null;
+      }
+    }
+    currentMask05 = null;
+    els.mask05Banner.classList.add('hidden');
+    els.mask05Overlay.classList.remove('show', 'is-interactive');
+    els.mask05Overlay.setAttribute('aria-hidden', 'true');
+    mask05Controls();
+    specialAudioActive = false;
+    syncAmbientVolume();
+  }
+
+  function beginMask05(item, preview, restoring = false) {
+    if (!item || item.id !== 'masque-005' || !eventSession.active
+      || currentMaskEvent || currentMask05 || currentRadioEvent
+      || currentRadio02 || currentWeatherEvent || specialAudioActive
+      || anyBlockingModalOpen() || !isPartieTabActive()
+      || document.visibilityState !== 'visible' || state.value >= 100) return false;
+
+    const pending = restoring ? eventSession.pendingMask005 : null;
+    if (restoring && (!pending || pending.id !== item.id)) return false;
+    const pool = livingPlayerNumbers();
+    if (!restoring && pool.length < 2) return false;
+    const target = restoring ? pending.target : pool[randomBetween(0, pool.length - 1)];
+    const remaining = pool.filter(p => p !== target);
+    const accomplice = restoring ? pending.accomplice
+      : remaining[randomBetween(0, remaining.length - 1)];
+    if (target === accomplice) return false;
+
+    hideMask05CancelNotice();
+    pauseAudioEventClock();
+    const previousDelay = eventSession.remainingMs;
+    currentMask05 = {
+      item, preview, token: ++mask05Token, target, accomplice,
+      stage: restoring ? pending.stage : 'public',
+      savedPreviewDelay: previousDelay, deadline: pending?.deadline || 0,
+      outcome: pending?.outcome || null,
+      audio: null, afterAudio: null, publicIndex: 0,
+      tickTimer: null, gapTimer: null, gongTimer: null
+    };
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.remainingMs = null;
+      saveMask05Stage();
+    }
+
+    els.mask05Portrait.src = getMaskState(state.value).src;
+    els.mask05Heading.textContent = 'INTERVENTION DU MASQUE';
+    showMask05Overlay();
+    silenceHauntSounds();
+    renderEventControls();
+
+    const r = currentMask05;
+    // Après un rechargement, la confidence ne repart JAMAIS en lecture automatique.
+    if (r.stage === 'public') playMask05PublicPart(0);
+    else if (r.stage === 'private-ready' || r.stage === 'secret') showMask05PrivateReady();
+    else if (r.stage === 'start-ready') showMask05StartReady();
+    else if (r.stage === 'mission') restoreMask05Mission();
+    else if (r.stage === 'gong' || r.stage === 'verdict') playMask05Verdict();
+    else if (r.stage === 'decision') showMask05Decision();
+    else if (r.stage === 'reaction') playMask05Reaction();
+    else if (r.stage === 'result') showMask05Result();
+    return true;
+  }
+
+  function playMask05Audio(src, status, onEnd, volume = 1) {
+    const r = currentMask05;
+    if (!r) return;
+    if (r.audio) {
+      r.audio.pause();
+      r.audio.onended = null;
+      r.audio.onerror = null;
+    }
+    const sound = new Audio(src);
+    sound.preload = 'auto';
+    sound.volume = volume;
+    r.audio = sound;
+    r.afterAudio = onEnd;
+    els.mask05Status.textContent = status;
+    els.mask05Play.classList.add('hidden');
+    els.mask05Skip.classList.add('hidden');
+
+    const token = r.token;
+    sound.onended = () => {
+      if (currentMask05?.token !== token || r.audio !== sound) return;
+      r.afterAudio = null;
+      onEnd();
+    };
+    sound.onerror = () => {
+      if (currentMask05?.token === token && r.audio === sound)
+        showMask05AudioFallback();
+    };
+    if (document.visibilityState === 'visible') resumeMask05Audio();
+    else showMask05AudioFallback();
+  }
+
+  function showMask05AudioFallback() {
+    const r = currentMask05;
+    if (!r || !r.audio) return;
+    els.mask05Play.textContent = 'REPRENDRE L’ENREGISTREMENT';
+    els.mask05Play.classList.remove('hidden');
+    els.mask05Skip.classList.remove('hidden');
+    els.mask05Status.textContent = 'Lecture suspendue. Touchez pour reprendre.';
+  }
+
+  function resumeMask05Audio() {
+    const r = currentMask05;
+    if (!r || !r.audio || document.visibilityState !== 'visible') return;
+    els.mask05Play.classList.add('hidden');
+    els.mask05Skip.classList.add('hidden');
+    r.audio.play().catch(() => {
+      if (currentMask05 === r) showMask05AudioFallback();
+    });
+  }
+
+  function skipMask05Audio() {
+    const r = currentMask05;
+    if (!r || !r.audio || !r.afterAudio) return;
+    const end = r.afterAudio;
+    r.afterAudio = null;
+    r.audio.pause();
+    r.audio.onended = null;
+    r.audio.onerror = null;
+    els.mask05Play.classList.add('hidden');
+    els.mask05Skip.classList.add('hidden');
+    // En cas d'échec audio, le texte de la mission doit rester accessible
+    // au SEUL confident, sans lequel il ne pourrait pas accomplir le défi.
+    if (r.stage === 'secret') showMask05StartReady(true);
+    else end();
+  }
+
+  function playMask05PublicPart(index) {
+    const r = currentMask05;
+    if (!r || r.stage !== 'public') return;
+    clearTimeout(r.gapTimer);
+    const clips = [
+      r.item.introAudio,
+      'audio/events/masque/designations/joueur-' + r.target + '.mp3',
+      r.item.cibleAudio,
+      'audio/events/masque/designations/joueur-' + r.accomplice + '.mp3',
+      r.item.transfertAudio
+    ];
+    if (index >= clips.length) {
+      showMask05PrivateReady();
+      return;
+    }
+    r.publicIndex = index;
+    playMask05Audio(
+      clips[index],
+      index === 1 ? 'Le Masque désigne un survivant…'
+        : index === 3 ? 'Le Masque choisit son confident…'
+        : 'Le Masque s’adresse au groupe…',
+      () => {
+        if (currentMask05 !== r || r.stage !== 'public') return;
+        r.gapTimer = setTimeout(() => {
+          r.gapTimer = null;
+          playMask05PublicPart(index + 1);
+        }, 280);
+      }
+    );
+  }
+
+  function showMask05PrivateReady() {
+    const r = currentMask05;
+    if (!r) return;
+    r.stage = 'private-ready';
+    if (r.audio) r.audio.pause();
+    r.audio = null;
+    r.afterAudio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
+    els.mask05Status.textContent =
+      'JOUEUR ' + r.accomplice + ' : prends le téléphone.\n'
+      + 'Éloigne-toi légèrement des autres survivants.';
+    els.mask05Hint.textContent =
+      'Approche l’appareil de ton oreille et règle son volume au minimum audible. '
+      + 'Le message ne doit être entendu que par toi.';
+    els.mask05Hint.classList.remove('hidden');
+    els.mask05Private.classList.remove('hidden');
+    els.mask05Private.focus();
+  }
+
+  function startMask05Secret() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'private-ready') return;
+    r.stage = 'secret';
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
+    // Volume bas par défaut, sans promettre un vrai mode écouteur.
+    playMask05Audio(r.item.secretAudio, '',
+      () => showMask05StartReady(), 0.4);
+  }
+
+  function showMask05StartReady(audioUnavailable = false) {
+    const r = currentMask05;
+    if (!r) return;
+    r.stage = 'start-ready';
+    if (r.audio) r.audio.pause();
+    r.audio = null;
+    r.afterAudio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
+    els.mask05Status.textContent =
+      'JOUEUR ' + r.accomplice + ' : retourne à la table.\n'
+      + 'La mission commencera lorsque tu confirmeras être prêt.';
+    if (audioUnavailable) {
+      els.mask05Hint.textContent =
+        'MISSION SECRÈTE (à lire seul) : Fais lever entièrement le joueur '
+        + r.target + ' de sa chaise dans les cinq prochaines minutes, '
+        + 'sans dévoiler cet objectif ni employer la force. '
+        + 'Un lever spontané compte également comme une réussite.';
+      els.mask05Hint.classList.remove('hidden');
+    }
+    els.mask05Start.classList.remove('hidden');
+    els.mask05Start.focus();
+  }
+
+  function showMask05MissionBanner() {
+    const r = currentMask05;
+    if (!r) return;
+    els.mask05Overlay.classList.remove('show');
+    els.mask05Overlay.setAttribute('aria-hidden', 'true');
+    els.mask05Banner.classList.remove('hidden');
+    specialAudioActive = false;
+    syncAmbientVolume();
+    updateMask05Countdown();
+  }
+
+  function startMask05Mission() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'start-ready') return;
+    r.stage = 'mission';
+    r.deadline = Date.now() + MASK05_MISSION_MS;
+    saveMask05Stage();
+    showMask05MissionBanner();
+    // Le clic sur « Commencer la mission » fournit un geste utilisateur :
+    // si le navigateur a interrompu l'ambiance, reprendre le lecteur EXISTANT
+    // sans remettre sa position à zéro.
+    if (state.musicOn) syncMusicForActiveTab();
+    runMask05MissionClock();
+  }
+
+  function restoreMask05Mission() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    // La durée réelle de la mission continue si l'appli passe en arrière-plan.
+    // À la réouverture, le temps est recalculé à partir de l'échéance sauvegardée.
+    if (!r.deadline) {
+      r.deadline = Date.now() + MASK05_MISSION_MS;
+      saveMask05Stage();
+    }
+    showMask05MissionBanner();
+    runMask05MissionClock();
+  }
+
+  function updateMask05Countdown() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    const remaining = Math.max(0, r.deadline - Date.now());
+    const seconds = Math.ceil(remaining / 1000);
+    const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const ss = String(seconds % 60).padStart(2, '0');
+    els.mask05BannerClock.textContent = mm + ':' + ss;
+    els.mask05BannerProgress.style.width =
+      (remaining / MASK05_MISSION_MS * 100).toFixed(2) + '%';
+    if (!remaining && document.visibilityState === 'visible') beginMask05Gong();
+  }
+
+  function runMask05MissionClock() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    clearInterval(r.tickTimer);
+    r.tickTimer = setInterval(() => updateMask05Countdown(), 250);
+    updateMask05Countdown();
+  }
+
+  function beginMask05Gong() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'mission') return;
+    r.stage = 'gong';
+    clearInterval(r.tickTimer);
+    r.tickTimer = null;
+    saveMask05Stage();
+    // Laisser retentir le gong avant de montrer le Masque.
+    els.mask05Banner.classList.add('hidden');
+    els.mask05Overlay.classList.remove('show');
+    els.mask05Overlay.setAttribute('aria-hidden', 'true');
+    specialAudioActive = true;
+    syncAmbientVolume();
+    const gong = new Audio(r.item.gongAudio);
+    r.audio = gong;
+    r.afterAudio = null;
+    gong.volume = 1;
+    gong.preload = 'auto';
+
+    // Garder presque tout l'écho, sans attendre les dernières 1,5 s
+    // silencieuses ou très faibles du MP3 de 12 secondes.
+    // Démarrer le délai APRÈS que la lecture est effectivement autorisée.
+    const finishGong = () => {
+      if (currentMask05 !== r || r.stage !== 'gong') return;
+      clearTimeout(r.gongTimer);
+      r.gongTimer = null;
+      playMask05Verdict();
+    };
+    gong.onended = finishGong;
+    gong.onerror = finishGong;
+    gong.play().then(() => {
+      if (currentMask05 !== r || r.stage !== 'gong') return;
+      r.gongTimer = setTimeout(finishGong, 10500);
+    }).catch(finishGong);
+  }
+
+  function playMask05Verdict() {
+    const r = currentMask05;
+    if (!r) return;
+    clearTimeout(r.gongTimer);
+    r.gongTimer = null;
+    r.stage = 'verdict';
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'LE VERDICT DU MASQUE';
+    playMask05Audio(r.item.verdictAudio, 'Le Masque vous interroge…',
+      () => showMask05Decision());
+  }
+
+  function showMask05Decision() {
+    const r = currentMask05;
+    if (!r) return;
+    r.stage = 'decision';
+    r.afterAudio = null;
+    r.audio?.pause();
+    r.audio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'LE VERDICT DU MASQUE';
+    els.mask05Status.textContent =
+      'JOUEUR ' + r.accomplice + ' : as-tu réussi à faire lever le joueur '
+      + r.target + ' dans le temps imparti ?';
+    els.mask05Success.classList.remove('hidden');
+    els.mask05Failure.classList.remove('hidden');
+    els.mask05Success.focus();
+  }
+
+  function resolveMask05(outcome) {
+    const r = currentMask05;
+    if (!r || r.stage !== 'decision'
+      || !['success','failure'].includes(outcome)) return;
+    r.outcome = outcome;
+    playMask05Reaction();
+  }
+
+  function playMask05Reaction() {
+    const r = currentMask05;
+    if (!r || !['success','failure'].includes(r.outcome)) return;
+    r.stage = 'reaction';
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'LA SENTENCE DU MASQUE';
+    playMask05Audio(
+      r.outcome === 'success' ? r.item.successAudio : r.item.failureAudio,
+      '',
+      () => showMask05Result()
+    );
+  }
+
+  function showMask05Result() {
+    const r = currentMask05;
+    if (!r || !['success','failure'].includes(r.outcome)) return;
+    r.stage = 'result';
+    r.audio?.pause();
+    r.audio = null;
+    r.afterAudio = null;
+    saveMask05Stage();
+    showMask05Overlay();
+    els.mask05Heading.textContent = 'MISSION DU MASQUE TERMINÉE';
+    els.mask05Status.textContent = 'Le Masque a rendu sa sentence.';
+    if (r.outcome === 'success') {
+      els.mask05Outcome.textContent =
+        'MISSION ACCOMPLIE.\n\n'
+        + 'JOUEUR ' + r.accomplice + ' : récupère 1 PV.\n\n'
+        + 'Si tu es déjà en pleine santé, tu peux offrir ce soin à '
+        + 'un autre survivant vivant de ton choix. '
+        + 'Si tout le monde est en pleine santé, aucun effet.\n\n'
+        + 'Reportez le soin sur la feuille de personnage.';
+    } else {
+      els.mask05Outcome.textContent =
+        'JOUEUR ' + r.accomplice + ' : passe ton prochain TOUR DE JEU.\n\n'
+        + 'Tu ne réalises pas tes actions individuelles de ce tour, '
+        + 'mais tu peux toujours participer aux COMBATS '
+        + 'déclenchés par tes coéquipiers.\n\n'
+        + 'Notez cette pénalité pour le prochain tour.';
+    }
+    els.mask05Outcome.classList.remove('hidden');
+    els.mask05Done.classList.remove('hidden');
+    els.mask05Done.focus();
+  }
+
+  function cancelMask05IfParticipantDied(player) {
+    const r = currentMask05;
+    // Aucun effet si la mission n'est pas en cours ou si le joueur
+    // décédé n'est ni la cible ni le confident.
+    if (!r || r.stage !== 'mission'
+      || (player !== r.target && player !== r.accomplice)) return false;
+
+    const delay = r.preview
+      ? r.savedPreviewDelay
+      : randomBetween(...EVENT_NEXT_DELAY);
+    dismissMask05();
+    if (!r.preview) eventSession.pendingMask005 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+
+    // Petit message d'information, sans masquer le plateau ni demander
+    // un clic supplémentaire. Il s'efface au bout de huit secondes.
+    hideMask05CancelNotice();
+    els.mask05CancelText.textContent =
+      'JOUEUR ' + player + ' est mort. '
+      + 'La mission est interrompue : ni récompense ni pénalité.';
+    els.mask05CancelNotice.classList.remove('hidden');
+    mask05CancelNoticeTimer = setTimeout(() => {
+      mask05CancelNoticeTimer = null;
+      els.mask05CancelNotice.classList.add('hidden');
+    }, 8000);
+    return true;
+  }
+
+  function completeMask05() {
+    const r = currentMask05;
+    if (!r || r.stage !== 'result') return;
+    const delay = r.preview ? r.savedPreviewDelay : randomBetween(...EVENT_NEXT_DELAY);
+    dismissMask05();
+    if (!r.preview) eventSession.pendingMask005 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    // Le clic sur « Continuer la partie » peut également réautoriser le son.
+    if (state.musicOn) syncMusicForActiveTab();
+    updateAudioEventClock();
+  }
+
+  function handleMask05Visibility() {
+    const r = currentMask05;
+    if (!r) return;
+    if (r.stage === 'mission') {
+      if (document.visibilityState === 'visible') updateMask05Countdown();
+      return;
+    }
+    if (document.visibilityState === 'hidden') {
+      if (r.stage === 'gong') {
+        // Si l'appli est masquée au moment du gong, le verdict restera accessible.
+        clearTimeout(r.gongTimer);
+        r.gongTimer = null;
+        r.audio?.pause();
+        r.audio = null;
+        r.stage = 'verdict';
+        saveMask05Stage();
+        showMask05Overlay();
+        els.mask05Status.textContent = 'Verdict suspendu. Revenez à l’application.';
+        return;
+      }
+      if (r.audio && !r.audio.paused) {
+        r.audio.pause();
+        showMask05AudioFallback();
+      }
+    } else if (r.stage === 'verdict' && !r.audio) {
+      playMask05Verdict();
+    }
+  }
+
+  function resumePendingMask05IfPossible() {
+    const pending = eventSession.pendingMask005;
+    if (!pending || !eventSession.active || gameOverShown
+      || state.value >= 100 || document.visibilityState !== 'visible') return false;
+    const item = AUDIO_EVENTS.find(entry => entry.id === pending.id);
+    if (!item) {
+      eventSession.pendingMask005 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginMask05(item, false, true);
+  }
+
+
+  // =========================================================
+  // MASQUE-006 : LA COMPTINE DES OUBLIÉS
+  // Introduction → comptine → question → OUI/NON → réaction → +5 global.
+  // La jauge est réellement modifiée en partie comme en mode test.
+  // =========================================================
+
+  function saveMask06Stage() {
+    const r = currentMask06;
+    if (!r || r.preview) return;
+    eventSession.pendingMask006 = {
+      id: 'masque-006', stage: r.stage, choice: r.choice,
+      before: r.before, after: r.after, gameOver: r.gameOver === true
+    };
+    saveAudioEventSession();
+  }
+
+  function mask06HideControls() {
+    for (const id of ['mask06Choices', 'mask06Result', 'mask06Play',
+      'mask06Skip', 'mask06Done']) {
+      els[id].classList.add('hidden');
+    }
+  }
+
+  function mask06StopAudio(r) {
+    if (!r?.audio) return;
+    r.audio.pause();
+    r.audio.onended = null;
+    r.audio.onerror = null;
+    r.audio = null;
+  }
+
+  function dismissMask06() {
+    mask06Token += 1;
+    const r = currentMask06;
+    mask06StopAudio(r);
+    currentMask06 = null;
+    els.mask06Overlay.classList.remove('show', 'is-choice', 'is-result', 'is-singing');
+    els.mask06Overlay.setAttribute('aria-hidden', 'true');
+    mask06HideControls();
+    specialAudioActive = false;
+    syncAmbientVolume();
+    renderEventControls();
+  }
+
+  function mask06ShowOverlay() {
+    const r = currentMask06;
+    if (!r) return;
+    els.mask06Portrait.src = getMaskState(state.value).src;
+    els.mask06Overlay.classList.add('show');
+    els.mask06Overlay.classList.toggle('is-choice', r.stage === 'choices');
+    els.mask06Overlay.classList.toggle('is-result', r.stage === 'result');
+    els.mask06Overlay.classList.toggle('is-singing', r.stage === 'song');
+    els.mask06Overlay.setAttribute('aria-hidden', 'false');
+    mask06HideControls();
+    specialAudioActive = true;
+    syncAmbientVolume();
+  }
+
+  function mask06AudioPath(r) {
+    return r.stage === 'intro' ? r.item.introAudio
+      : r.stage === 'song' ? r.item.songAudio
+      : r.stage === 'question' ? r.item.questionAudio
+      : r.stage === 'reaction'
+        ? (r.choice === 'yes' ? r.item.yesAudio : r.item.noAudio)
+        : null;
+  }
+
+  function mask06AudioFallback(broken = false) {
+    const r = currentMask06;
+    if (!r || !['intro', 'song', 'question', 'reaction'].includes(r.stage)) return;
+    r.audioBroken = broken;
+    els.mask06Status.textContent = broken
+      ? 'Enregistrement indisponible. Réessayez ou continuez sans cet audio.'
+      : 'Lecture suspendue. Touchez pour reprendre.';
+    els.mask06Play.textContent = broken
+      ? 'RÉESSAYER L’ENREGISTREMENT' : 'REPRENDRE L’AUDIO';
+    els.mask06Play.classList.remove('hidden');
+    els.mask06Skip.classList.toggle('hidden', !broken);
+  }
+
+  function mask06PlayStage() {
+    const r = currentMask06;
+    if (!r) return;
+    if (document.visibilityState !== 'visible') {
+      // Ne pas rester bloqué si un segment se termine au moment où
+      // Android place l'application en arrière-plan.
+      mask06AudioFallback(false);
+      return;
+    }
+    const stage = r.stage, url = mask06AudioPath(r);
+    if (!url) return;
+    if (!r.audio) {
+      r.audio = new Audio(url);
+      r.audio.preload = 'auto';
+      r.audio.volume = 1;
+    }
+    const audio = r.audio, token = r.token;
+    audio.onended = () => {
+      if (currentMask06?.token === token && r.stage === stage && r.audio === audio) {
+        mask06Advance();
+      }
+    };
+    audio.onerror = () => {
+      if (currentMask06?.token === token && r.stage === stage && r.audio === audio) {
+        mask06AudioFallback(true);
+      }
+    };
+    r.audioBroken = false;
+    els.mask06Status.textContent = stage === 'intro'
+      ? 'Le Masque a une surprise à vous présenter…'
+      : stage === 'song' ? 'Le Masque interprète son chef-d’œuvre…'
+      : stage === 'question' ? 'Le Masque attend votre avis…'
+      : 'Le Masque réagit à votre réponse…';
+    els.mask06Play.classList.add('hidden');
+    els.mask06Skip.classList.add('hidden');
+    els.mask06Overlay.classList.toggle('is-singing', stage === 'song');
+    try {
+      audio.play().catch(() => {
+        if (currentMask06?.token === token && r.stage === stage) {
+          mask06AudioFallback(false);
+        }
+      });
+    } catch (_) {
+      mask06AudioFallback(false);
+    }
+  }
+
+  function mask06SetStage(stage) {
+    const r = currentMask06;
+    if (!r) return;
+    mask06StopAudio(r);
+    r.stage = stage;
+    r.audioBroken = false;
+    saveMask06Stage();
+    mask06ShowOverlay();
+  }
+
+  function mask06Advance() {
+    const r = currentMask06;
+    if (!r) return;
+    if (r.stage === 'intro') {
+      mask06SetStage('song');
+      mask06PlayStage();
+    } else if (r.stage === 'song') {
+      mask06SetStage('question');
+      mask06PlayStage();
+    } else if (r.stage === 'question') {
+      mask06SetStage('choices');
+      mask06ShowChoices();
+    } else if (r.stage === 'reaction') {
+      mask06Finalize();
+    }
+  }
+
+  function skipMask06BrokenAudio() {
+    const r = currentMask06;
+    if (!r || !r.audioBroken) return;
+    mask06Advance();
+  }
+
+  function mask06ShowChoices() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'choices') return;
+    mask06ShowOverlay();
+    els.mask06Status.textContent = 'ALOOOORS ?! Vous avez aimé ma chanson ?';
+    els.mask06Choices.classList.remove('hidden');
+    els.mask06Yes.focus();
+  }
+
+  function chooseMask06(choice) {
+    const r = currentMask06;
+    if (!r || r.stage !== 'choices' || !['yes','no'].includes(choice)) return;
+    r.choice = choice;
+    mask06SetStage('reaction');
+    mask06PlayStage();
+  }
+
+  function mask06Finalize() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'reaction' || !['yes','no'].includes(r.choice)) return;
+    r.before = state.value;
+    r.after = clamp(r.before + 5, 0, 100);
+    r.gameOver = r.after >= 100;
+
+    // La conséquence prévue est enregistrée AVANT de modifier l'Instabilité.
+    // Une restauration après F5 peut ainsi appliquer l'effet au maximum une fois.
+    mask06SetStage('result');
+    if (r.after !== r.before) {
+      const effect = applyInstabilityDelta(5, {
+        source: 'Le Masque — La Comptine des oubliés (' + (r.choice === 'yes' ? 'oui' : 'non') + ')',
+        deferThreshold: true,
+        deferGameOver: true
+      });
+      r.after = state.value;
+      r.gameOver = effect.gameOver;
+      saveMask06Stage();
+    }
+    mask06ShowResult();
+  }
+
+  function mask06ShowResult() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'result') return;
+    mask06StopAudio(r);
+    mask06ShowOverlay();
+    els.mask06Status.textContent = 'Le Masque a rendu sa sentence.';
+    const actual = Number.isFinite(r.before) && Number.isFinite(r.after)
+      ? r.after - r.before : 0;
+    els.mask06Result.textContent =
+      (r.choice === 'yes' ? 'VOUS AVEZ RÉPONDU OUI.' : 'VOUS AVEZ RÉPONDU NON.') +
+      '\n\nLe Masque n’a pas accepté votre réponse.\n\n' +
+      'Instabilité globale du groupe : ' + r.before + ' % → ' + r.after +
+      ' % (+' + actual + ' points).\n\n' +
+      (r.gameOver
+        ? 'Le seuil de 100 % est atteint : la fin de partie sera déclenchée après cette fenêtre.'
+        : 'La partie continue.');
+    els.mask06Result.classList.remove('hidden');
+    els.mask06Done.classList.remove('hidden');
+    els.mask06Done.focus();
+  }
+
+  function completeMask06() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'result') return;
+    const delay = r.preview ? r.savedPreviewDelay : randomBetween(...EVENT_NEXT_DELAY);
+    const transition = Number.isFinite(r.before) && Number.isFinite(r.after)
+      && r.before !== r.after ? [r.before, r.after] : null;
+    const over = r.gameOver;
+    dismissMask06();
+    if (!r.preview) eventSession.pendingMask006 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+
+    if (transition || over) {
+      clearTimeout(mask06DeferredOutcomeTimer);
+      mask06DeferredOutcomeTimer = setTimeout(() => {
+        mask06DeferredOutcomeTimer = null;
+        if (over) checkGameOver();
+        else if (transition && state.value === transition[1]) {
+          handleThresholdTransition(transition[0], transition[1]);
+        }
+      }, REDUCED_MOTION ? 0 : 790);
+    }
+  }
+
+  function resumeMask06Audio() {
+    const r = currentMask06;
+    if (!r || document.visibilityState !== 'visible') return;
+    if (r.audioBroken) {
+      mask06StopAudio(r);
+      r.audioBroken = false;
+    }
+    mask06PlayStage();
+  }
+
+  function handleMask06Visibility() {
+    const r = currentMask06;
+    if (!r || document.visibilityState !== 'hidden') return;
+    if (r.audio && !r.audio.paused) {
+      r.audio.pause();
+      mask06AudioFallback(false);
+    }
+  }
+
+  function mask06OnPageHide() {
+    const r = currentMask06;
+    if (r?.audio) r.audio.pause();
+  }
+
+  function beginMask06(item, preview, restoring = false) {
+    const pending = restoring ? eventSession.pendingMask006 : null;
+    if (item?.id !== 'masque-006' || !eventSession.active
+      || currentMaskEvent || currentMask05 || currentMask06 || currentRadioEvent
+      || currentRadio02 || currentRadio03 || currentWeatherEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || !isPartieTabActive() || document.visibilityState !== 'visible'
+      || (state.value >= 100 && !(restoring && pending?.stage === 'result'))
+      || (!restoring && livingPlayerNumbers().length === 0)
+      || (restoring && !pending)) return false;
+
+    pauseAudioEventClock();
+    const r = {
+      token: ++mask06Token, item, preview,
+      savedPreviewDelay: eventSession.remainingMs,
+      stage: pending?.stage || 'intro',
+      choice: pending?.choice || null,
+      before: pending?.before ?? null,
+      after: pending?.after ?? null,
+      gameOver: pending?.gameOver === true,
+      audio: null, audioBroken: false
+    };
+    currentMask06 = r;
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.remainingMs = null;
+    }
+    saveMask06Stage();
+    mask06ShowOverlay();
+    silenceHauntSounds();
+    renderEventControls();
+
+    if (r.stage === 'choices') {
+      mask06ShowChoices();
+    } else if (r.stage === 'result') {
+      // Cas rare : F5 entre l'écriture du résultat et l'application des +5.
+      if (!preview && Number.isFinite(r.before) && Number.isFinite(r.after)
+        && state.value === r.before && r.after > r.before) {
+        applyInstabilityDelta(r.after - r.before, {
+          source: 'Le Masque — La Comptine des oubliés (reprise)',
+          deferThreshold: true, deferGameOver: true
+        });
+        saveMask06Stage();
+      }
+      mask06ShowResult();
+    } else {
+      mask06PlayStage();
+    }
+    return true;
+  }
+
+  function resumePendingMask06IfPossible() {
+    const pending = eventSession.pendingMask006;
+    if (!pending || !eventSession.active || gameOverShown
+      || document.visibilityState !== 'visible'
+      || (state.value >= 100 && pending.stage !== 'result')) return false;
+    const item = AUDIO_EVENTS.find(entry => entry.id === pending.id);
+    if (!item) {
+      eventSession.pendingMask006 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginMask06(item, false, true);
+  }
 
   // =========================================================
   // MASQUE 004 — LE REGARD DU VICE : DUEL EN TEMPS RÉEL
@@ -5358,11 +6660,17 @@ syncMusicForActiveTab();
 
   function handleAudioEventVisibility() {
     updateAudioEventClock();
-    if (currentWeatherEvent && document.visibilityState === 'hidden'
+    if (currentWeatherEvent?.isWeather04) weather04Visibility();
+    if (currentWeatherEvent && !currentWeatherEvent.isWeather04
+      && document.visibilityState === 'hidden'
       && currentWeatherEvent.audio && !currentWeatherEvent.audio.paused) {
       currentWeatherEvent.audio.pause();
       showWeatherAudioFallback('Narration suspendue. Touchez pour reprendre.');
     }
+    handleRadio02Visibility();
+    handleRadio03Visibility();
+    handleMask05Visibility();
+    handleMask06Visibility();
     if (currentRadioEvent && document.visibilityState === 'hidden'
       && currentRadioEvent.audio
       && !currentRadioEvent.audio.paused) {
@@ -5505,8 +6813,10 @@ syncMusicForActiveTab();
   }
 
   function beginRadioEvent(item, preview) {
+    if (item?.id === 'radio-002') return beginRadio02(item, preview);
+    if (item?.id === 'radio-003') return beginRadio03(item, preview);
     if (!item || item.type !== 'radio' || !eventSession.active
-      || currentMaskEvent || currentRadioEvent || currentWeatherEvent
+      || currentMask05 || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
       || document.visibilityState !== 'visible'
       || !isPartieTabActive() || state.value >= 100
@@ -5707,15 +7017,1448 @@ syncMusicForActiveTab();
     updateAudioEventClock();
   }
 
+
+  // RADIO 002 : rapport prémonitoire, choix chronométré et effets différés.
+  function dismissRadio02() {
+    radio02Token += 1;
+    const r = currentRadio02;
+    if (r) {
+      if (r.timer !== null) clearInterval(r.timer);
+      if (r.audio) {
+        r.audio.pause();
+        r.audio.onended = null;
+        r.audio.onerror = null;
+      }
+    }
+    currentRadio02 = null;
+    els.radio02Overlay.classList.remove('show');
+    els.radio02Overlay.setAttribute('aria-hidden', 'true');
+    for (const id of ['radio02Choices','radio02Reward','radio02Play',
+      'radio02Skip','radio02Done']) els[id].classList.add('hidden');
+    specialAudioActive = false;
+    syncAmbientVolume();
+    renderEventControls();
+  }
+
+  function beginRadio02(item, preview, restoring = false) {
+    if (item?.id !== 'radio-002' || !eventSession.active
+      || currentMask05 || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || document.visibilityState !== 'visible' || !isPartieTabActive()
+      || (state.value >= 100 && !(restoring
+        && eventSession.pendingRadio002?.stage === 'result'))) return false;
+    if (restoring && !eventSession.pendingRadio002) return false;
+    pauseAudioEventClock();
+    const pending = restoring ? eventSession.pendingRadio002 : null;
+    const stage = pending?.stage || 'intro';
+    const choice = pending?.choice ?? null;
+    const audioPath = stage === 'intro'
+      ? item.audio : stage === 'branch' ? item.responses[choice] : null;
+    const audio = audioPath ? new Audio(audioPath) : null;
+    if (audio) { audio.volume = 1; audio.preload = 'auto'; }
+    currentRadio02 = {
+      token: ++radio02Token, item, audio, preview, choice,
+      phase: stage, savedPreviewDelay: eventSession.remainingMs,
+      timer: null, deadline: 0, remainingMs: 15000,
+      before: pending?.before ?? null, after: pending?.after ?? null,
+      deferredTransition: null, deferredGameOver: pending?.gameOver === true
+    };
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.pendingRadio002 = { id: item.id, stage: 'intro', choice: null };
+      eventSession.remainingMs = null;
+    }
+    saveAudioEventSession();
+    els.radio02Heading.textContent = 'TRANSMISSION INTERCEPTÉE';
+    els.radio02Status.textContent = 'Une fréquence inconnue s’active…';
+    for (const id of ['radio02Choices','radio02Reward','radio02Play',
+      'radio02Skip','radio02Done']) els[id].classList.add('hidden');
+    els.radio02Overlay.classList.add('show');
+    els.radio02Overlay.setAttribute('aria-hidden', 'false');
+    specialAudioActive = true;
+    silenceHauntSounds();
+    syncAmbientVolume();
+    renderEventControls();
+
+    if (stage === 'result') {
+      const before = pending.before;
+      const after = pending.after;
+      if (Number.isFinite(before) && Number.isFinite(after)
+        && state.value === before) {
+        applyInstabilityDelta(after - before, {
+          source: 'Radio — Le Rapport impossible',
+          deferThreshold: true, deferGameOver: true
+        });
+      }
+      currentRadio02.before = before;
+      currentRadio02.after = state.value;
+      currentRadio02.deferredTransition = [before, state.value];
+      showRadio02Reward();
+    } else if (stage === 'choices') showRadio02Choices(true);
+    else playRadio02Audio();
+    return true;
+  }
+
+  function showRadio02AudioFallback() {
+    const r = currentRadio02;
+    if (!r || !['intro','branch'].includes(r.phase)) return;
+    els.radio02Status.textContent =
+      'Audio interrompu. Réessayez ou poursuivez sans narration.';
+    els.radio02Play.textContent = 'ÉCOUTER LA TRANSMISSION';
+    els.radio02Play.classList.remove('hidden');
+    els.radio02Skip.classList.remove('hidden');
+  }
+
+  function playRadio02Audio() {
+    const r = currentRadio02;
+    if (!r || !['intro','branch'].includes(r.phase)
+      || !r.audio || document.visibilityState !== 'visible') return;
+    const token = r.token, phase = r.phase;
+    els.radio02Play.classList.add('hidden');
+    els.radio02Skip.classList.add('hidden');
+    els.radio02Status.textContent = phase === 'intro'
+      ? 'Une voix cherche à joindre les survivants…'
+      : 'Le rapport semblait connaître votre réponse…';
+    r.audio.onended = () => {
+      if (currentRadio02?.token !== token || r.phase !== phase) return;
+      if (phase === 'intro') showRadio02Choices();
+      else finishRadio02Branch();
+    };
+    r.audio.onerror = () => {
+      if (currentRadio02?.token === token) showRadio02AudioFallback();
+    };
+    try {
+      r.audio.play().catch(() => {
+        if (currentRadio02?.token === token) showRadio02AudioFallback();
+      });
+    } catch (_) { showRadio02AudioFallback(); }
+  }
+
+  function skipRadio02Audio() {
+    const r = currentRadio02;
+    if (!r || !['intro','branch'].includes(r.phase)) return;
+    r.audio?.pause();
+    if (r.audio) { r.audio.onended = null; r.audio.onerror = null; }
+    if (r.phase === 'intro') showRadio02Choices();
+    else finishRadio02Branch();
+  }
+
+  function renderRadio02Countdown(r) {
+    const remaining = Math.max(0, r.remainingMs);
+    const seconds = Math.ceil(remaining / 1000);
+    els.radio02Clock.textContent = '00:' + String(seconds).padStart(2,'0');
+    els.radio02Progress.style.width = (remaining / 15000 * 100).toFixed(2) + '%';
+    els.radio02Track.setAttribute('aria-valuenow', String(seconds));
+  }
+
+  function pauseRadio02Countdown() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'choices' || r.timer === null) return;
+    r.remainingMs = Math.max(0, r.deadline - performance.now());
+    clearInterval(r.timer);
+    r.timer = null;
+    renderRadio02Countdown(r);
+  }
+
+  function tickRadio02Countdown(token) {
+    const r = currentRadio02;
+    if (!r || r.token !== token || r.phase !== 'choices' || r.timer === null) return;
+    r.remainingMs = Math.max(0, r.deadline - performance.now());
+    renderRadio02Countdown(r);
+    if (r.remainingMs === 0) chooseRadio02('silence');
+  }
+
+  function resumeRadio02Countdown() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'choices' || r.timer !== null
+      || document.visibilityState !== 'visible') return;
+    r.deadline = performance.now() + r.remainingMs;
+    r.timer = setInterval(() => tickRadio02Countdown(r.token), 100);
+    tickRadio02Countdown(r.token);
+  }
+
+  function showRadio02Choices(restoring = false) {
+    const r = currentRadio02;
+    if (!r || (!restoring && r.phase !== 'intro')) return;
+    r.audio?.pause();
+    r.phase = 'choices';
+    r.audio = null;
+    r.remainingMs = 15000;
+    els.radio02Status.textContent = 'Une réponse est attendue.';
+    els.radio02Play.classList.add('hidden');
+    els.radio02Skip.classList.add('hidden');
+    els.radio02Choices.classList.remove('hidden');
+    els.radio02Answer.disabled = false;
+    els.radio02Cut.disabled = false;
+    renderRadio02Countdown(r);
+    if (!r.preview && !restoring) {
+      eventSession.pendingRadio002 = { id: r.item.id, stage: 'choices', choice: null };
+      saveAudioEventSession();
+    }
+    resumeRadio02Countdown();
+  }
+
+  function chooseRadio02(choice) {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'choices'
+      || !['answer','cut','silence'].includes(choice)) return;
+    pauseRadio02Countdown();
+    r.phase = 'branch';
+    r.choice = choice;
+    els.radio02Choices.classList.add('hidden');
+    els.radio02Status.textContent = 'La transmission reprend…';
+    if (!r.preview) {
+      eventSession.pendingRadio002 = { id: r.item.id, stage: 'branch', choice };
+      saveAudioEventSession();
+    }
+    r.audio = new Audio(r.item.responses[choice]);
+    r.audio.volume = 1;
+    r.audio.preload = 'auto';
+    playRadio02Audio();
+  }
+
+  function finishRadio02Branch() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'branch') return;
+    r.audio?.pause();
+    if (r.audio) { r.audio.onended = null; r.audio.onerror = null; }
+    const before = state.value;
+    const delta = r.choice === 'answer' ? 5 : r.choice === 'cut' ? -5 : 0;
+    const after = Math.max(0, Math.min(100, before + delta));
+    if (!r.preview) {
+      eventSession.pendingRadio002 = {
+        id: r.item.id, stage: 'result', choice: r.choice,
+        before, after, gameOver: after >= 100
+      };
+      saveAudioEventSession();
+    }
+    if (delta) {
+      const effect = applyInstabilityDelta(delta, {
+        source: 'Radio — Le Rapport impossible (' + r.choice + ')',
+        deferThreshold: true, deferGameOver: true
+      });
+      r.deferredTransition = [before, state.value];
+      r.deferredGameOver = effect.gameOver;
+    }
+    r.before = before; r.after = state.value; r.phase = 'result';
+    showRadio02Reward();
+  }
+
+  function showRadio02Reward() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'result') return;
+    els.radio02Status.textContent = 'TRANSMISSION TERMINÉE';
+    els.radio02Choices.classList.add('hidden');
+    els.radio02Play.classList.add('hidden');
+    els.radio02Skip.classList.add('hidden');
+    const before = r.before, after = r.after;
+    const actual = after - before;
+    const amount = actual > 0 ? '+' + actual : String(actual);
+    const nl = String.fromCharCode(10,10);
+    if (r.choice === 'answer') {
+      els.radio02Reward.textContent = 'Les paroles de l’opérateur continuent de vous hanter.' + nl
+        + 'Instabilité mentale : ' + before + ' % → ' + after
+        + ' % (' + amount + ' points).' + nl
+        + 'Le groupe choisit UN joueur vivant qui pioche 1 carte Objet.';
+    } else if (r.choice === 'cut') {
+      els.radio02Reward.textContent =
+        'Le silence revient enfin. Vous reprenez progressivement vos esprits.' + nl
+        + 'Instabilité mentale : ' + before + ' % → ' + after
+        + ' % (' + amount + ' points).';
+    } else {
+      els.radio02Reward.textContent = 'La fréquence est redevenue muette.' + nl
+        + 'Le silence vous laisse avec davantage de questions que de réponses.';
+    }
+    els.radio02Reward.classList.remove('hidden');
+    els.radio02Done.classList.remove('hidden');
+    els.radio02Done.focus();
+  }
+
+  function completeRadio02() {
+    const r = currentRadio02;
+    if (!r || r.phase !== 'result') return;
+    const delay = r.preview ? r.savedPreviewDelay : randomBetween(...EVENT_NEXT_DELAY);
+    const transition = r.deferredTransition;
+    const over = r.deferredGameOver;
+    dismissRadio02();
+    if (!r.preview) eventSession.pendingRadio002 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+    if (transition || over) {
+      clearTimeout(radio02DeferredOutcomeTimer);
+      radio02DeferredOutcomeTimer = setTimeout(() => {
+        radio02DeferredOutcomeTimer = null;
+        if (transition && state.value === transition[1] && !over)
+          handleThresholdTransition(transition[0], transition[1]);
+        if (over) checkGameOver();
+      }, REDUCED_MOTION ? 0 : 650);
+    }
+  }
+
+  function handleRadio02Visibility() {
+    const r = currentRadio02;
+    if (!r) return;
+    if (document.visibilityState === 'hidden') {
+      if (r.phase === 'choices') pauseRadio02Countdown();
+      if (r.audio && !r.audio.paused) {
+        r.audio.pause();
+        showRadio02AudioFallback();
+      }
+    } else if (r.phase === 'choices') resumeRadio02Countdown();
+  }
+
+  function resumePendingRadio02IfPossible() {
+    const pending = eventSession.pendingRadio002;
+    if (!pending || !eventSession.active || gameOverShown
+      || document.visibilityState !== 'visible'
+      || (state.value >= 100 && pending.stage !== 'result')) return false;
+    const item = AUDIO_EVENTS.find(entry => entry.id === pending.id);
+    if (!item) {
+      eventSession.pendingRadio002 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginRadio02(item, false, true);
+  }
+
+
+  // RADIO-003 : seule la partie "test" affiche le titre technique.
+  // La séquence reste fixe, et chaque prononciation choisit un timbre (70/30).
+  function radio03Save(){
+    const r=currentRadio03;if(!r||r.preview)return;
+    eventSession.pendingRadio003={
+      id:'radio-003',stage:r.stage,sequence:r.sequence.slice(),
+      target:r.target,guess:r.guess.slice(),outcome:r.outcome,
+      remainingMs:r.remainingMs,deadline:r.deadline||0,
+      before:r.before,after:r.after,gameOver:r.gameOver===true
+    };
+    saveAudioEventSession();
+  }
+  function radio03StopColors(r){
+    if(!r)return;
+    clearTimeout(r.colorTimer);r.colorTimer=null;
+    if(r.colorAudio){
+      r.colorAudio.onended=null;r.colorAudio.onerror=null;
+      r.colorAudio.pause();r.colorAudio=null;
+    }
+    r.colorsStarted=false;r.colorIndex=0;
+  }
+  function radio03StopBackground(r){
+    radio03StopColors(r);r?.ambience?.pause();
+  }
+  function radio03StopAudio(r){
+    if(!r)return;
+    if(r.gongTimer!==null&&r.gongTimer!==undefined){
+      clearTimeout(r.gongTimer);r.gongTimer=null;
+    }
+    if(r.audio){
+      r.audio.onended=null;r.audio.onerror=null;r.audio.ontimeupdate=null;
+      r.audio.pause();r.audio=null;
+    }
+    radio03StopBackground(r);
+  }
+  function radio03StopTimer(r){
+    if(r?.timer!==null&&r?.timer!==undefined){
+      clearInterval(r.timer);r.timer=null;
+    }
+  }
+  function dismissRadio03(){
+    radio03Token++;
+    const r=currentRadio03;
+    if(r){radio03StopTimer(r);radio03StopAudio(r);}
+    currentRadio03=null;
+    els.radio03Overlay.classList.remove('show','is-speaking','is-hijacked',
+      'has-mask','is-interactive');
+    els.radio03MaskImage.classList.add('hidden');
+    els.radio03Overlay.setAttribute('aria-hidden','true');
+    for(const id of ['radio03Challenge','radio03Reward','radio03Play',
+      'radio03Cancel','radio03Done'])els[id].classList.add('hidden');
+    specialAudioActive=false;syncAmbientVolume();renderEventControls();
+  }
+  function radio03UpdatePortrait(stage){
+    const hasMask=['maskintro','designation','maskepreuve','choices','reaction'].includes(stage);
+    els.radio03Heading.textContent=stage==='transmission'
+      ?'TRANSMISSION INTERCEPTÉE':'TRANSMISSION INTERROMPUE';
+    els.radio03MaskImage.classList.toggle('hidden',!hasMask);
+    els.radio03Overlay.classList.toggle('has-mask',hasMask);
+    els.radio03Overlay.classList.toggle('is-interactive',stage==='choices');
+    if(hasMask)els.radio03MaskImage.src=getMaskState(state.value).src;
+  }
+  function radio03Stage(stage){
+    const r=currentRadio03;if(!r)return;
+    radio03StopAudio(r);r.stage=stage;
+    els.radio03Overlay.classList.toggle('is-hijacked',
+      !['transmission','glitch'].includes(stage));
+    radio03UpdatePortrait(stage);
+    for(const id of ['radio03Challenge','radio03Reward','radio03Play',
+      'radio03Cancel','radio03Done'])els[id].classList.add('hidden');
+    els.radio03Overlay.classList.remove('is-speaking');
+    radio03Save();
+  }
+  function radio03AudioBlocked(message){
+    const r=currentRadio03;
+    if(!r||['choices','result','cancelled'].includes(r.stage))return;
+    els.radio03Overlay.classList.remove('is-speaking');
+    els.radio03Status.textContent=message||'La lecture est suspendue.';
+    els.radio03Play.classList.remove('hidden');
+    els.radio03Play.textContent='REPRENDRE L’AUDIO';
+    // Un simple blocage d'autoplay n'est pas une échappatoire à la sanction.
+    els.radio03Cancel.classList.add('hidden');
+  }
+  function radio03ShowCancelled(){
+    els.radio03Status.textContent='TRANSMISSION INTERROMPUE';
+    els.radio03Reward.textContent=
+      'Cette épreuve audio n’a pas pu être terminée. Aucune récompense ni pénalité.';
+    els.radio03Reward.classList.remove('hidden');
+    els.radio03Done.classList.remove('hidden');
+  }
+  function radio03CancelWithoutPenalty(){
+    const r=currentRadio03;if(!r||r.stage==='result')return;
+    radio03StopTimer(r);radio03Stage('cancelled');radio03ShowCancelled();
+  }
+  function radio03PlayColorClip(color,variation,canRetry){
+    const r=currentRadio03;
+    if(!r||r.stage!=='transmission'||!r.colorsStarted
+      ||document.visibilityState!=='visible')return;
+    const audio=new Audio('audio/events/sfx/'+color+'-'+variation+'.mp3');
+    // Rehaussement important après écoute sur téléphone (0,42 était inaudible).
+    // Garder une petite marge pour la version normale, la version filtrée à 100 %.
+    audio.volume=variation==='telephone'?1:.95;
+    audio.preload='auto';r.colorAudio=audio;
+    const token=r.token;
+    audio.onended=()=>{
+      if(currentRadio03?.token!==token||r.colorAudio!==audio
+        ||r.stage!=='transmission')return;
+      r.colorAudio=null;r.colorIndex=(r.colorIndex+1)%5;
+      const delay=r.colorIndex===0?RADIO03_CYCLE_GAP:RADIO03_COLOR_GAP;
+      r.colorTimer=setTimeout(()=>{
+        r.colorTimer=null;radio03PlayColor();
+      },delay);
+    };
+    const fail=()=>{
+      if(currentRadio03?.token!==token||r.colorAudio!==audio)return;
+      audio.onended=null;audio.onerror=null;audio.pause();r.colorAudio=null;
+      if(canRetry&&variation==='telephone')
+        radio03PlayColorClip(color,'normal',false);
+      else radio03CancelWithoutPenalty();
+    };
+    audio.onerror=fail;
+    try{audio.play().catch(fail);}catch(_){fail();}
+  }
+  function radio03PlayColor(){
+    const r=currentRadio03;
+    if(!r||r.stage!=='transmission'||!r.colorsStarted)return;
+    const color=r.sequence[r.colorIndex];
+    radio03PlayColorClip(color,Math.random()<.30?'telephone':'normal',true);
+  }
+  function radio03StartColors(){
+    const r=currentRadio03;
+    if(!r||r.stage!=='transmission'||r.colorsStarted)return;
+    r.colorsStarted=true;r.colorIndex=0;radio03PlayColor();
+  }
+  function radio03PlayTransmission(){
+    const r=currentRadio03;
+    if(!r||r.stage!=='transmission'||document.visibilityState!=='visible')return;
+    if(!r.audio){
+      r.audio=new Audio(r.item.transmission);
+      r.audio.preload='auto';r.audio.volume=1;
+      r.audio.onended=()=>{
+        if(currentRadio03?.token===r.token&&r.stage==='transmission')
+          radio03Advance();
+      };
+      r.audio.onerror=radio03CancelWithoutPenalty;
+    }
+    const main=r.audio;
+    main.ontimeupdate=()=>{
+      if(currentRadio03?.token===r.token&&r.stage==='transmission'
+        &&main.currentTime>=RADIO03_COLOR_DELAY)radio03StartColors();
+    };
+    if(!r.ambience){
+      r.ambience=new Audio(r.item.ambience);r.ambience.preload='auto';
+      r.ambience.loop=true;r.ambience.volume=.12;
+    }
+    els.radio03Status.textContent='Une voix apparaît au milieu des parasites…';
+    els.radio03Play.classList.add('hidden');
+    els.radio03Cancel.classList.add('hidden');
+    els.radio03Overlay.classList.add('is-speaking');
+    try{r.ambience.play().catch(()=>{});}catch(_){}
+    const blocked=()=>{
+      r.ambience?.pause();
+      radio03AudioBlocked('Lecture bloquée. Touchez pour écouter.');
+    };
+    try{main.play().then(()=>{
+      if(currentRadio03?.token===r.token&&r.stage==='transmission'
+        &&main.currentTime>=RADIO03_COLOR_DELAY)radio03StartColors();
+    }).catch(blocked);}
+    catch(_){blocked();}
+  }
+  function radio03PlaySegment(){
+    const r=currentRadio03;
+    if(!r||document.visibilityState!=='visible')return;
+    const stage=r.stage;
+    const path=stage==='gong'?'audio/events/sfx/gong-fin-chronometre.mp3':
+      stage==='glitch'?r.item.glitch:
+      stage==='maskintro'?r.item.maskIntro:
+      stage==='designation'?'audio/events/masque/designations/joueur-'+r.target+'.mp3':
+      stage==='maskepreuve'?r.item.maskChallenge:
+      stage==='reaction'?(r.outcome==='success'?r.item.success:r.item.failure):null;
+    if(!path)return;
+    if(!r.audio){
+      r.audio=new Audio(path);r.audio.volume=1;r.audio.preload='auto';
+      const audio=r.audio,token=r.token;
+      audio.onended=()=>{
+        if(currentRadio03?.token===token&&r.stage===stage&&r.audio===audio)
+          radio03Advance();
+      };
+      audio.onerror=stage==='gong'
+        ?()=>{if(currentRadio03?.token===token&&r.stage===stage)radio03Advance();}
+        :radio03CancelWithoutPenalty;
+    }
+    els.radio03Status.textContent=stage==='gong'
+      ?'TEMPS ÉCOULÉ… LE VERDICT APPROCHE.':
+      stage==='glitch'?'La fréquence se brouille violemment…':
+      stage==='maskintro'?'Le Masque interrompt la transmission…':
+      stage==='designation'?'Le Masque choisit sa victime…':
+      stage==='maskepreuve'?'Le Masque s’adresse à sa victime…':
+      'Le Masque rend son verdict…';
+    els.radio03Play.classList.add('hidden');
+    els.radio03Cancel.classList.add('hidden');
+    els.radio03Overlay.classList.add('is-speaking');
+    const blocked=()=>radio03AudioBlocked('Lecture bloquée. Touchez pour reprendre.');
+    try{
+      r.audio.play().then(()=>{
+        if(stage!=='gong'||currentRadio03?.token!==r.token
+          ||r.stage!=='gong'||r.gongTimer!==null)return;
+        // Comme MASQUE-005 : le Masque revient après 10,5 s de résonance.
+        r.gongTimer=setTimeout(()=>{
+          r.gongTimer=null;
+          if(currentRadio03?.token===r.token&&r.stage==='gong')radio03Advance();
+        },RADIO03_GONG_DELAY_MS);
+      }).catch(blocked);
+    }catch(_){blocked();}
+  }
+  function radio03Advance(){
+    const r=currentRadio03;if(!r)return;
+    if(r.stage==='transmission'){
+      // L'ambiance, les cinq couleurs et la survivante cessent immédiatement.
+      radio03Stage('glitch');radio03PlaySegment();
+    }else if(r.stage==='glitch'){
+      radio03Stage('maskintro');radio03PlaySegment();
+    }else if(r.stage==='maskintro'){
+      if(!r.target){
+        const pool=livingPlayerNumbers();
+        if(!pool.length){radio03CancelWithoutPenalty();return;}
+        r.target=pool[randomBetween(0,pool.length-1)];
+      }
+      radio03Stage('designation');radio03PlaySegment();
+    }else if(r.stage==='designation'){
+      radio03Stage('maskepreuve');radio03PlaySegment();
+    }else if(r.stage==='maskepreuve'){
+      radio03Stage('choices');radio03ShowChoices();
+    }else if(r.stage==='gong'){
+      radio03Stage('reaction');radio03PlaySegment();
+    }else if(r.stage==='reaction')radio03Finalize();
+  }
+  function radio03RenderChoices(){
+    const r=currentRadio03;if(!r||r.stage!=='choices')return;
+    els.radio03Slots.replaceChildren();
+    for(let i=0;i<5;i++){
+      const value=r.guess[i],slot=document.createElement('div');
+      slot.className='radio03-slot'+(value?' filled':'');
+      slot.textContent=value?value.toUpperCase():String(i+1);
+      slot.setAttribute('aria-label','Position '+(i+1)+' : '+(value||'vide'));
+      els.radio03Slots.appendChild(slot);
+    }
+    els.radio03Confirm.disabled=r.guess.length!==5;
+    els.radio03Undo.disabled=r.guess.length===0;
+    const s=Math.ceil(Math.max(0,r.remainingMs)/1000);
+    els.radio03Clock.textContent='00:'+String(s).padStart(2,'0');
+    els.radio03Progress.style.width=
+      (Math.max(0,r.remainingMs)/RADIO03_CHOICE_MS*100).toFixed(2)+'%';
+    els.radio03Track.setAttribute('aria-valuenow',String(s));
+  }
+  function radio03PauseTimer(){
+    const r=currentRadio03;
+    if(!r||r.stage!=='choices'||r.timer===null)return;
+    r.remainingMs=Math.max(0,r.deadline-Date.now());
+    radio03StopTimer(r);r.deadline=0;radio03Save();
+  }
+  function radio03Tick(){
+    const r=currentRadio03;
+    if(!r||r.stage!=='choices'||r.timer===null)return;
+    r.remainingMs=Math.max(0,r.deadline-Date.now());
+    radio03RenderChoices();
+    if(r.remainingMs<=0)radio03Resolve('timeout');
+  }
+  function radio03StartTimer(){
+    const r=currentRadio03;
+    if(!r||r.stage!=='choices'||r.timer!==null
+      ||document.visibilityState!=='visible')return;
+    if(!r.deadline)r.deadline=Date.now()+r.remainingMs;
+    radio03Save();
+    if(r.deadline<=Date.now()){radio03Resolve('timeout');return;}
+    r.timer=setInterval(radio03Tick,100);
+    radio03Tick();
+  }
+  function radio03ShowChoices(){
+    const r=currentRadio03;if(!r||r.stage!=='choices')return;
+    els.radio03Status.textContent='JOUEUR '+r.target+
+      ' : restitue les cinq couleurs dans l’ordre. Tes compagnons peuvent t’aider.';
+    els.radio03Challenge.classList.remove('hidden');
+    els.radio03Overlay.classList.remove('is-speaking');
+    els.radio03Palette.replaceChildren();
+    for(const color of RADIO03_COLORS){
+      const button=document.createElement('button');
+      button.type='button';button.className='radio03-color '+color;
+      button.textContent=color.toUpperCase();
+      button.setAttribute('aria-label','Ajouter '+color);
+      button.addEventListener('click',()=>{
+        if(currentRadio03!==r||r.stage!=='choices'||r.guess.length>=5)return;
+        if(r.deadline&&Date.now()>=r.deadline){radio03Resolve('timeout');return;}
+        r.guess.push(color);radio03Save();radio03RenderChoices();
+      });
+      els.radio03Palette.appendChild(button);
+    }
+    radio03RenderChoices();radio03StartTimer();
+  }
+  function radio03Undo(){
+    const r=currentRadio03;if(!r||r.stage!=='choices')return;
+    if(r.deadline&&Date.now()>=r.deadline){radio03Resolve('timeout');return;}
+    r.guess.pop();radio03Save();radio03RenderChoices();
+  }
+  function radio03Submit(){
+    const r=currentRadio03;
+    if(!r||r.stage!=='choices'||r.guess.length!==5)return;
+    if(r.deadline&&Date.now()>=r.deadline){radio03Resolve('timeout');return;}
+    radio03Resolve(r.guess.every((color,i)=>color===r.sequence[i])?'success':'failure');
+  }
+  function radio03Resolve(outcome){
+    const r=currentRadio03;if(!r||r.stage!=='choices')return;
+    radio03StopTimer(r);r.deadline=0;r.outcome=outcome;
+    if(outcome==='timeout'){
+      r.remainingMs=0;
+      radio03Stage('gong');
+    }else radio03Stage('reaction');
+    radio03PlaySegment();
+  }
+  function radio03Finalize(){
+    const r=currentRadio03;if(!r||r.stage!=='reaction')return;
+    r.before=state.value;
+    r.after=clamp(r.before+(r.outcome==='success'?0:5),0,100);
+    r.gameOver=r.after>=100;
+    // Écrire le résultat AVANT le changement de jauge : restauration idempotente.
+    radio03Stage('result');
+    if(r.after!==r.before){
+      const effect=applyInstabilityDelta(5,{
+        source:'Radio — Vous écoutiez ?',deferThreshold:true,deferGameOver:true
+      });
+      r.after=state.value;r.gameOver=effect.gameOver;radio03Save();
+    }
+    radio03ShowResult();
+  }
+  function radio03ShowResult(){
+    const r=currentRadio03;if(!r||r.stage!=='result')return;
+    radio03StopAudio(r);
+    els.radio03Overlay.classList.remove('is-speaking');
+    els.radio03Challenge.classList.add('hidden');
+    els.radio03Status.textContent='TRANSMISSION TERMINÉE';
+    const correct=r.sequence.map(c=>c.toUpperCase()).join(' → ');
+    const message=r.outcome==='success'
+      ?'JOUEUR '+r.target+' : réponse correcte ! Pioche 2 cartes Objet, uniquement pour toi.'
+      :r.outcome==='timeout'
+        ?'Temps écoulé. L’Instabilité globale du groupe augmente de 5 points.'
+        :'Mauvaise réponse. L’Instabilité globale du groupe augmente de 5 points.';
+    // En cas de réussite, ne pas révéler une solution que le groupe connaît déjà.
+    // En cas d'échec ou de temps écoulé, indiquer clairement la bonne suite.
+    const correction=r.outcome==='success'?''
+      :'\n\nLa bonne séquence était : '+correct+
+        '\nInstabilité : '+r.before+' % → '+r.after+' %.';
+    els.radio03Reward.textContent=message+correction;
+    els.radio03Reward.classList.remove('hidden');
+    els.radio03Done.classList.remove('hidden');
+    els.radio03Done.focus();
+  }
+  function radio03Complete(){
+    const r=currentRadio03;
+    if(!r||!['result','cancelled'].includes(r.stage))return;
+    const delay=r.preview?r.savedPreviewDelay:randomBetween(...EVENT_NEXT_DELAY);
+    const over=r.stage==='result'&&r.gameOver;
+    const transition=r.stage==='result'
+      &&Number.isFinite(r.before)&&Number.isFinite(r.after)
+      &&r.after!==r.before?[r.before,r.after]:null;
+    dismissRadio03();
+    if(!r.preview)eventSession.pendingRadio003=null;
+    eventSession.remainingMs=delay;
+    saveAudioEventSession();renderEventControls();updateAudioEventClock();
+    if(over||transition){
+      clearTimeout(radio03DeferredOutcomeTimer);
+      radio03DeferredOutcomeTimer=setTimeout(()=>{
+        radio03DeferredOutcomeTimer=null;
+        if(over)checkGameOver();
+        else if(transition&&state.value===transition[1])
+          handleThresholdTransition(transition[0],transition[1]);
+      },REDUCED_MOTION?0:650);
+    }
+  }
+  function radio03ResumeAudio(){
+    const r=currentRadio03;
+    if(!r||document.visibilityState!=='visible')return;
+    if(r.stage==='transmission')radio03PlayTransmission();
+    else radio03PlaySegment();
+  }
+  function handleRadio03Visibility(){
+    const r=currentRadio03;if(!r)return;
+    if(document.visibilityState==='hidden'){
+      if(r.stage==='choices')radio03PauseTimer();
+      if(r.stage==='gong'&&r.gongTimer!==null){
+        clearTimeout(r.gongTimer);r.gongTimer=null;
+      }
+      if(r.audio&&!r.audio.paused){
+        r.audio.pause();radio03StopBackground(r);
+        radio03AudioBlocked('Lecture suspendue. Touchez pour reprendre.');
+      }
+    }else if(r.stage==='choices')radio03StartTimer();
+  }
+  function radio03OnPageHide(){
+    const r=currentRadio03;if(!r)return;
+    if(r.stage==='choices')radio03PauseTimer();
+    else if(r.audio){
+      if(r.stage==='gong'&&r.gongTimer!==null){
+        clearTimeout(r.gongTimer);r.gongTimer=null;
+      }
+      r.audio.pause();radio03StopBackground(r);
+    }
+  }
+  function beginRadio03(item,preview,restoring=false){
+    const pending=restoring?eventSession.pendingRadio003:null;
+    if(item?.id!=='radio-003'||!eventSession.active
+      ||currentMaskEvent||currentMask05||currentRadioEvent||currentRadio02
+      ||currentRadio03||currentWeatherEvent||specialAudioActive
+      ||anyBlockingModalOpen()||!isPartieTabActive()
+      ||document.visibilityState!=='visible'
+      ||(state.value>=100&&!(restoring&&pending?.stage==='result'))
+      ||(!restoring&&livingPlayerNumbers().length===0)
+      ||restoring&&!pending)return false;
+    pauseAudioEventClock();
+    // Après F5, l'appel initial ne sera JAMAIS rejoué.
+    const stage=restoring&&pending.stage==='transmission'?'glitch'
+      :restoring?pending.stage:'transmission';
+    const r={
+      token:++radio03Token,item,preview,stage,
+      savedPreviewDelay:eventSession.remainingMs,
+      sequence:pending?.sequence?.slice()||Array.from({length:5},()=>
+        RADIO03_COLORS[randomBetween(0,3)]),
+      target:pending?.target??null,guess:pending?.guess?.slice()||[],
+      outcome:pending?.outcome??null,before:pending?.before??null,
+      after:pending?.after??null,gameOver:pending?.gameOver===true,
+      remainingMs:pending?.remainingMs??RADIO03_CHOICE_MS,
+      deadline:pending?.deadline||0,
+      audio:null,ambience:null,colorAudio:null,
+      colorTimer:null,colorIndex:0,colorsStarted:false,timer:null,gongTimer:null
+    };
+    currentRadio03=r;
+    if(!preview&&!restoring){
+      eventSession.played.push(item.id);eventSession.remainingMs=null;
+    }
+    radio03Save();
+    els.radio03Status.textContent='Une fréquence inconnue s’active…';
+    for(const id of ['radio03Challenge','radio03Reward','radio03Play',
+      'radio03Cancel','radio03Done'])els[id].classList.add('hidden');
+    els.radio03Overlay.classList.toggle('is-hijacked',
+      !['transmission','glitch'].includes(stage));
+    radio03UpdatePortrait(stage);
+    els.radio03Overlay.classList.add('show');
+    els.radio03Overlay.setAttribute('aria-hidden','false');
+    specialAudioActive=true;silenceHauntSounds();syncAmbientVolume();
+    renderEventControls();
+    if(stage==='choices')radio03ShowChoices();
+    else if(stage==='result'){
+      // Corrige le rare F5 entre la sauvegarde du verdict et l'effet.
+      if(!preview&&Number.isFinite(r.before)&&Number.isFinite(r.after)
+        &&state.value===r.before&&r.after>r.before){
+        applyInstabilityDelta(r.after-r.before,{
+          source:'Radio — Vous écoutiez ? (reprise)',
+          deferThreshold:true,deferGameOver:true
+        });
+      }
+      radio03ShowResult();
+    }else if(stage==='cancelled')radio03ShowCancelled();
+    else if(stage==='transmission')radio03PlayTransmission();
+    else radio03PlaySegment();
+    return true;
+  }
+  function resumePendingRadio03IfPossible(){
+    const pending=eventSession.pendingRadio003;
+    if(!pending||!eventSession.active||gameOverShown
+      ||document.visibilityState!=='visible'
+      ||(state.value>=100&&pending.stage!=='result'))return false;
+    const item=AUDIO_EVENTS.find(x=>x.id==='radio-003');
+    if(!item){eventSession.pendingRadio003=null;saveAudioEventSession();return false;}
+    return beginRadio03(item,false,true);
+  }
+
   // =========================================================
   // MÉTÉO : NARRATION DU MONDE ET CONSÉQUENCE AUTOMATIQUE
   // =========================================================
+
+
+  // =========================================================
+  // MÉTÉO 004 — LE DERNIER BATTEMENT (identité jamais affichée)
+  // =========================================================
+  const WEATHER04_DURATION=15000;
+  // Décalage testable : la combustion commence avant la fin du MP3 « Céder ».
+  const WEATHER04_REVEAL_LEAD_SECONDS=2.0;
+  const WEATHER04_VIDEO='bestiaire/videos/gardienne-du-vice.webm';
+  let w04BurnFrame=null, w04VideoFrame=null, w04Delay=null, w04AutoplayTimer=null;
+  let w04VolumeFadeFrame=null;
+  function w04Save(stage) {
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.preview)return;
+    eventSession.pendingWeather={id:e.item.id,stage,choice:e.choice,
+      remainingMs:stage==='choices'?e.remainingMs:null,rewardApplied:e.applied};
+    saveAudioEventSession();
+  }
+  function w04StopClock() {
+    const e=currentWeatherEvent;
+    if(e?.timer!==null && e?.timer!==undefined){clearInterval(e.timer);e.timer=null;}
+  }
+  function w04StopAudio() {
+    const e=currentWeatherEvent;
+    if(e?.loop){e.loop.pause();try{e.loop.currentTime=0;}catch(_){}}
+  }
+  function w04StopVisuals() {
+    if(w04BurnFrame!==null)cancelAnimationFrame(w04BurnFrame);
+    if(w04VideoFrame!==null)cancelAnimationFrame(w04VideoFrame);
+    if(w04Delay!==null)clearTimeout(w04Delay);
+    if(w04AutoplayTimer!==null)clearTimeout(w04AutoplayTimer);
+    if(w04VolumeFadeFrame!==null)cancelAnimationFrame(w04VolumeFadeFrame);
+    w04BurnFrame=null;w04VideoFrame=null;w04Delay=null;w04AutoplayTimer=null;
+    w04VolumeFadeFrame=null;
+  }
+  function weather04CleanUp() {
+    w04StopClock();w04StopAudio();w04StopVisuals();
+    const v=els.weather04Video;
+    v.pause();v.onended=null;v.onerror=null;v.onloadeddata=null;
+    v.removeAttribute('src');v.load();
+    els.weather04Overlay.classList.remove('show');
+    els.weather04Overlay.setAttribute('aria-hidden','true');
+    els.weather04Stage.className='weather04-stage';
+    els.weather04Stage.style.removeProperty('--heart-shock');
+    els.weather04Surface.style.removeProperty('mask-image');
+    els.weather04Surface.style.removeProperty('-webkit-mask-image');
+    els.weather04Surface.style.removeProperty('pointer-events');
+    els.weather04Surface.style.removeProperty('opacity');
+    els.weather04Surface.style.removeProperty('transition');
+    els.weather04Panel.style.removeProperty('mask-image');
+    els.weather04Panel.style.removeProperty('-webkit-mask-image');
+    els.weather04Panel.style.removeProperty('pointer-events');
+    els.weather04Panel.style.removeProperty('opacity');
+    els.weather04Panel.style.removeProperty('transition');
+    els.weather04Burn.removeAttribute('style');
+    for(const id of ['weather04Choices','weather04Sound','weather04Play',
+      'weather04Skip','weather04Result','weather04Done','weather04VideoActions'])
+      els[id].classList.add('hidden');
+    els.weather04Burn.width=0;els.weather04Burn.height=0;
+  }
+  function w04Fallback(message) {
+    const e=currentWeatherEvent;
+    if(!e?.is04||!['intro','branch'].includes(e.phase))return;
+    els.weather04Status.textContent=message||
+      'Narration interrompue. Réessayez ou poursuivez sans audio.';
+    els.weather04Play.classList.remove('hidden');
+    els.weather04Skip.classList.remove('hidden');
+  }
+  function weather04PlayNarration(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||!['intro','branch'].includes(e.phase)
+      ||document.visibilityState!=='visible')return;
+    if(!e.audio)return weather04SkipNarration();
+    const phase=e.phase,token=e.token;
+    els.weather04Play.classList.add('hidden');
+    els.weather04Skip.classList.add('hidden');
+    els.weather04Status.textContent=phase==='intro'
+      ?'Une pulsation inconnue traverse la ville…'
+      :e.choice==='resist'?'Vous luttez contre le rythme imposé…'
+        :'Vous abandonnez toute résistance…';
+    // Pendant la conclusion B, le récit continue sous la combustion :
+    // seule la transition démarre plus tôt, sans couper le narrateur.
+    e.audio.ontimeupdate=()=>{
+      if(currentWeatherEvent?.token!==token||phase!=='branch'
+        ||e.choice!=='cede'||e.phase!=='branch')return;
+      const duration=e.audio?.duration;
+      const position=e.audio?.currentTime;
+      if(Number.isFinite(duration)&&duration>0&&Number.isFinite(position)
+        &&duration-position<=WEATHER04_REVEAL_LEAD_SECONDS){
+        w04AfterBranch(true);
+      }
+    };
+    e.audio.onended=()=>{
+      if(currentWeatherEvent?.token!==token)return;
+      if(phase==='intro'&&e.phase==='intro')w04Choices();
+      else if(phase==='branch'){
+        if(e.phase==='branch')w04AfterBranch(); // secours si le MP3 n'a pas de durée.
+        else if(e.phase==='reveal'){
+          e.audio=null;
+          w04RestoreRevealVolume();
+        }
+      }
+    };
+    e.audio.onerror=()=>{
+      if(currentWeatherEvent?.token===token)
+        w04Fallback('Audio indisponible. Réessayez ou poursuivez.');
+    };
+    try{e.audio.play().catch(()=>{
+      if(currentWeatherEvent?.token===token)
+        w04Fallback('Lecture bloquée. Touchez pour reprendre.');
+    });}catch(_){w04Fallback();}
+  }
+  function weather04SkipNarration(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||!['intro','branch'].includes(e.phase))return;
+    e.audio?.pause();
+    if(e.audio){e.audio.onended=null;e.audio.onerror=null;}
+    if(e.phase==='intro')w04Choices();
+    else w04AfterBranch();
+  }
+  function w04ClockView(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices')return;
+    const sec=Math.ceil(e.remainingMs/1000);
+    els.weather04Clock.textContent='00:'+String(sec).padStart(2,'0');
+    els.weather04Progress.style.width=(e.remainingMs/WEATHER04_DURATION*100).toFixed(2)+'%';
+    els.weather04Track.setAttribute('aria-valuenow',String(sec));
+  }
+  function weather04TryChoiceAudio(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices'||document.visibilityState!=='visible')return;
+    e.loop.play().then(()=>els.weather04Sound.classList.add('hidden')).catch(()=>{
+      if(currentWeatherEvent?.token===e.token)
+        els.weather04Sound.classList.remove('hidden');
+    });
+  }
+  function w04PauseChoices(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices')return;
+    if(e.timer!==null){
+      e.remainingMs=Math.max(0,e.deadline-performance.now());
+      w04StopClock();w04Save('choices');
+    }
+    w04StopAudio();
+  }
+  function w04ResumeChoices(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices'||e.timer!==null
+      ||document.visibilityState!=='visible')return;
+    if(e.remainingMs<=0)return weather04Choose('resist');
+    e.deadline=performance.now()+e.remainingMs;
+    const token=e.token;let sec=Math.ceil(e.remainingMs/1000);
+    e.timer=setInterval(()=>{
+      if(currentWeatherEvent?.token!==token||e.phase!=='choices')return;
+      e.remainingMs=Math.max(0,e.deadline-performance.now());
+      w04ClockView();
+      const next=Math.ceil(e.remainingMs/1000);
+      if(next!==sec){sec=next;w04Save('choices');}
+      if(e.remainingMs<=0)weather04Choose('resist');
+    },100);
+    weather04TryChoiceAudio();
+  }
+  function w04Choices(restoring=false){
+    const e=currentWeatherEvent;if(!e?.is04)return;
+    e.audio?.pause();e.audio=null;e.phase='choices';
+    e.remainingMs=restoring?Math.max(0,Math.min(WEATHER04_DURATION,e.remainingMs))
+      :WEATHER04_DURATION;
+    if(!e.loop){
+      e.loop=new Audio(e.item.choiceAudio);
+      e.loop.loop=true;e.loop.volume=1;e.loop.preload='auto';
+    }
+    els.weather04Stage.className='weather04-stage choices';
+    els.weather04Status.textContent=
+      'Une cadence étrangère s’impose à vos cœurs. Comment réagissez-vous ?';
+    for(const id of ['weather04Play','weather04Skip','weather04Result',
+      'weather04Done','weather04Sound'])els[id].classList.add('hidden');
+    els.weather04Choices.classList.remove('hidden');
+    w04ClockView();w04Save('choices');w04ResumeChoices();
+  }
+  function weather04Choose(choice){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='choices'||!['resist','cede'].includes(choice))return;
+    w04PauseChoices();e.choice=choice;e.phase='branch';
+    e.audio=new Audio(choice==='resist'?e.item.resistAudio:e.item.cedeAudio);
+    e.audio.volume=1;e.audio.preload='auto';
+    els.weather04Choices.classList.add('hidden');
+    els.weather04Sound.classList.add('hidden');
+    els.weather04Stage.className='weather04-stage branch';
+    w04Save('branch');
+    if(choice==='cede'){
+      els.weather04Video.src=WEATHER04_VIDEO;
+      els.weather04Video.preload='auto';
+      els.weather04Video.load();
+      ensureRuntimeAsset(WEATHER04_VIDEO).catch(()=>{});
+    }
+    weather04PlayNarration();
+  }
+  function w04AfterBranch(keepNarration=false){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='branch')return;
+    if(keepNarration&&e.choice==='cede'){
+      // Le MP3 finit normalement sa dernière phrase, sans déclencher
+      // à nouveau la révélation quand son événement ended se produit.
+      if(e.audio)e.audio.ontimeupdate=null;
+    }else{
+      e.audio?.pause();
+      e.audio=null;
+    }
+    if(e.choice==='cede'){
+      e.phase='reveal';w04Save('reveal');w04Reveal();
+    }else weather04Result();
+  }
+  function w04RestoreRevealVolume(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const video=els.weather04Video;
+    if(w04VolumeFadeFrame!==null)cancelAnimationFrame(w04VolumeFadeFrame);
+    const start=video.volume,at=performance.now(),token=e.token;
+    const fade=now=>{
+      if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+      const p=Math.max(0,Math.min(1,(now-at)/480));
+      video.volume=Math.min(1,start+(1-start)*p);
+      if(p<1)w04VolumeFadeFrame=requestAnimationFrame(fade);
+      else w04VolumeFadeFrame=null;
+    };
+    w04VolumeFadeFrame=requestAnimationFrame(fade);
+  }
+
+
+  // Combustion procédurale : une membrane de "papier" craquelle,
+  // se consume et ouvre des brèches sur la vidéo derrière elle.
+  function w04Burn(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const stage=els.weather04Stage,curtain=els.weather04Surface;
+    const canvas=els.weather04Burn;
+    const token=e.token;
+    // Le WebM est visible sous chaque trou dès la première brûlure.
+    // Le son/la vidéo démarrent au bout de 500 ms, pendant la combustion.
+    function finish(){
+      if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+      curtain.style.opacity='0';
+      stage.classList.add('burn-done','revealing');
+      w04BurnFrame=null;
+      // À la fin du feu, la lecture est déjà en cours. Si le navigateur
+      // refuse l'autoplay, on attend ici pour proposer une action manuelle.
+      if(e.videoError){
+        els.weather04VideoActions.classList.remove('hidden');
+        els.weather04VideoPlay.classList.add('hidden');
+      }else if(e.videoAutoplayBlocked){
+        els.weather04VideoActions.classList.remove('hidden');
+        els.weather04VideoPlay.classList.remove('hidden');
+        els.weather04VideoPlay.textContent='TOUCHER POUR RÉVÉLER';
+      }else if(els.weather04Video.paused && w04AutoplayTimer===null){
+        weather04TryVideo();
+      }
+    }
+    const masksSupported=('maskImage' in curtain.style)
+      ||('webkitMaskImage' in curtain.style);
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    if(!ctx||!masksSupported||REDUCED_MOTION){
+      curtain.style.transition='opacity .55s ease';
+      curtain.style.opacity='0';
+      w04Delay=setTimeout(()=>{w04Delay=null;finish();},560);
+      return;
+    }
+    const rect=curtain.getBoundingClientRect();
+    // Le masque couvre le viewport, mais est calculé à résolution
+    // maîtrisée pour préserver la fluidité sur smartphone/ordinateur.
+    const scale=Math.min(1,
+      Math.sqrt(370000/Math.max(1,rect.width*rect.height)),
+      900/Math.max(1,rect.width));
+    const W=Math.max(1,Math.round(rect.width*scale));
+    const H=Math.max(1,Math.round(rect.height*scale));
+    canvas.style.left=rect.left+'px';
+    canvas.style.top=rect.top+'px';
+    canvas.style.width=rect.width+'px';
+    canvas.style.height=rect.height+'px';
+    canvas.width=W;canvas.height=H;
+    curtain.style.pointerEvents='none';
+    const mask=document.createElement('canvas');
+    mask.width=W;mask.height=H;
+    const mc=mask.getContext('2d',{willReadFrequently:true});
+    if(!mc){curtain.style.opacity='0';finish();return;}
+    const maskPixels=mc.createImageData(W,H);
+    const glowPixels=ctx.createImageData(W,H);
+    const total=W*H,field=new Float32Array(total);
+    // Bruit continu multiéchelle : des micro-brûlures organiques et non
+    // des trous géométriques/rayonnants dessinés à partir de cercles.
+    function hash(x,y){
+      let n=Math.imul(x,374761393)^Math.imul(y,668265263);
+      n=Math.imul(n^(n>>>13),1274126177);
+      return ((n^(n>>>16))>>>0)/4294967295;
+    }
+    function noise(x,y){
+      const ix=Math.floor(x),iy=Math.floor(y);
+      const sx=x-ix,sy=y-iy;
+      const tx=sx*sx*(3-2*sx),ty=sy*sy*(3-2*sy);
+      const a=hash(ix,iy),b=hash(ix+1,iy);
+      const c=hash(ix,iy+1),d=hash(ix+1,iy+1);
+      return (a+(b-a)*tx)*(1-ty)+(c+(d-c)*tx)*ty;
+    }
+    const seeds=[
+      [.05,.17,-.08],[.85,.13,.03],[.12,.74,-.02],
+      [.76,.86,.02],[.46,.43,.12],[.93,.52,.10],
+      [.31,.07,.09],[.35,.92,.08],[.62,.24,.12],
+      [.08,.45,.17],[.58,.71,.13],[.23,.30,.10],
+      [.71,.44,.16],[.43,.63,.17],[.27,.82,.19],
+      [.92,.84,.20],[.13,.90,.17],[.86,.32,.22]
+    ];
+    let lo=Infinity,hi=-Infinity;
+    for(let y=0;y<H;y++){
+      const v=(y+.5)/H;
+      for(let x=0;x<W;x++){
+        const u=(x+.5)/W;
+        const large=noise(u*5.5+7.2,v*6.6+1.8);
+        const mid=noise(u*17.6+10.3,v*19.8+3.1);
+        const fine=noise(u*47.2+4.6,v*43.9+11.7);
+        const warpU=u+(large-.5)*.093+(mid-.5)*.026;
+        const warpV=v+(noise(u*5.5+15.7,v*6.3+9.1)-.5)*.083;
+        let nearest=Infinity;
+        for(const [sx,sy,offset] of seeds){
+          const dist=Math.hypot((warpU-sx)*1.1,(warpV-sy)*.87);
+          nearest=Math.min(nearest,dist+offset);
+        }
+        const t=nearest*1.85+(large-.5)*.23
+          +(mid-.5)*.16+(fine-.5)*.062;
+        const ix=y*W+x;
+        field[ix]=t;
+        if(t<lo)lo=t;if(t>hi)hi=t;
+      }
+    }
+    const inv=1/Math.max(.001,hi-lo);
+    for(let i=0;i<total;i++)field[i]=(field[i]-lo)*inv;
+    const start=performance.now(),duration=3450;
+    let lastFrame=-Infinity;
+    function renderFrame(now){
+      if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+      if(now-lastFrame<43){
+        w04BurnFrame=requestAnimationFrame(renderFrame);return;
+      }
+      lastFrame=now;
+      const p=Math.min(1,(now-start)/duration);
+      const threshold=-.012+p*1.035;
+      const m=maskPixels.data,g=glowPixels.data;
+      for(let i=0;i<total;i++){
+        const delta=field[i]-threshold,k=i*4;
+        const alpha=Math.max(0,Math.min(255,Math.round(delta*14200)));
+        m[k]=255;m[k+1]=255;m[k+2]=255;m[k+3]=alpha;
+        // Cendres noires, croûte orange, filet jaune incandescent.
+        let ga=0,r=0,gg=0,b=0;
+        if(delta>-.034&&delta<.063){
+          if(delta<-.013){
+            r=255;gg=65;b=22;
+            ga=80*(delta+.034)/.021;
+          }else if(delta<0){
+            r=255;gg=117;b=37;
+            ga=115+125*(delta+.013)/.013;
+          }else if(delta<.011){
+            r=255;gg=228;b=143;
+            ga=238;
+          }else if(delta<.03){
+            r=235;gg=89;b=32;
+            ga=193*(.03-delta)/.019;
+          }else{
+            r=19;gg=7;b=6;
+            ga=150*(.063-delta)/.033;
+          }
+        }
+        g[k]=r;g[k+1]=gg;g[k+2]=b;
+        g[k+3]=Math.max(0,Math.min(255,Math.round(ga)));
+      }
+      mc.putImageData(maskPixels,0,0);
+      const encoded=mask.toDataURL('image/png');
+      curtain.style.maskImage='url("'+encoded+'")';
+      curtain.style.webkitMaskImage='url("'+encoded+'")';
+      ctx.putImageData(glowPixels,0,0);
+      // Quelques minuscules braises détachées des bords, pas d'étoiles.
+      if(p<.96){
+        for(let j=0;j<20;j++){
+          const pos=((j*7919+Math.floor(p*600)*409)%total);
+          if(Math.abs(field[pos]-threshold)>.025)continue;
+          ctx.fillStyle=j%4?'rgba(255,112,40,.58)':'rgba(255,223,154,.8)';
+          ctx.fillRect(pos%W,(pos/W|0)-2-j%10,1+j%2,2+j%3);
+        }
+      }
+      if(p>=1){finish();return;}
+      w04BurnFrame=requestAnimationFrame(renderFrame);
+    }
+    w04BurnFrame=requestAnimationFrame(renderFrame);
+  }
+  function w04SyncVideo(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const video=els.weather04Video;
+    const time=video.currentTime||0;
+    // Une seule lecture vidéo : les images fournissent aussi le fond flouté.
+    if(video.readyState>=2){
+      const canvas=els.weather04Backdrop;
+      if(canvas.width!==384||canvas.height!==240){
+        canvas.width=384;canvas.height=240;
+      }
+      const ctx=canvas.getContext('2d',{alpha:false});
+      if(ctx){
+        const vw=video.videoWidth||736,vh=video.videoHeight||1120;
+        const ratio=Math.min(vw/384,vh/240);
+        const sw=384*ratio,sh=240*ratio;
+        ctx.drawImage(video,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,384,240);
+      }
+    }
+    // Deux grandes impulsions observables dans l'animation source.
+    const strength=Math.min(1,
+      .5*Math.exp(-Math.pow((time-1.8)/.25,2))+
+      Math.exp(-Math.pow((time-6.3)/.36,2)));
+    els.weather04Stage.style.setProperty('--heart-shock',strength.toFixed(3));
+    w04VideoFrame=requestAnimationFrame(w04SyncVideo);
+  }
+
+
+  function w04Reveal(restoring=false){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const token=e.token,video=els.weather04Video;
+    els.weather04Stage.className=restoring
+      ? 'weather04-stage revealing burn-done'
+      : 'weather04-stage burning';
+    els.weather04VideoActions.classList.add('hidden');
+    video.playsInline=true;video.muted=false;
+    // Éviter que le premier grondement du WebM masque « C'est le sien ».
+    video.volume=e.audio&&!e.audio.paused?0.12:1;
+    video.preload='auto';
+    if(!video.getAttribute('src'))video.src=WEATHER04_VIDEO;
+    video.onended=()=>{
+      if(currentWeatherEvent?.token===token&&e.phase==='reveal')weather04Result();
+    };
+    video.onerror=()=>{
+      if(currentWeatherEvent?.token===token&&e.phase==='reveal'){
+        e.videoError=true;
+        if(els.weather04Stage.classList.contains('burn-done')){
+          els.weather04VideoActions.classList.remove('hidden');
+          els.weather04VideoPlay.classList.add('hidden');
+        }
+      }
+    };
+    if(restoring){
+      els.weather04Surface.style.opacity='0';
+      els.weather04VideoPlay.classList.remove('hidden');
+      els.weather04VideoPlay.textContent='REPRENDRE L’APPARITION';
+      els.weather04VideoActions.classList.remove('hidden');
+    }else{
+      // On attend la PREMIÈRE IMAGE DÉCODÉE avant de consumer tout l'écran.
+      // Aucun écran vide après la combustion, même sur connexion lente.
+      const ignite=()=>{
+        if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+        video.onloadeddata=null;
+        if(w04Delay!==null){clearTimeout(w04Delay);w04Delay=null;}
+        els.weather04VideoActions.classList.add('hidden');
+        w04Burn();
+        // La combustion dure 3,45 s : la vidéo joue dès 0,5 s.
+        // On conserve la première image visible sous le masque avant cela.
+        w04AutoplayTimer=setTimeout(()=>{
+          w04AutoplayTimer=null;
+          if(currentWeatherEvent?.token!==token||e.phase!=='reveal')return;
+          weather04TryVideo();
+        },500);
+      };
+      if(video.readyState>=2)ignite();
+      else{
+        els.weather04Status.textContent=
+          'Une présence cherche à traverser votre écran…';
+        video.onloadeddata=ignite;
+        w04Delay=setTimeout(()=>{
+          w04Delay=null;
+          if(currentWeatherEvent?.token!==token||e.phase!=='reveal'
+            ||video.readyState>=2)return;
+          els.weather04Status.textContent=
+            'L’apparition tarde à se charger. Vous pouvez poursuivre sans la vidéo.';
+          els.weather04VideoActions.classList.remove('hidden');
+          els.weather04VideoPlay.classList.add('hidden');
+        },7000);
+      }
+    }
+    if(!REDUCED_MOTION)w04VideoFrame=requestAnimationFrame(w04SyncVideo);
+  }
+  function weather04TryVideo(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||e.phase!=='reveal')return;
+    const v=els.weather04Video;
+    if(v.error){
+      els.weather04VideoActions.classList.remove('hidden');
+      els.weather04VideoPlay.classList.add('hidden');
+      return;
+    }
+    v.play().then(()=>{
+      if(currentWeatherEvent?.token!==e.token)return;
+      e.videoAutoplayBlocked=false;
+      els.weather04VideoActions.classList.add('hidden');
+    }).catch(()=>{
+      if(currentWeatherEvent?.token!==e.token)return;
+      e.videoAutoplayBlocked=true;
+      // Pas de bouton pendant la combustion, pour préserver la surprise.
+      if(!els.weather04Stage.classList.contains('burn-done'))return;
+      els.weather04VideoActions.classList.remove('hidden');
+      els.weather04VideoPlay.classList.remove('hidden');
+      els.weather04VideoPlay.textContent='TOUCHER POUR RÉVÉLER';
+    });
+  }
+  function weather04Result(){
+    const e=currentWeatherEvent;if(!e?.is04)return;
+    w04StopVisuals();w04StopClock();w04StopAudio();
+    els.weather04Surface.style.removeProperty('opacity');
+    els.weather04Surface.style.removeProperty('mask-image');
+    els.weather04Surface.style.removeProperty('-webkit-mask-image');
+    els.weather04Surface.style.removeProperty('pointer-events');
+    els.weather04Surface.style.removeProperty('transition');
+    els.weather04Panel.style.removeProperty('opacity');
+    els.weather04Panel.style.removeProperty('mask-image');
+    els.weather04Panel.style.removeProperty('-webkit-mask-image');
+    els.weather04Panel.style.removeProperty('pointer-events');
+    els.weather04Panel.style.removeProperty('transition');
+    els.weather04Burn.removeAttribute('style');
+    e.audio?.pause();els.weather04Video.pause();
+    e.phase='result';
+    // Sauvegarde de l'étape et de la récompense avant l'affichage.
+    w04Save('result');
+    if(e.choice==='cede'&&!e.applied){
+      setTemporaryEffect('equipements','Équipements et Objets inutilisables',2);
+      e.applied=true;w04Save('result');
+    }
+    e.completed=true;
+    els.weather04Stage.className='weather04-stage result';
+    els.weather04Status.textContent=e.choice==='resist'
+      ?'Vous avez repoussé les pulsations.'
+      :'Le silence revient. Une présence vous a répondu.';
+    els.weather04Result.replaceChildren();
+    const p=document.createElement('p'),b=document.createElement('strong');
+    b.textContent=e.choice==='resist'
+      ?'Chaque survivant perd 1 PV.':'Chaque survivant soigne 1 PV.';
+    p.appendChild(b);els.weather04Result.appendChild(p);
+    const info=document.createElement('p');
+    info.textContent=e.choice==='resist'
+      ?'Cette perte ne peut pas tuer : un survivant à 1 PV conserve son dernier PV.'
+      :'Retournez face cachée tous vos Équipements et Objets. Ils sont inutilisables pendant 2 manches complètes.';
+    els.weather04Result.appendChild(info);
+    for(const id of ['weather04Choices','weather04Play','weather04Skip',
+      'weather04VideoActions'])els[id].classList.add('hidden');
+    els.weather04Result.classList.remove('hidden');
+    els.weather04Done.classList.remove('hidden');
+    els.weather04Done.focus();
+    if(!e.preview){
+      eventSession.nextWeatherEligibleAt=Date.now()+WEATHER_MIN_GAP_MS;
+      saveAudioEventSession();
+    }
+  }
+  function weather04Complete(){
+    const e=currentWeatherEvent;
+    if(!e?.is04||!e.completed)return;
+    const delay=e.preview?e.savedPreviewDelay:randomBetween(...EVENT_NEXT_DELAY);
+    dismissWeatherEvent();
+    if(!e.preview)eventSession.pendingWeather=null;
+    eventSession.remainingMs=delay;
+    saveAudioEventSession();renderEventControls();updateAudioEventClock();
+  }
+  function weather04Visibility(){
+    const e=currentWeatherEvent;if(!e?.is04)return;
+    if(document.visibilityState==='hidden'){
+      if(e.phase==='choices')w04PauseChoices();
+      if(['intro','branch'].includes(e.phase)&&e.audio&&!e.audio.paused){
+        e.audio.pause();w04Fallback('Narration suspendue. Touchez pour reprendre.');
+      }
+      if(e.phase==='reveal'){
+        e.audio?.pause();
+        els.weather04Video.pause();
+        els.weather04Video.onloadeddata=null;
+        w04StopVisuals();
+        els.weather04Surface.style.opacity='0';
+        els.weather04Stage.className='weather04-stage revealing burn-done';
+        els.weather04VideoActions.classList.remove('hidden');
+        els.weather04VideoPlay.classList.remove('hidden');
+        els.weather04VideoPlay.textContent='REPRENDRE L’APPARITION';
+      }
+    }else if(e.phase==='choices')w04ResumeChoices();
+  }
+  function beginWeather04(item,preview,restoring=false){
+    if(!item||item.id!=='meteo-004'||!eventSession.active
+      ||currentMask05||currentMaskEvent||currentRadioEvent||currentRadio02
+      ||currentWeatherEvent||specialAudioActive||anyBlockingModalOpen()
+      ||document.visibilityState!=='visible'||!isPartieTabActive()
+      ||state.value>=100||livingPlayerNumbers().length===0)return false;
+    const pending=restoring?eventSession.pendingWeather:null;
+    if(restoring&&(!pending||pending.id!=='meteo-004'))return false;
+    if(!preview&&!restoring&&(eventSession.pendingWeather
+      ||eventSession.played.includes(item.id)
+      ||eventSession.weatherCount>=WEATHER_MAX_PER_GAME
+      ||Date.now()<eventSession.nextWeatherEligibleAt))return false;
+    if(preview&&eventSession.pendingWeather)return false;
+    pauseAudioEventClock();
+    const phase=pending?.stage||'intro',choice=pending?.choice||null;
+    const path=phase==='intro'?item.introAudio
+      :phase==='branch'?(choice==='cede'?item.cedeAudio:item.resistAudio):null;
+    const audio=path?new Audio(path):null;
+    if(audio){audio.preload='auto';audio.volume=1;}
+    currentWeatherEvent={
+      is04:true,isWeather04:true,item,preview,token:++weatherEventToken,
+      phase,choice,audio,loop:null,timer:null,deadline:0,
+      remainingMs:Number.isFinite(pending?.remainingMs)
+        ?Math.max(0,Math.min(WEATHER04_DURATION,pending.remainingMs))
+        :WEATHER04_DURATION,
+      applied:pending?.rewardApplied===true,completed:false,
+      videoAutoplayBlocked:false,videoError:false,
+      savedPreviewDelay:eventSession.remainingMs
+    };
+    if(!preview&&!restoring){
+      eventSession.played.push(item.id);
+      eventSession.weatherCount=Math.min(WEATHER_MAX_PER_GAME,eventSession.weatherCount+1);
+      eventSession.remainingMs=null;
+      w04Save('intro');
+    }
+    els.weather04Stage.className='weather04-stage intro';
+    els.weather04Surface.style.removeProperty('opacity');
+    els.weather04Surface.style.removeProperty('mask-image');
+    els.weather04Surface.style.removeProperty('-webkit-mask-image');
+    els.weather04Surface.style.removeProperty('pointer-events');
+    els.weather04Surface.style.removeProperty('transition');
+    els.weather04Panel.style.removeProperty('opacity');
+    els.weather04Panel.style.removeProperty('mask-image');
+    els.weather04Panel.style.removeProperty('-webkit-mask-image');
+    els.weather04Status.textContent='Une sensation inconnue traverse la ville…';
+    for(const id of ['weather04Choices','weather04Result','weather04Done',
+      'weather04Play','weather04Skip','weather04VideoActions','weather04Sound'])
+      els[id].classList.add('hidden');
+    els.weather04VideoPlay.classList.remove('hidden');
+    els.weather04Overlay.classList.add('show');
+    els.weather04Overlay.setAttribute('aria-hidden','false');
+    specialAudioActive=true;silenceHauntSounds();syncAmbientVolume();renderEventControls();
+    if(restoring){
+      if(phase==='choices')w04Choices(true);
+      else if(phase==='reveal')w04Reveal(true);
+      else if(phase==='result')weather04Result();
+      else w04Fallback('Reprenez le récit interrompu.');
+    }else weather04PlayNarration();
+    return true;
+  }
 
   function getWeatherItem(id) {
     return AUDIO_EVENTS.find(item => item.type === 'meteo' && item.id === id);
   }
 
+  function getWeatherResultValue(item, before, fromReflet) {
+    // La Fracture du Réel force le passage d'un monde à l'autre :
+    // 55 % depuis le normal, 45 % depuis le Reflet, sans +5 % météo.
+    if (item.id === 'meteo-003') return fromReflet ? 45 : 55;
+    return clamp(before + item.delta, 0, 100);
+  }
+
   function dismissWeatherEvent(immediate = false) {
+    if (currentWeatherEvent?.isWeather04) weather04CleanUp();
     weatherEventToken += 1;
     if (currentWeatherEvent?.audio) {
       currentWeatherEvent.audio.pause();
@@ -5781,8 +8524,9 @@ syncMusicForActiveTab();
   }
 
   function beginWeatherEvent(item, preview, restoring = false) {
+    if (item?.id === 'meteo-004') return beginWeather04(item, preview, restoring);
     if (!item || item.type !== 'meteo' || !eventSession.active
-      || currentMaskEvent || currentRadioEvent || currentWeatherEvent
+      || currentMask05 || currentMaskEvent || currentRadioEvent || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
       || !isPartieTabActive() || document.visibilityState !== 'visible'
       || (state.value >= 100 && !(restoring
@@ -5803,11 +8547,16 @@ syncMusicForActiveTab();
 
     pauseAudioEventClock();
     const token = ++weatherEventToken;
-    const audio = new Audio(item.audio);
+    // Le monde est figé dès le tirage, et conservé si la page est rechargée.
+    const savedOrigin = restoring ? eventSession.pendingWeather?.fromReflet : null;
+    const fromReflet = typeof savedOrigin === 'boolean' ? savedOrigin : isReflet();
+    const audioPath = item.id === 'meteo-003'
+      ? (fromReflet ? item.audioReflet : item.audioNormal) : item.audio;
+    const audio = new Audio(audioPath);
     audio.preload = 'auto';
     audio.volume = 1;
     currentWeatherEvent = {
-      item, preview, restoring, token, audio, completed: false,
+      item, preview, restoring, token, audio, fromReflet, completed: false,
       savedPreviewDelay: eventSession.remainingMs,
       deferredTransition: null, deferredGameOver: false
     };
@@ -5819,7 +8568,7 @@ syncMusicForActiveTab();
       );
       eventSession.pendingWeather = {
         id: item.id, stage: 'playing', before: null, after: null,
-        gameOver: false
+        fromReflet, gameOver: false
       };
       eventSession.remainingMs = null;
     }
@@ -5828,8 +8577,11 @@ syncMusicForActiveTab();
     // Aucun nom ni pictogramme propre au phénomène avant la narration.
     // Le nom technique reste réservé aux contrôles du mode test.
     els.weatherEventSymbol.textContent = '◇';
-    els.weatherEventHeading.textContent = 'PERTURBATION ATMOSPHÉRIQUE';
-    els.weatherEventStatus.textContent = 'L’atmosphère semble se déformer…';
+    els.weatherEventHeading.textContent = item.id === 'meteo-003'
+      ? 'ANOMALIE SISMIQUE' : 'PERTURBATION ATMOSPHÉRIQUE';
+    els.weatherEventStatus.textContent = item.id === 'meteo-003'
+      ? 'Une anomalie se manifeste sous vos pieds…'
+      : 'L’atmosphère semble se déformer…';
     els.weatherEventPlay.classList.add('hidden');
     els.weatherEventSkip.classList.add('hidden');
     els.weatherEventResult.classList.add('hidden');
@@ -5848,7 +8600,7 @@ syncMusicForActiveTab();
         // Une actualisation juste avant la mise à jour de la jauge ne doit
         // ni annuler ni appliquer deux fois la conséquence.
         if (state.value === pending.before) {
-          applyInstabilityDelta(item.delta, {
+          applyInstabilityDelta(pending.after - pending.before, {
             source: 'Météo — ' + item.title,
             deferThreshold: true,
             deferGameOver: true
@@ -5873,13 +8625,20 @@ syncMusicForActiveTab();
     els.weatherEventOverlay.classList.remove('is-speaking');
     const actual = after - before;
     const change = actual > 0 ? '+' + actual : String(actual);
-    els.weatherEventStatus.textContent =
-      'Le phénomène se dissipe, mais son empreinte demeure.';
+    const isFracture = running.item.id === 'meteo-003';
+    els.weatherEventStatus.textContent = isFracture
+      ? (running.fromReflet
+        ? 'Vous revenez de force dans le monde normal.'
+        : 'Vous basculez de force dans le Reflet du Vice.')
+      : 'Le phénomène se dissipe, mais son empreinte demeure.';
     els.weatherEventEffect.textContent = 'Instabilité mentale';
     els.weatherEventChange.textContent = change + ' %';
-    els.weatherEventValues.textContent = before + ' % → ' + after + ' %'
-      + (Math.abs(actual) !== Math.abs(running.item.delta)
-        ? ' (limite de la jauge atteinte)' : '');
+    els.weatherEventValues.classList.toggle('fracture-values', isFracture);
+    els.weatherEventValues.textContent = isFracture
+      ? '(' + before + ' % → ' + after + ' %)'
+      : before + ' % → ' + after + ' %'
+        + (Math.abs(actual) !== Math.abs(running.item.delta)
+          ? ' (limite de la jauge atteinte)' : '');
     els.weatherEventPlay.classList.add('hidden');
     els.weatherEventSkip.classList.add('hidden');
     els.weatherEventResult.classList.remove('hidden');
@@ -5895,20 +8654,20 @@ syncMusicForActiveTab();
     running.audio.onended = null;
     running.audio.onerror = null;
     const before = state.value;
-    const after = clamp(before + running.item.delta, 0, 100);
+    const after = getWeatherResultValue(running.item, before, running.fromReflet);
 
     if (!running.preview) {
       // L'intention de modifier la jauge est enregistrée avant l'application.
       // Une reprise ne peut donc pas donner deux fois les points.
       eventSession.pendingWeather = {
         id: running.item.id, stage: 'result', before, after,
-        gameOver: after >= 100
+        fromReflet: running.fromReflet, gameOver: after >= 100
       };
       eventSession.nextWeatherEligibleAt = Date.now() + WEATHER_MIN_GAP_MS;
       saveAudioEventSession();
     }
 
-    const effect = applyInstabilityDelta(running.item.delta, {
+    const effect = applyInstabilityDelta(after - before, {
       source: 'Météo — ' + running.item.title,
       deferThreshold: true,
       deferGameOver: true
@@ -5984,7 +8743,11 @@ syncMusicForActiveTab();
 
     scheduleMaskDisturbance();
 
-    if (!resumePendingWeatherIfPossible()) {
+    if (!resumePendingMask05IfPossible()
+      && !resumePendingMask06IfPossible()
+      && !resumePendingRadio02IfPossible()
+      && !resumePendingRadio03IfPossible()
+      && !resumePendingWeatherIfPossible()) {
       updateAudioEventClock();
     }
 
@@ -5995,7 +8758,8 @@ syncMusicForActiveTab();
     }
 
     if (
-      state.value >= 100 && !currentWeatherEvent
+      state.value >= 100 && !currentWeatherEvent && !currentRadio02
+      && !currentRadio03 && !currentMask05 && !currentMask06
     ) {
       checkGameOver();
     }
@@ -6007,6 +8771,27 @@ syncMusicForActiveTab();
         'click',
         openJournal
       );
+    els.btnEffects.addEventListener('click', openEffectsModal);
+    els.effectsClose.addEventListener('click', closeEffectsModal);
+    els.effectsModal.addEventListener('click', e => {
+      if (e.target === els.effectsModal) closeEffectsModal();
+    });
+    els.effectsPreset.addEventListener('click', () =>
+      setTemporaryEffect('equipements', 'Équipements et Objets inutilisables', 2));
+    els.effectsForm.addEventListener('submit', e => {
+      e.preventDefault();
+      addManualEffect();
+    });
+    els.effectsAdvance.addEventListener('click', advanceTemporaryEffects);
+    els.effectsUndo.addEventListener('click', undoTemporaryEffects);
+    els.weather04Resist.addEventListener('click', () => weather04Choose('resist'));
+    els.weather04Cede.addEventListener('click', () => weather04Choose('cede'));
+    els.weather04Sound.addEventListener('click', weather04TryChoiceAudio);
+    els.weather04Play.addEventListener('click', weather04PlayNarration);
+    els.weather04Skip.addEventListener('click', weather04SkipNarration);
+    els.weather04Done.addEventListener('click', weather04Complete);
+    els.weather04VideoPlay.addEventListener('click', weather04TryVideo);
+    els.weather04VideoSkip.addEventListener('click', weather04Result);
 
     els.journalClose
       .addEventListener(
@@ -6134,6 +8919,18 @@ syncMusicForActiveTab();
     els.maskDuelLoss2.addEventListener('click', () => resolveMaskDuel('second'));
     els.maskDuelSuccess.addEventListener('click', () => resolveMaskDuel('both'));
     els.maskDuelSkipAudio.addEventListener('click', skipMaskDuelReaction);
+    els.mask05Private.addEventListener('click', startMask05Secret);
+    els.mask05Start.addEventListener('click', startMask05Mission);
+    els.mask05Success.addEventListener('click', () => resolveMask05('success'));
+    els.mask05Failure.addEventListener('click', () => resolveMask05('failure'));
+    els.mask05Play.addEventListener('click', resumeMask05Audio);
+    els.mask05Skip.addEventListener('click', skipMask05Audio);
+    els.mask05Done.addEventListener('click', completeMask05);
+    els.mask06Yes.addEventListener('click', () => chooseMask06('yes'));
+    els.mask06No.addEventListener('click', () => chooseMask06('no'));
+    els.mask06Play.addEventListener('click', resumeMask06Audio);
+    els.mask06Skip.addEventListener('click', skipMask06BrokenAudio);
+    els.mask06Done.addEventListener('click', completeMask06);
 
     els.radioMissionToggle.addEventListener('click', toggleRadioMissionPanel);
     els.radioMissionArrived.addEventListener('click', radioMissionArrived);
@@ -6143,6 +8940,16 @@ syncMusicForActiveTab();
     els.radioEventAccept.addEventListener('click', () => answerRadioCall(true));
     els.radioEventIgnore.addEventListener('click', () => answerRadioCall(false));
     els.radioEventDone.addEventListener('click', finishRadioResolution);
+    els.radio02Answer.addEventListener('click', () => chooseRadio02('answer'));
+    els.radio02Cut.addEventListener('click', () => chooseRadio02('cut'));
+    els.radio02Play.addEventListener('click', playRadio02Audio);
+    els.radio02Skip.addEventListener('click', skipRadio02Audio);
+    els.radio02Done.addEventListener('click', completeRadio02);
+    els.radio03Undo.addEventListener('click', radio03Undo);
+    els.radio03Confirm.addEventListener('click', radio03Submit);
+    els.radio03Play.addEventListener('click', radio03ResumeAudio);
+    els.radio03Cancel.addEventListener('click', radio03CancelWithoutPenalty);
+    els.radio03Done.addEventListener('click', radio03Complete);
     els.weatherEventPlay.addEventListener('click', playWeatherNarration);
     els.weatherEventSkip.addEventListener('click', () => finishWeatherNarration(true));
     els.weatherEventDone.addEventListener('click', completeWeatherEvent);
@@ -6235,7 +9042,11 @@ syncMusicForActiveTab();
         }
       );
 
-    window.addEventListener('pagehide', pauseAudioEventClock);
+    window.addEventListener('pagehide', () => {
+      pauseAudioEventClock();
+      radio03OnPageHide();
+      mask06OnPageHide();
+    });
 
     document
       .addEventListener(
@@ -6248,6 +9059,10 @@ syncMusicForActiveTab();
             return;
           }
 
+          if (els.effectsModal.classList.contains('show')) {
+            closeEffectsModal();
+            return;
+          }
           if (els.playersModal.classList.contains('show')) {
             closePlayersModal();
             return;
@@ -6296,6 +9111,7 @@ syncMusicForActiveTab();
     els.version.textContent =
       VERSION;
 
+    renderTemporaryEffects();
     renderEventControls();
 
     syncAmbientVolume();

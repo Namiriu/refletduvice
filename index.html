@@ -1438,6 +1438,124 @@
     @media(max-height:550px){.radio-event-content{padding:10px 12px}.radio-event-icon{font-size:26px}.radio-event-signal{margin:3px auto;height:20px}}
     @media(prefers-reduced-motion:reduce){.radio-event-signal i{animation:none}}
 
+
+    /* Radio 002 — interface indépendante, aucun titre révélateur */
+    .radio02-overlay{position:fixed;inset:0;z-index:10125;display:flex;align-items:center;justify-content:center;padding:14px;background:radial-gradient(ellipse at 45% 37%,rgba(12,31,34,.985),rgba(3,9,12,.995) 78%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .5s ease,visibility 0s linear .5s}
+    .radio02-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
+    .radio02-content{width:min(100%,470px);max-height:calc(100dvh - 28px);overflow-y:auto;text-align:center;padding:24px 17px 20px;border:1px solid #4f827c;border-radius:13px;background:linear-gradient(150deg,#142b2b,#0a141b);box-shadow:0 15px 48px rgba(0,0,0,.72)}
+    .radio02-heading{font:clamp(15px,4.2vw,19px) var(--font-ui);letter-spacing:1px;color:#d4f0e4;margin:5px 0 12px}
+    .radio02-symbol{font-size:39px;filter:drop-shadow(0 0 13px rgba(65,158,142,.35))}
+    .radio02-status{font:clamp(16px,4vw,19px)/1.4 var(--font-body);white-space:pre-line;color:#d6e0da;margin:11px 0 16px}
+    .radio02-timer{font:clamp(32px,10vw,48px) var(--font-ui);color:#f0ddd2;letter-spacing:2px;margin:9px auto 7px}
+    .radio02-progress-track{height:7px;overflow:hidden;border-radius:20px;background:#213739;margin:8px 0 14px}
+    .radio02-progress{height:100%;width:100%;background:linear-gradient(90deg,#7fc3ae,#c3a38b);border-radius:20px;transition:width .1s linear}
+    .radio02-note{font:clamp(13px,3.6vw,15px)/1.35 var(--font-body);color:#b8c7c2;margin:10px 0}
+    .radio02-actions{display:grid;gap:9px;margin:12px auto 0}
+    .radio02-btn{width:100%;min-height:46px;border:1px solid #578d7c;border-radius:8px;background:#21463e;color:#f2f7f0;font:clamp(11px,3vw,13px)/1.35 var(--font-ui);cursor:pointer;padding:11px}
+    .radio02-btn.secondary{border-color:#596268;background:#253037;color:#dedcda}
+    .radio02-btn:disabled{opacity:.5;cursor:default}
+    .radio02-effect{white-space:pre-line;padding:15px 13px;margin:11px 0 17px;border:1px solid #527f73;background:#112525;border-radius:10px;color:#e8efe9;font:clamp(16px,4vw,18px)/1.45 var(--font-body)}
+    .radio02-overlay .hidden{display:none!important}
+    @media(max-height:520px){.radio02-content{padding:11px 13px}.radio02-symbol{font-size:25px}.radio02-actions{gap:6px}.radio02-btn{min-height:42px}}
+    @media(prefers-reduced-motion:reduce){.radio02-progress{transition:none}}
+
+
+
+    /* RADIO-003 : transmission sans divulgâcher l'épreuve d'attention. */
+    .radio03-overlay{position:fixed;inset:0;z-index:10132;display:grid;place-items:center;padding:14px;background:radial-gradient(ellipse at 50% 40%,rgba(13,36,35,.985),rgba(4,8,13,.995) 80%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .48s ease,visibility 0s linear .48s}
+    .radio03-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .36s ease}
+    .radio03-content{width:min(100%,510px);max-height:calc(100dvh - 28px);overflow:auto;padding:clamp(15px,4vw,25px);border:1px solid #4a8379;border-radius:14px;text-align:center;background:linear-gradient(150deg,#122b2b,#0a1219);box-shadow:0 0 56px rgba(0,0,0,.75)}
+    .radio03-icon{font-size:42px;margin:0 0 5px;filter:drop-shadow(0 0 12px rgba(68,193,142,.25))}
+    /* Portrait du Masque : centré pendant la prise de contrôle de la radio. */
+    .radio03-mask-image{display:block;width:min(64vw,250px);height:min(42dvh,315px);object-fit:contain;margin:6px auto 12px;filter:drop-shadow(0 0 23px rgba(177,34,66,.34));animation:mask-event-arrival .75s ease-out both}
+    .radio03-overlay.has-mask .radio03-icon,.radio03-overlay.has-mask .radio03-signal{display:none}
+    .radio03-overlay.is-interactive .radio03-mask-image{width:min(35vw,130px);height:min(18dvh,115px);margin:2px auto 5px}
+    @media(max-height:550px){.radio03-mask-image{height:min(31dvh,150px)}.radio03-overlay.is-interactive .radio03-mask-image{height:min(17dvh,85px)}}
+    .radio03-heading{font:clamp(14px,4vw,19px) var(--font-ui);color:#bce8dc;letter-spacing:1.2px;margin:8px 0 13px}
+    .radio03-status{font:clamp(16px,4.4vw,20px)/1.45 var(--font-body);color:#e1e8e2;white-space:pre-line;margin:14px 0}
+    .radio03-signal{height:31px;display:flex;gap:5px;justify-content:center;align-items:center;margin:10px 0}
+    .radio03-signal i{width:4px;height:7px;border-radius:4px;background:#73bdac;opacity:.6}
+    .radio03-overlay.is-speaking .radio03-signal i{animation:radio-signal .8s ease-in-out infinite alternate}
+    .radio03-signal i:nth-child(2){animation-delay:.15s}.radio03-signal i:nth-child(3){animation-delay:.3s}.radio03-signal i:nth-child(4){animation-delay:.45s}.radio03-signal i:nth-child(5){animation-delay:.6s}
+    .radio03-overlay.is-hijacked{background:radial-gradient(ellipse at 50% 35%,rgba(43,15,22,.98),rgba(7,4,10,.995) 83%)}
+    .radio03-overlay.is-hijacked .radio03-content{border-color:#81505c;background:linear-gradient(145deg,#261821,#111019)}
+    .radio03-overlay.is-hijacked .radio03-heading{color:#ead1d7}
+    .radio03-overlay.is-hijacked .radio03-signal i{background:#d28389}
+    .radio03-challenge{margin:14px 0}
+    .radio03-timer{font:clamp(37px,10vw,52px) var(--font-ui);color:#e5baae;letter-spacing:2px}
+    .radio03-track{height:7px;border-radius:8px;background:#3a2830;overflow:hidden;margin:7px 0 13px}
+    .radio03-progress{height:100%;width:100%;background:linear-gradient(90deg,#c87583,#f1bfaa);transition:width .1s linear}
+    .radio03-note{font:14px/1.35 var(--font-body);color:#dfbfc6;margin:8px 0 12px}
+    .radio03-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:12px 0 16px}
+    .radio03-slot{display:grid;place-items:center;min-height:51px;padding:5px 1px;border:1px dashed #7a5661;border-radius:7px;background:#171920;color:#9c8f96;font:clamp(10px,2.2vw,13px) var(--font-ui);overflow-wrap:anywhere}
+    .radio03-slot.filled{border:1px solid #b78991;background:#3a2934;color:#fff}
+    .radio03-palette{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+    .radio03-color,.radio03-btn{min-height:47px;padding:10px 8px;border-radius:8px;border:1px solid #a27a86;background:#4f3140;color:#fff;font:clamp(11px,3vw,13px) var(--font-ui);cursor:pointer}
+    .radio03-color.rouge{border-color:#c86c74}.radio03-color.bleu{border-color:#668bbb}.radio03-color.jaune{border-color:#cbb279}.radio03-color.vert{border-color:#6ca687}
+    .radio03-color::before{content:"";display:inline-block;width:10px;height:10px;margin-right:8px;border-radius:50%;background:currentColor}
+    .radio03-color.rouge::before{background:#e55e69}.radio03-color.bleu::before{background:#5ba6ed}.radio03-color.jaune::before{background:#f0c45b}.radio03-color.vert::before{background:#6ec798}
+    .radio03-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+    .radio03-btn.wide{grid-column:1/-1}.radio03-btn.secondary{background:#27232b;border-color:#5c555d}
+    .radio03-btn:disabled{opacity:.45;cursor:not-allowed}
+    .radio03-btn:focus-visible,.radio03-color:focus-visible{outline:2px solid #ffccbe;outline-offset:2px}
+    .radio03-reward{font:clamp(15px,4.2vw,19px)/1.45 var(--font-body);white-space:pre-line;color:#f2e0dc;background:#241a21;border:1px solid #855865;border-radius:10px;padding:16px 10px;margin:12px 0}
+    .radio03-overlay .hidden{display:none!important}
+    @media(max-height:530px){.radio03-content{padding:10px 13px}.radio03-icon{font-size:28px}.radio03-slot{min-height:36px}.radio03-color,.radio03-btn{min-height:42px}}
+    @media(prefers-reduced-motion:reduce){.radio03-signal i{animation:none!important}.radio03-progress{transition:none}}
+
+
+    /* MASQUE-006 : représentation théâtrale, comptine et piège à deux réponses. */
+    .mask06-overlay{position:fixed;inset:0;z-index:10146;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(38,12,26,.965),rgba(2,3,8,.997) 77%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .65s ease,visibility 0s linear .65s}
+    .mask06-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
+    .mask06-content{width:min(100%,510px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:12px 14px 25px}
+    .mask06-kicker{font:clamp(13px,3.2vw,16px) var(--font-ui);color:#efd0d7;letter-spacing:1px;margin:2px 0 13px}
+    .mask06-portrait{display:block;width:min(64vw,235px);height:min(44dvh,300px);object-fit:contain;margin:7px auto 15px;filter:drop-shadow(0 0 20px rgba(162,33,71,.35));animation:mask-event-arrival .75s ease-out both}
+    .mask06-status{font:clamp(16px,4.2vw,20px)/1.45 var(--font-body);white-space:pre-line;color:#e7d7df;margin:12px 0 18px}
+    .mask06-overlay.is-choice .mask06-portrait{width:min(53vw,190px);height:min(31dvh,205px);margin:2px auto 9px}
+    .mask06-overlay.is-result .mask06-portrait{width:min(48vw,168px);height:min(24dvh,145px);margin:2px auto 8px}
+    .mask06-notes{display:none;gap:18px;justify-content:center;align-items:center;color:#eed9aa;letter-spacing:3px;font-size:25px;line-height:1.2;margin:0 auto 9px}
+    .mask06-overlay.is-singing .mask06-notes{display:flex}
+    .mask06-notes span:nth-child(2){animation:mask06-note 2.1s ease-in-out infinite alternate}
+    .mask06-notes span:nth-child(1){animation:mask06-note 2.5s ease-in-out infinite alternate-reverse}
+    .mask06-notes span:nth-child(3){animation:mask06-note 2.8s ease-in-out infinite alternate}
+    @keyframes mask06-note{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(-5px)}}
+    .mask06-actions{display:grid;gap:9px;margin:14px auto 0}
+    .mask06-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px auto 0}
+    .mask06-btn{width:100%;min-height:49px;padding:11px 9px;border:1px solid #a76e7e;border-radius:9px;background:#592e3c;color:#fff;font:clamp(11px,2.8vw,13px)/1.35 var(--font-ui);cursor:pointer}
+    .mask06-btn.secondary{border-color:#695761;background:#302931}
+    .mask06-btn:focus-visible{outline:2px solid #f2c7d4;outline-offset:3px}
+    .mask06-outcome{font:clamp(16px,4vw,19px)/1.45 var(--font-body);white-space:pre-line;color:#f5e4e9;border:1px solid #986275;border-radius:11px;background:rgba(35,20,30,.94);padding:17px 11px;margin:12px 0}
+    .mask06-overlay .hidden{display:none!important}
+    @media(max-height:570px){.mask06-content{padding:7px 10px 13px}.mask06-portrait{height:min(31dvh,145px);margin:2px auto 6px}.mask06-overlay.is-choice .mask06-portrait{height:min(24dvh,105px)}.mask06-status{margin:7px 0}.mask06-choices{margin:7px 0}}
+    @media(max-width:350px){.mask06-choices{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){.mask06-portrait,.mask06-notes span{animation:none!important}}
+
+    /* Masque 005 : dialogue privé, mission secrète et horloge non intrusive */
+    .mask05-overlay{position:fixed;inset:0;z-index:10145;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
+    .mask05-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
+    .mask05-content{width:min(100%,520px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:10px 12px 25px}
+    .mask05-portrait{display:block;width:min(64vw,230px);height:min(50dvh,330px);object-fit:contain;margin:4px auto 12px;filter:drop-shadow(0 0 18px rgba(125,17,29,.25));animation:mask-event-arrival .8s ease-out both}
+    .mask05-overlay.is-interactive .mask05-portrait{width:min(50vw,180px);height:min(30dvh,193px);margin:0 auto 8px}
+    .mask05-heading{font:clamp(15px,4.4vw,20px) var(--font-ui);color:#f4d4dd;letter-spacing:.7px;margin:9px 0 10px}
+    .mask05-status{font:clamp(15px,4vw,19px)/1.4 var(--font-body);color:#c9b9bb;white-space:pre-line;margin:12px 0}
+    .mask05-status:empty{display:none}
+    .mask05-hint{font:clamp(14px,3.8vw,16px)/1.45 var(--font-body);color:#d2bfc6;margin:9px 0}
+    .mask05-actions{display:grid;gap:10px;margin:14px auto 0}
+    .mask05-button{width:100%;min-height:47px;background:#66333f;border:1px solid #ae6c7d;border-radius:8px;color:#fff;font:clamp(11px,3vw,13px)/1.35 var(--font-ui);padding:12px 10px;cursor:pointer}
+    .mask05-button.secondary{background:#2b2632;border-color:#625565}
+    .mask05-button:focus-visible{outline:2px solid #f6c7d2;outline-offset:3px}
+    .mask05-outcome{white-space:pre-line;margin:13px 0;padding:15px;border:1px solid #825663;background:#21171e;border-radius:10px;font:clamp(16px,4.1vw,19px)/1.45 var(--font-body);color:#f0e3e8}
+    .mask05-banner{position:fixed;z-index:9990;bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(calc(100% - 28px),370px);padding:11px 16px 10px;border:1px solid #a16e7c;border-radius:12px;background:rgba(35,21,29,.97);box-shadow:0 6px 24px rgba(0,0,0,.55);pointer-events:none;text-align:center}
+    .mask05-banner-title{font:clamp(10px,2.9vw,12px) var(--font-ui);letter-spacing:.5px;color:#eccbd6}
+    .mask05-banner-time{font:clamp(23px,6vw,29px) var(--font-ui);color:#fff;line-height:1.28;margin-top:4px}
+    .mask05-banner-progress{height:4px;background:#4b303c;border-radius:5px;overflow:hidden;margin-top:7px}
+    .mask05-banner-progress>i{display:block;width:100%;height:100%;background:#cc8e9d;transition:width .2s linear}
+    .mask05-cancel-notice{position:fixed;z-index:10160;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(calc(100% - 28px),390px);padding:13px 15px;background:rgba(32,20,29,.98);border:1px solid #b88391;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,.6);text-align:center;pointer-events:none}
+    .mask05-cancel-notice strong{display:block;font:clamp(11px,3vw,13px) var(--font-ui);color:#f0ccd8;letter-spacing:.35px;margin-bottom:6px}
+    .mask05-cancel-notice p{font:clamp(14px,3.8vw,16px)/1.35 var(--font-body);color:#efe4e9;margin:0}
+    @media(max-height:570px){.mask05-portrait{height:min(40dvh,185px)}.mask05-overlay.is-interactive .mask05-portrait{height:min(22dvh,110px)}.mask05-content{padding:9px 12px}.mask05-status{margin:5px 0}.mask05-actions{gap:6px}}
+    @media(prefers-reduced-motion:reduce){.mask05-banner-progress>i{transition:none}}
+
     /* MÉTÉO : métal gris et rouille, volontairement sans révélation du phénomène */
     .weather-event-overlay{position:fixed;inset:0;z-index:10130;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 48% 34%,rgba(51,48,44,.97),rgba(10,10,11,.995) 77%);opacity:0;visibility:hidden;pointer-events:none;isolation:isolate;transition:opacity .7s ease,visibility 0s linear .7s}
     .weather-event-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .6s ease}
@@ -1457,10 +1575,81 @@
     .weather-event-result{margin:16px 0 14px;padding:14px 11px;border:1px solid #715643;border-radius:10px;background:rgba(13,12,11,.78)}
     .weather-event-result strong{display:block;font:clamp(20px,6vw,27px) var(--font-ui);color:#e9b58d;margin:5px auto 7px}
     .weather-event-result span{color:#d3c7bf;font-size:17px}
+    .weather-event-result .fracture-values{font-style:italic}
     .weather-event-btn{min-height:45px;width:100%;padding:10px 14px;border:1px solid #926242;border-radius:9px;background:#593827;color:#f6e6db;font:12px var(--font-ui);cursor:pointer;margin:7px 0 0}
     .weather-event-btn.secondary{background:transparent;border-color:#605147;color:#bdada2;font-size:11px}
     @media(max-height:540px){.weather-event-content{padding:12px 15px}.weather-event-symbol{font-size:29px}.weather-event-lines{margin:3px auto;height:21px}}
     @media(prefers-reduced-motion:reduce){.weather-event-lines i{animation:none}}
+
+    
+    /* Effets temporaires — aucun cinquième bouton dans la rangée utilitaire */
+    .effects-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .effects-heading .actions-title{margin:0}
+    .effects-open,.effects-btn{min-height:38px;padding:9px 11px;border:1px solid #92745e;border-radius:8px;background:#4b3028;color:#f8e8dc;font:clamp(10px,2.6vw,12px) var(--font-ui);cursor:pointer}
+    .effects-btn.secondary{background:#282428;border-color:#64575a}
+    .effects-open:focus-visible,.effects-btn:focus-visible{outline:2px solid #ffcb9c;outline-offset:2px}
+    .effects-banner{border:1px solid #805b48;border-radius:10px;background:linear-gradient(130deg,#332725,#17181b);box-shadow:inset 0 0 22px rgba(190,82,41,.1);padding:12px;margin:13px 0}
+    .effects-banner strong{display:block;color:#eac6a7;font:12px var(--font-ui);margin-bottom:9px}
+    .effects-banner #effectsBannerList{display:grid;gap:8px;font:clamp(14px,3.7vw,17px)/1.3 var(--font-body);color:#f4e8e1;margin-bottom:11px}
+    .effects-banner-row{display:flex;justify-content:space-between;gap:12px}
+    .effects-banner-row b{color:#ffbf93;white-space:nowrap}
+    .effects-banner .effects-btn{width:100%}
+    .effects-feedback{color:#e6bda0;font:14px/1.35 var(--font-body);margin:7px 0}
+    .effects-dialog{max-width:465px;text-align:left}
+    .effects-dialog h2{font:clamp(16px,4vw,20px) var(--font-ui);color:#f1d3bf;margin:0 0 10px}
+    .effects-dialog p{font:14px/1.4 var(--font-body);color:#d0bfb8}
+    .effects-list{display:grid;gap:7px;margin:12px 0}
+    .effects-line{padding:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #67504b;border-radius:8px;background:#251d1d;color:#f1e4dc;font:14px/1.35 var(--font-body)}
+    .effects-line button{background:#37282a;color:#f1d4c8;border:1px solid #775e5b;border-radius:6px;padding:5px 9px;cursor:pointer}
+    .effects-form{display:grid;grid-template-columns:minmax(0,1fr) 78px;gap:8px;margin-top:15px}
+    .effects-form label{grid-column:1/-1;color:#dbc5b8;font:12px var(--font-ui)}
+    .effects-form input{min-width:0;padding:10px;border-radius:7px;border:1px solid #785e54;background:#171719;color:#fff;font:15px var(--font-body)}
+    .effects-form .effects-btn{grid-column:1/-1}
+    .effects-bottom{display:flex;gap:9px;margin-top:15px}
+    .effects-bottom button{flex:1;min-width:0}
+    .effects-dialog .hidden,.effects-banner.hidden{display:none!important}
+
+    /* MÉTÉO 004 : intrusion organique, puis dévoration de l'interface */
+    .weather04-overlay{position:fixed;inset:0;z-index:10200;opacity:0;visibility:hidden;pointer-events:none;background:#080708;isolation:isolate;transition:opacity .55s ease,visibility 0s linear .55s}
+    .weather04-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .38s ease}
+    .weather04-stage{--heart-shock:0;position:relative;height:100%;width:100%;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#30201d 0%,#161114 50%,#050608 100%)}
+    .weather04-stage::before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:repeating-linear-gradient(104deg,transparent 0 53px,rgba(255,129,73,.025) 54px 55px),radial-gradient(circle at center,rgba(174,68,34,.13),transparent 61%)}
+    .weather04-surface{position:absolute;inset:0;z-index:4;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#30201d 0%,#161114 50%,#090708 100%);mask-size:100% 100%;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;-webkit-mask-repeat:no-repeat}
+    .weather04-surface::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(circle at 50% 40%,rgba(212,82,38,.12),transparent 48%),repeating-linear-gradient(106deg,transparent 0 61px,rgba(255,146,89,.018) 62px 63px)}
+    .weather04-panel{position:relative;z-index:1;width:min(92vw,470px);max-height:calc(100dvh - 28px);overflow-y:auto;text-align:center;padding:clamp(16px,4vw,27px);border:1px solid #85523a;border-radius:13px;background:linear-gradient(150deg,rgba(42,30,30,.99),rgba(16,15,19,.98));box-shadow:0 15px 65px rgba(0,0,0,.75),inset 0 0 35px rgba(183,71,30,.15);transition:opacity .25s ease}
+    .weather04-panel h2{color:#d7ad92;font:clamp(12px,3vw,15px) var(--font-ui);letter-spacing:1.8px;margin:0 0 14px}
+    .weather04-heart{width:78px;height:78px;border-radius:50%;margin:10px auto 15px;border:1px solid #81462e;background:radial-gradient(circle,rgba(239,119,56,.63),rgba(149,52,27,.13) 24%,rgba(23,12,16,.6) 63%,transparent 73%);box-shadow:inset 0 0 24px rgba(247,97,37,.16),0 0 23px rgba(227,93,45,.27)}
+    .weather04-heart::after{content:"";display:block;border:1px solid #9b593c;border-radius:50%;width:55%;height:55%;margin:22%}
+    .weather04-stage.choices .weather04-heart{animation:weather04-beat 1.65s ease-in-out infinite}
+    .weather04-stage.choices .weather04-panel{animation:weather04-glow 1.65s ease-in-out infinite}
+    @keyframes weather04-beat{0%,100%{transform:scale(1)}13%{transform:scale(1.16)}24%{transform:scale(1.04)}38%{transform:scale(1.1)}55%{transform:scale(1)}}
+    @keyframes weather04-glow{0%,100%{box-shadow:0 15px 65px rgba(0,0,0,.75),0 0 8px rgba(179,64,27,.13)}14%,39%{box-shadow:0 15px 65px rgba(0,0,0,.75),0 0 39px rgba(226,83,42,.41)}}
+    #weather04Status{font:clamp(16px,4.3vw,21px)/1.45 var(--font-body);color:#ead8cf;white-space:pre-line;margin:11px 0 13px}
+    #weather04Clock{font:clamp(36px,10vw,54px) var(--font-ui);color:#ffc298;text-shadow:0 0 24px rgba(208,83,42,.33)}
+    .weather04-track{height:6px;border-radius:20px;background:#382421;margin:8px 0 15px;overflow:hidden}
+    .weather04-track i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#864632,#ffba7d)}
+    #weather04Choices p{color:#c6ada2;font:14px/1.3 var(--font-body)}
+    .weather04-buttons{display:grid;gap:9px;margin-top:13px}
+    .weather04-buttons button,.weather04-video-actions button{width:100%;min-height:48px;border-radius:9px;padding:10px 14px;border:1px solid #a36c4c;background:#653d2b;color:#f9eae0;font:clamp(11px,3vw,13px) var(--font-ui);cursor:pointer}
+    .weather04-buttons button.secondary,.weather04-video-actions button.secondary{background:#29242a;border-color:#66575d}
+    .weather04-buttons button:focus-visible,.weather04-video-actions button:focus-visible{outline:2px solid #f8caa9;outline-offset:3px}
+    .weather04-result{border:1px solid #805740;border-radius:10px;padding:13px 10px;background:#21191a;margin:13px 0;font:clamp(16px,4vw,19px)/1.5 var(--font-body);color:#efe2da}
+    .weather04-result strong{color:#f5c19f}
+    .weather04-result p{margin:6px 0}
+    /* Sous l'interface : la présence apparaît dans les trous de combustion. */
+    .weather04-vision{position:absolute;z-index:2;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,#351713,#080608 72%);opacity:0;transition:opacity .12s linear;pointer-events:none}
+    .weather04-vision canvas{position:absolute;z-index:0;inset:-8%;width:116%;height:116%;object-fit:cover;filter:blur(32px) brightness(.37) saturate(.9);transform:scale(1.05);opacity:.85}
+    .weather04-vision video{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:contain;transform:scale(calc(1 + var(--heart-shock)*.012));filter:brightness(calc(1 + var(--heart-shock)*.15)) drop-shadow(0 0 25px rgba(143,51,37,.27))}
+    .weather04-vision::after{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;opacity:calc(.13 + var(--heart-shock)*.38);background:radial-gradient(ellipse at 50% 45%,rgba(255,123,45,.22),transparent 63%);mix-blend-mode:screen}
+    .weather04-stage.burning .weather04-vision,.weather04-stage.revealing .weather04-vision{opacity:1}
+    .weather04-stage.revealing .weather04-surface{opacity:0;pointer-events:none}
+    .weather04-burn{position:absolute;z-index:6;inset:0;width:1px;height:1px;pointer-events:none;opacity:0;transition:opacity .12s ease;filter:drop-shadow(0 0 7px rgba(246,101,30,.75))}
+    .weather04-stage.burning .weather04-burn{opacity:1}
+    .weather04-stage.burn-done .weather04-burn{opacity:0}
+    .weather04-video-actions{position:absolute;z-index:7;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(90vw,380px);display:grid;gap:8px}
+    .weather04-overlay .hidden{display:none!important}
+    @media(max-height:530px){.weather04-panel{padding:12px 16px}.weather04-heart{height:44px;width:44px;margin:4px auto}.weather04-buttons button{min-height:42px}}
+    @media(prefers-reduced-motion:reduce){.weather04-stage.choices .weather04-heart,.weather04-stage.choices .weather04-panel{animation:none}.weather04-vision video{transform:none}}
 
     .mask-event-overlay{position:fixed;inset:0;z-index:10100;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
     .mask-event-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .65s ease}
@@ -1676,16 +1865,31 @@
             <option value="masque-002">002 · Un élan de générosité</option>
             <option value="masque-003">003 · Le Prix du sacrifice</option>
             <option value="masque-004">004 · Le Regard du Vice</option>
+            <option value="masque-005">005 · La Confidence empoisonnée</option>
+            <option value="masque-006">006 · La Comptine des oubliés</option>
             <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
+            <option value="radio-002">📻 Radio 002 · Le Rapport impossible</option>
+            <option value="radio-003">📻 Radio 003 · Vous écoutiez ?</option>
             <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
             <option value="meteo-002">🌧️ Météo 002 · La Pluie à rebours</option>
+            <option value="meteo-003">◇ Météo 003 · La Fracture du Réel</option>
+            <option value="meteo-004">◈ Météo 004 · Le Dernier Battement</option>
           </select>
           <button id="btnTestMaskEvent" class="utility-btn event-test-btn hidden" type="button">TESTER LE MASQUE</button>
         </div>
       </section>
 
       <section class="card actions-card">
-        <h2 class="actions-title">ACTIONS SPÉCIALES</h2>
+        <div class="effects-heading">
+          <h2 class="actions-title">ACTIONS SPÉCIALES</h2>
+          <button id="btnEffects" class="effects-open" type="button">⏳ EFFETS</button>
+        </div>
+        <div id="effectsBanner" class="effects-banner hidden" role="status">
+          <strong>⏳ EFFETS TEMPORAIRES</strong>
+          <div id="effectsBannerList"></div>
+          <button id="effectsAdvance" class="effects-btn" type="button">TERMINER UNE MANCHE</button>
+        </div>
+        <p id="effectsFeedback" class="effects-feedback hidden" role="status"></p>
 
         <div class="action-block">
           <div class="action-header">
@@ -1827,7 +2031,7 @@
       </div>
     </section>
 
-    <div id="version">v0.9.3 Playtest</div>
+    <div id="version">v1.4.0 MASQUE-006 — Comptine (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -1866,6 +2070,27 @@
 
   <!-- Narration dynamique du Bestiaire -->
   <audio id="bestiaireNarration" preload="metadata"></audio>
+
+
+  <!-- ==================== SUIVI DES MANCHES ==================== -->
+  <div id="effectsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="effectsTitle" aria-hidden="true">
+    <div class="modal-inner effects-dialog">
+      <h2 id="effectsTitle">⏳ Effets temporaires</h2>
+      <p>Une manche = un tour de table complet. Comptez deux manches complètes APRÈS l'apparition.</p>
+      <div id="effectsList" class="effects-list"></div>
+      <button id="effectsPreset" class="effects-btn" type="button">🔒 Équipements et Objets inutilisables · 2 manches</button>
+      <form id="effectsForm" class="effects-form" autocomplete="off">
+        <label for="effectsName">Ajouter un effet personnalisé</label>
+        <input id="effectsName" type="text" maxlength="80" placeholder="Nom de l'effet" required aria-label="Nom de l'effet" />
+        <input id="effectsDuration" type="number" value="2" min="1" max="30" required aria-label="Durée en manches" />
+        <button class="effects-btn" type="submit">AJOUTER</button>
+      </form>
+      <div class="effects-bottom">
+        <button id="effectsUndo" class="effects-btn secondary" type="button">↶ ANNULER</button>
+        <button id="effectsClose" class="effects-btn secondary" type="button">FERMER</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== JOURNAL ==================== -->
 
@@ -1974,6 +2199,100 @@
     </div>
   </div>
 
+  <!-- ==================== RADIO 002 : RAPPORT IMPOSSIBLE ==================== -->
+  <div id="radio02Overlay" class="radio02-overlay" role="dialog" aria-modal="true" aria-labelledby="radio02Heading" aria-hidden="true">
+    <div class="radio02-content">
+      <div class="radio02-symbol" aria-hidden="true">📻</div>
+      <h2 id="radio02Heading" class="radio02-heading">TRANSMISSION INTERCEPTÉE</h2>
+      <p id="radio02Status" class="radio02-status" aria-live="polite">Une fréquence inconnue s'active…</p>
+      <div id="radio02Choices" class="hidden">
+        <div id="radio02Clock" class="radio02-timer" role="timer" aria-live="off">00:15</div>
+        <div id="radio02Track" class="radio02-progress-track" role="progressbar" aria-label="Temps restant pour répondre" aria-valuemin="0" aria-valuemax="15" aria-valuenow="15">
+          <div id="radio02Progress" class="radio02-progress"></div>
+        </div>
+        <p class="radio02-note">Sans réponse, la transmission se poursuivra d'elle-même.</p>
+        <div class="radio02-actions">
+          <button id="radio02Answer" class="radio02-btn" type="button">RÉPONDRE À LA TRANSMISSION</button>
+          <button id="radio02Cut" class="radio02-btn secondary" type="button">COUPER LA COMMUNICATION</button>
+        </div>
+      </div>
+      <div id="radio02Reward" class="radio02-effect hidden"></div>
+      <div class="radio02-actions">
+        <button id="radio02Play" class="radio02-btn hidden" type="button">ÉCOUTER LA TRANSMISSION</button>
+        <button id="radio02Skip" class="radio02-btn secondary hidden" type="button">CONTINUER SANS AUDIO</button>
+        <button id="radio02Done" class="radio02-btn hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- RADIO-003 : le titre et le défi restent cachés jusqu'au piratage du Masque. -->
+  <div id="radio03Overlay" class="radio03-overlay" role="dialog" aria-modal="true" aria-labelledby="radio03Heading" aria-hidden="true">
+    <div class="radio03-content">
+      <div class="radio03-icon" aria-hidden="true">📻</div>
+      <h2 id="radio03Heading" class="radio03-heading">TRANSMISSION INTERCEPTÉE</h2>
+      <div class="radio03-signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <img id="radio03MaskImage" class="radio03-mask-image hidden" alt="Le Masque" aria-hidden="true">
+      <p id="radio03Status" class="radio03-status" aria-live="polite">Une fréquence inconnue s’active…</p>
+      <div id="radio03Challenge" class="radio03-challenge hidden">
+        <div id="radio03Clock" class="radio03-timer" role="timer" aria-live="off">00:30</div>
+        <div id="radio03Track" class="radio03-track" role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30"><div id="radio03Progress" class="radio03-progress"></div></div>
+        <p class="radio03-note">Une seule tentative. Aucune réécoute possible.</p>
+        <div id="radio03Slots" class="radio03-slots" aria-label="Séquence saisie"></div>
+        <div id="radio03Palette" class="radio03-palette" aria-label="Choisir les couleurs"></div>
+        <div class="radio03-actions">
+          <button id="radio03Undo" class="radio03-btn secondary" type="button">EFFACER LA DERNIÈRE</button>
+          <button id="radio03Confirm" class="radio03-btn" type="button" disabled>VALIDER LA SÉQUENCE</button>
+        </div>
+      </div>
+      <div id="radio03Reward" class="radio03-reward hidden" role="status"></div>
+      <div class="radio03-actions">
+        <button id="radio03Play" class="radio03-btn wide hidden" type="button">REPRENDRE L’AUDIO</button>
+        <button id="radio03Cancel" class="radio03-btn secondary wide hidden" type="button">ANNULER SANS SANCTION</button>
+        <button id="radio03Done" class="radio03-btn wide hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÉTÉO 004 : le nom et l'identité de la présence restent secrets -->
+  <div id="weather04Overlay" class="weather04-overlay" role="dialog" aria-modal="true" aria-labelledby="weather04Heading" aria-hidden="true">
+    <div id="weather04Stage" class="weather04-stage">
+      <div class="weather04-vision" aria-hidden="true">
+        <canvas id="weather04Backdrop" aria-hidden="true"></canvas>
+        <video id="weather04Video" playsinline preload="none"></video>
+      </div>
+      <div id="weather04Surface" class="weather04-surface">
+        <div id="weather04Panel" class="weather04-panel">
+        <h2 id="weather04Heading">ANOMALIE INEXPLIQUÉE</h2>
+        <div class="weather04-heart" aria-hidden="true"></div>
+        <p id="weather04Status" aria-live="polite">Une sensation inconnue traverse la ville…</p>
+        <div id="weather04Choices" class="hidden">
+          <div id="weather04Clock" role="timer" aria-live="off">00:15</div>
+          <div id="weather04Track" class="weather04-track" role="progressbar" aria-label="Temps restant" aria-valuemin="0" aria-valuemax="15" aria-valuenow="15"><i id="weather04Progress"></i></div>
+          <p>Décidez ensemble. Sans réponse, vous résisterez par instinct.</p>
+          <div class="weather04-buttons">
+            <button id="weather04Resist" type="button">RÉSISTER À L'APPEL</button>
+            <button id="weather04Cede" type="button">CÉDER AUX PULSATIONS</button>
+            <button id="weather04Sound" class="secondary hidden" type="button">🔊 ACTIVER LES BATTEMENTS</button>
+          </div>
+        </div>
+        <div id="weather04Result" class="weather04-result hidden" role="status"></div>
+        <div class="weather04-buttons">
+          <button id="weather04Play" class="hidden" type="button">REPRENDRE LA NARRATION</button>
+          <button id="weather04Skip" class="secondary hidden" type="button">CONTINUER SANS AUDIO</button>
+          <button id="weather04Done" class="hidden" type="button">CONTINUER LA PARTIE</button>
+        </div>
+        </div>
+      </div>
+      <canvas id="weather04Burn" class="weather04-burn" aria-hidden="true"></canvas>
+      <div id="weather04VideoActions" class="weather04-video-actions hidden">
+        <button id="weather04VideoPlay" type="button">TOUCHER POUR RÉVÉLER</button>
+        <button id="weather04VideoSkip" class="secondary" type="button">CONTINUER SANS L'ANIMATION</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== ANOMALIE MÉTÉOROLOGIQUE ==================== -->
   <div id="weatherEventOverlay" class="weather-event-overlay" role="dialog" aria-modal="true" aria-labelledby="weatherEventHeading" aria-hidden="true">
     <div class="weather-event-content">
@@ -1989,6 +2308,56 @@
         <span id="weatherEventValues">40 % → 45 %</span>
       </div>
       <button id="weatherEventDone" class="weather-event-btn hidden" type="button">CONTINUER LA PARTIE</button>
+    </div>
+  </div>
+
+
+  <!-- MASQUE-006 : mini-spectacle du Masque, deux choix piégés. -->
+  <div id="mask06Overlay" class="mask06-overlay" role="dialog" aria-modal="true" aria-labelledby="mask06Heading" aria-hidden="true">
+    <div class="mask06-content">
+      <h2 id="mask06Heading" class="mask06-kicker">INTERVENTION DU MASQUE</h2>
+      <img id="mask06Portrait" class="mask06-portrait" src="img/masque0.png" alt="Le Masque">
+      <div class="mask06-notes" aria-hidden="true"><span>♪</span><span>♫</span><span>♪</span></div>
+      <p id="mask06Status" class="mask06-status" aria-live="polite">Le Masque vous prépare une surprise…</p>
+      <div id="mask06Choices" class="mask06-choices hidden">
+        <button id="mask06Yes" class="mask06-btn" type="button">❤️ OUI, C'ÉTAIT MAGNIFIQUE !</button>
+        <button id="mask06No" class="mask06-btn secondary" type="button">💀 NON, C'ÉTAIT HORRIBLE !</button>
+      </div>
+      <div id="mask06Result" class="mask06-outcome hidden" role="status"></div>
+      <div class="mask06-actions">
+        <button id="mask06Play" class="mask06-btn hidden" type="button">REPRENDRE L’AUDIO</button>
+        <button id="mask06Skip" class="mask06-btn secondary hidden" type="button">CONTINUER SANS CET AUDIO</button>
+        <button id="mask06Done" class="mask06-btn hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MASQUE 005 : CONFIDENCE ==================== -->
+  <div id="mask05CancelNotice" class="mask05-cancel-notice hidden" role="alert" aria-live="assertive">
+    <strong>🎭 MISSION DU MASQUE ANNULÉE</strong>
+    <p id="mask05CancelText"></p>
+  </div>
+  <div id="mask05Banner" class="mask05-banner hidden" role="status" aria-label="Mission du Masque en cours">
+    <div class="mask05-banner-title">🎭 MISSION DU MASQUE EN COURS</div>
+    <div id="mask05BannerClock" class="mask05-banner-time" role="timer" aria-live="off">05:00</div>
+    <div class="mask05-banner-progress"><i id="mask05BannerProgress"></i></div>
+  </div>
+  <div id="mask05Overlay" class="mask05-overlay" role="dialog" aria-modal="true" aria-labelledby="mask05Heading" aria-hidden="true">
+    <div class="mask05-content">
+      <img id="mask05Portrait" class="mask05-portrait" src="img/masque0.png" alt="Le Masque">
+      <h2 id="mask05Heading" class="mask05-heading">INTERVENTION DU MASQUE</h2>
+      <p id="mask05Status" class="mask05-status" aria-live="polite">Le Masque choisit ses victimes…</p>
+      <p id="mask05Hint" class="mask05-hint hidden"></p>
+      <div id="mask05Outcome" class="mask05-outcome hidden"></div>
+      <div class="mask05-actions">
+        <button id="mask05Private" class="mask05-button hidden" type="button">J’AI LE TÉLÉPHONE — ÉCOUTER LA CONFIDENCE</button>
+        <button id="mask05Start" class="mask05-button hidden" type="button">J’AI COMPRIS — COMMENCER LA MISSION</button>
+        <button id="mask05Success" class="mask05-button hidden" type="button">MISSION ACCOMPLIE</button>
+        <button id="mask05Failure" class="mask05-button secondary hidden" type="button">MISSION ÉCHOUÉE</button>
+        <button id="mask05Play" class="mask05-button hidden" type="button">REPRENDRE L’ENREGISTREMENT</button>
+        <button id="mask05Skip" class="mask05-button secondary hidden" type="button">CONTINUER SANS AUDIO</button>
+        <button id="mask05Done" class="mask05-button hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
     </div>
   </div>
 
