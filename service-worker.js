@@ -1,4 +1,4 @@
-const CACHE = 'instability-v92';
+const CACHE = 'instability-v93';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -132,6 +132,12 @@ const ASSETS = [
   './audio/events/masque/interventions/masque-005-confidence-verdict.mp3',
   './audio/events/masque/interventions/masque-005-confidence-reussite.mp3',
   './audio/events/masque/interventions/masque-005-confidence-echec.mp3',
+  // Masque 006 — La Comptine des oubliés
+  './audio/events/masque/interventions/masque-006-comptine.MP3',
+  './audio/events/masque/interventions/masque-006-intro.mp3',
+  './audio/events/masque/interventions/masque-006-non.mp3',
+  './audio/events/masque/interventions/masque-006-oui.mp3',
+  './audio/events/masque/interventions/masque-006-question.mp3',
   './audio/events/sfx/gong-fin-chronometre.mp3',
   // Première transmission radio : appel monté + résolution narrée
   './audio/events/radio/radio-001-derriere-la-porte.MP3',
@@ -315,6 +321,11 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-005-confidence-verdict.mp3": "339ce5ebd03bf0cd05733f5b701be0de3b4fb070",
   "./audio/events/masque/interventions/masque-005-confidence-reussite.mp3": "48ec07bbc18e41f66de7eb3ea9b17a314617dee0",
   "./audio/events/masque/interventions/masque-005-confidence-echec.mp3": "31bc495f2853a1aa00bf926c86953f4c6cd16f2e",
+  "./audio/events/masque/interventions/masque-006-comptine.MP3": "190d9da7b15da1823eb927f48e58e1634704334b",
+  "./audio/events/masque/interventions/masque-006-intro.mp3": "cdd67f739dd8609aca8fa35e454fca0d084e530e",
+  "./audio/events/masque/interventions/masque-006-non.mp3": "d9980065c8d99bc2925af557acfe9b7b43838d12",
+  "./audio/events/masque/interventions/masque-006-oui.mp3": "d761872d14deb99a5b8ab3d054aa5ec7fe2c2e1d",
+  "./audio/events/masque/interventions/masque-006-question.mp3": "e878a07088f43fc9de411c0d4a4f27f5d095076b",
   "./audio/events/sfx/gong-fin-chronometre.mp3": "04009fb2cc462e133b0646d3c92fe47fb85c36df",
   "./audio/events/radio/radio-001-derriere-la-porte.MP3": "f058d8962a4e843d4af550cabc36989d58a29d6b",
   "./audio/events/radio/radio-001-resolution-local-vide.mp3": "9af4f7ee68a2358f9287c91816b201604a34c41e",

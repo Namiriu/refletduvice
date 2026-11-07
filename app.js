@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.3.2 RADIO-003 — Résultat (test)';
+  const VERSION = 'v1.4.0 MASQUE-006 — Comptine (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -228,6 +228,16 @@ campAudio: $('campAudio'),
     mask05Play: $('mask05Play'),
     mask05Skip: $('mask05Skip'),
     mask05Done: $('mask05Done'),
+    mask06Overlay: $('mask06Overlay'),
+    mask06Portrait: $('mask06Portrait'),
+    mask06Status: $('mask06Status'),
+    mask06Choices: $('mask06Choices'),
+    mask06Yes: $('mask06Yes'),
+    mask06No: $('mask06No'),
+    mask06Result: $('mask06Result'),
+    mask06Play: $('mask06Play'),
+    mask06Skip: $('mask06Skip'),
+    mask06Done: $('mask06Done'),
     maskEventPortrait: $('maskEventPortrait'),
     maskEventTitle: $('maskEventTitle'),
     maskEventStatus: $('maskEventStatus'),
@@ -565,6 +575,14 @@ bestiaireNarration: $('bestiaireNarration'),
       target: 'deux-joueurs-vivants'
     },
     {
+      id: 'masque-006', type: 'masque', title: 'LA COMPTINE DES OUBLIÉS',
+      introAudio: 'audio/events/masque/interventions/masque-006-intro.mp3',
+      songAudio: 'audio/events/masque/interventions/masque-006-comptine.MP3',
+      questionAudio: 'audio/events/masque/interventions/masque-006-question.mp3',
+      yesAudio: 'audio/events/masque/interventions/masque-006-oui.mp3',
+      noAudio: 'audio/events/masque/interventions/masque-006-non.mp3'
+    },
+    {
       id: 'radio-001',
       type: 'radio',
       title: 'DERRIÈRE LA PORTE',
@@ -625,6 +643,9 @@ bestiaireNarration: $('bestiaireNarration'),
   let currentMaskEvent = null;
   let currentMask05 = null;
   let mask05Token = 0;
+  let currentMask06 = null;
+  let mask06Token = 0;
+  let mask06DeferredOutcomeTimer = null;
   let mask05CancelNoticeTimer = null;
   const MASK05_MISSION_MS = 5 * 60000;
   let currentRadioEvent = null;
@@ -1930,6 +1951,7 @@ function syncAmbientVolume() {
       || els.playersModal.classList.contains('show')
       || els.maskEventOverlay.classList.contains('show')
       || els.mask05Overlay.classList.contains('show')
+      || els.mask06Overlay.classList.contains('show')
       || els.radioEventOverlay.classList.contains('show')
       || els.radio02Overlay.classList.contains('show')
       || els.radio03Overlay.classList.contains('show')
@@ -4674,6 +4696,7 @@ syncMusicForActiveTab();
       pendingRadio002: null,
       pendingRadio003: null,
       pendingMask005: null,
+      pendingMask006: null,
       lastEventType: null,
       weatherCount: 0,
       nextWeatherEligibleAt: 0,
@@ -4770,6 +4793,21 @@ syncMusicForActiveTab();
                 ? Math.max(0, saved.pendingMask005.deadline) : 0,
               outcome: saved.pendingMask005.outcome ?? null
             } : null,
+        pendingMask006: saved.pendingMask006?.id === 'masque-006'
+          && ['intro','song','question','choices','reaction','result'].includes(saved.pendingMask006.stage)
+          && [null,'yes','no'].includes(saved.pendingMask006.choice ?? null)
+          && (!['reaction','result'].includes(saved.pendingMask006.stage)
+            || ['yes','no'].includes(saved.pendingMask006.choice))
+          ? {
+              id: 'masque-006',
+              stage: saved.pendingMask006.stage,
+              choice: saved.pendingMask006.choice ?? null,
+              before: Number.isFinite(saved.pendingMask006.before)
+                ? saved.pendingMask006.before : null,
+              after: Number.isFinite(saved.pendingMask006.after)
+                ? saved.pendingMask006.after : null,
+              gameOver: saved.pendingMask006.gameOver === true
+            } : null,
         lastEventType: ['masque', 'radio', 'meteo'].includes(saved.lastEventType)
           ? saved.lastEventType : null,
         weatherCount: Number.isInteger(saved.weatherCount)
@@ -4838,6 +4876,7 @@ syncMusicForActiveTab();
       && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003
       && !eventSession.pendingMask005
+      && !eventSession.pendingMask006
       && (item.type !== 'meteo'
         || (eventSession.weatherCount < WEATHER_MAX_PER_GAME
           && !eventSession.pendingWeather
@@ -4883,7 +4922,9 @@ syncMusicForActiveTab();
       || currentRadio03 !== null
       || currentWeatherEvent !== null
       || currentMask05 !== null
+      || currentMask06 !== null
       || eventSession.pendingMask005 !== null
+      || eventSession.pendingMask006 !== null
       || eventSession.pendingWeather !== null
       || eventSession.pendingRadio002 !== null
       || eventSession.pendingRadio003 !== null || alive === 0
@@ -4971,12 +5012,14 @@ syncMusicForActiveTab();
       && isPartieTabActive()
       && currentMaskEvent === null
       && currentMask05 === null
+      && currentMask06 === null
       && currentRadioEvent === null
       && currentRadio02 === null
       && currentRadio03 === null
       && currentWeatherEvent === null
       && !eventSession.pendingWeather
       && !eventSession.pendingMask005
+      && !eventSession.pendingMask006
       && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003
       && !(eventSession.radioMission
@@ -5062,6 +5105,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
     eventSession.pendingMask005 = null;
+    eventSession.pendingMask006 = null;
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
     saveAudioEventSession();
@@ -5171,6 +5215,8 @@ syncMusicForActiveTab();
   }
 
   function resetAudioEventSession() {
+    clearTimeout(mask06DeferredOutcomeTimer);
+    mask06DeferredOutcomeTimer = null;
     clearTimeout(radio03DeferredOutcomeTimer);
     radio03DeferredOutcomeTimer=null;
     hideMask05CancelNotice();
@@ -5179,6 +5225,7 @@ syncMusicForActiveTab();
     pauseAudioEventClock();
     dismissMaskEvent(true);
     dismissMask05();
+    dismissMask06();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissRadio03();
@@ -5197,6 +5244,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
     eventSession.pendingMask005 = null;
+    eventSession.pendingMask006 = null;
     eventSession.alive = [true, true, true, true];
     eventSession.played = [];
     eventSession.remainingMs = null;
@@ -5205,18 +5253,21 @@ syncMusicForActiveTab();
   }
 
   function stopAudioEventsForGameOver() {
+    clearTimeout(mask06DeferredOutcomeTimer);
+    mask06DeferredOutcomeTimer = null;
     clearTimeout(radio03DeferredOutcomeTimer);
     radio03DeferredOutcomeTimer=null;
     hideMask05CancelNotice();
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
-    if (!eventSession.active && !currentMaskEvent && !currentMask05
-      && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
+    if (!eventSession.active && !currentMaskEvent && !currentMask05 && !currentMask06
+      && !eventSession.pendingMask006 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
       && !eventSession.pendingWeather && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
     dismissMask05();
+    dismissMask06();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissRadio03();
@@ -5231,6 +5282,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
     eventSession.pendingMask005 = null;
+    eventSession.pendingMask006 = null;
     eventSession.remainingMs = null;
     saveAudioEventSession();
     renderEventControls();
@@ -5238,6 +5290,7 @@ syncMusicForActiveTab();
 
   function beginMaskEvent(item, preview) {
     if (item?.id === 'masque-005') return beginMask05(item, preview);
+    if (item?.id === 'masque-006') return beginMask06(item, preview);
     if (!eventSession.active || currentMask05 || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || specialAudioActive || anyBlockingModalOpen()) return false;
@@ -5961,6 +6014,343 @@ syncMusicForActiveTab();
     return beginMask05(item, false, true);
   }
 
+
+  // =========================================================
+  // MASQUE-006 : LA COMPTINE DES OUBLIÉS
+  // Introduction → comptine → question → OUI/NON → réaction → +5 global.
+  // La jauge est réellement modifiée en partie comme en mode test.
+  // =========================================================
+
+  function saveMask06Stage() {
+    const r = currentMask06;
+    if (!r || r.preview) return;
+    eventSession.pendingMask006 = {
+      id: 'masque-006', stage: r.stage, choice: r.choice,
+      before: r.before, after: r.after, gameOver: r.gameOver === true
+    };
+    saveAudioEventSession();
+  }
+
+  function mask06HideControls() {
+    for (const id of ['mask06Choices', 'mask06Result', 'mask06Play',
+      'mask06Skip', 'mask06Done']) {
+      els[id].classList.add('hidden');
+    }
+  }
+
+  function mask06StopAudio(r) {
+    if (!r?.audio) return;
+    r.audio.pause();
+    r.audio.onended = null;
+    r.audio.onerror = null;
+    r.audio = null;
+  }
+
+  function dismissMask06() {
+    mask06Token += 1;
+    const r = currentMask06;
+    mask06StopAudio(r);
+    currentMask06 = null;
+    els.mask06Overlay.classList.remove('show', 'is-choice', 'is-result', 'is-singing');
+    els.mask06Overlay.setAttribute('aria-hidden', 'true');
+    mask06HideControls();
+    specialAudioActive = false;
+    syncAmbientVolume();
+    renderEventControls();
+  }
+
+  function mask06ShowOverlay() {
+    const r = currentMask06;
+    if (!r) return;
+    els.mask06Portrait.src = getMaskState(state.value).src;
+    els.mask06Overlay.classList.add('show');
+    els.mask06Overlay.classList.toggle('is-choice', r.stage === 'choices');
+    els.mask06Overlay.classList.toggle('is-result', r.stage === 'result');
+    els.mask06Overlay.classList.toggle('is-singing', r.stage === 'song');
+    els.mask06Overlay.setAttribute('aria-hidden', 'false');
+    mask06HideControls();
+    specialAudioActive = true;
+    syncAmbientVolume();
+  }
+
+  function mask06AudioPath(r) {
+    return r.stage === 'intro' ? r.item.introAudio
+      : r.stage === 'song' ? r.item.songAudio
+      : r.stage === 'question' ? r.item.questionAudio
+      : r.stage === 'reaction'
+        ? (r.choice === 'yes' ? r.item.yesAudio : r.item.noAudio)
+        : null;
+  }
+
+  function mask06AudioFallback(broken = false) {
+    const r = currentMask06;
+    if (!r || !['intro', 'song', 'question', 'reaction'].includes(r.stage)) return;
+    r.audioBroken = broken;
+    els.mask06Status.textContent = broken
+      ? 'Enregistrement indisponible. Réessayez ou continuez sans cet audio.'
+      : 'Lecture suspendue. Touchez pour reprendre.';
+    els.mask06Play.textContent = broken
+      ? 'RÉESSAYER L’ENREGISTREMENT' : 'REPRENDRE L’AUDIO';
+    els.mask06Play.classList.remove('hidden');
+    els.mask06Skip.classList.toggle('hidden', !broken);
+  }
+
+  function mask06PlayStage() {
+    const r = currentMask06;
+    if (!r) return;
+    if (document.visibilityState !== 'visible') {
+      // Ne pas rester bloqué si un segment se termine au moment où
+      // Android place l'application en arrière-plan.
+      mask06AudioFallback(false);
+      return;
+    }
+    const stage = r.stage, url = mask06AudioPath(r);
+    if (!url) return;
+    if (!r.audio) {
+      r.audio = new Audio(url);
+      r.audio.preload = 'auto';
+      r.audio.volume = 1;
+    }
+    const audio = r.audio, token = r.token;
+    audio.onended = () => {
+      if (currentMask06?.token === token && r.stage === stage && r.audio === audio) {
+        mask06Advance();
+      }
+    };
+    audio.onerror = () => {
+      if (currentMask06?.token === token && r.stage === stage && r.audio === audio) {
+        mask06AudioFallback(true);
+      }
+    };
+    r.audioBroken = false;
+    els.mask06Status.textContent = stage === 'intro'
+      ? 'Le Masque a une surprise à vous présenter…'
+      : stage === 'song' ? 'Le Masque interprète son chef-d’œuvre…'
+      : stage === 'question' ? 'Le Masque attend votre avis…'
+      : 'Le Masque réagit à votre réponse…';
+    els.mask06Play.classList.add('hidden');
+    els.mask06Skip.classList.add('hidden');
+    els.mask06Overlay.classList.toggle('is-singing', stage === 'song');
+    try {
+      audio.play().catch(() => {
+        if (currentMask06?.token === token && r.stage === stage) {
+          mask06AudioFallback(false);
+        }
+      });
+    } catch (_) {
+      mask06AudioFallback(false);
+    }
+  }
+
+  function mask06SetStage(stage) {
+    const r = currentMask06;
+    if (!r) return;
+    mask06StopAudio(r);
+    r.stage = stage;
+    r.audioBroken = false;
+    saveMask06Stage();
+    mask06ShowOverlay();
+  }
+
+  function mask06Advance() {
+    const r = currentMask06;
+    if (!r) return;
+    if (r.stage === 'intro') {
+      mask06SetStage('song');
+      mask06PlayStage();
+    } else if (r.stage === 'song') {
+      mask06SetStage('question');
+      mask06PlayStage();
+    } else if (r.stage === 'question') {
+      mask06SetStage('choices');
+      mask06ShowChoices();
+    } else if (r.stage === 'reaction') {
+      mask06Finalize();
+    }
+  }
+
+  function skipMask06BrokenAudio() {
+    const r = currentMask06;
+    if (!r || !r.audioBroken) return;
+    mask06Advance();
+  }
+
+  function mask06ShowChoices() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'choices') return;
+    mask06ShowOverlay();
+    els.mask06Status.textContent = 'ALOOOORS ?! Vous avez aimé ma chanson ?';
+    els.mask06Choices.classList.remove('hidden');
+    els.mask06Yes.focus();
+  }
+
+  function chooseMask06(choice) {
+    const r = currentMask06;
+    if (!r || r.stage !== 'choices' || !['yes','no'].includes(choice)) return;
+    r.choice = choice;
+    mask06SetStage('reaction');
+    mask06PlayStage();
+  }
+
+  function mask06Finalize() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'reaction' || !['yes','no'].includes(r.choice)) return;
+    r.before = state.value;
+    r.after = clamp(r.before + 5, 0, 100);
+    r.gameOver = r.after >= 100;
+
+    // La conséquence prévue est enregistrée AVANT de modifier l'Instabilité.
+    // Une restauration après F5 peut ainsi appliquer l'effet au maximum une fois.
+    mask06SetStage('result');
+    if (r.after !== r.before) {
+      const effect = applyInstabilityDelta(5, {
+        source: 'Le Masque — La Comptine des oubliés (' + (r.choice === 'yes' ? 'oui' : 'non') + ')',
+        deferThreshold: true,
+        deferGameOver: true
+      });
+      r.after = state.value;
+      r.gameOver = effect.gameOver;
+      saveMask06Stage();
+    }
+    mask06ShowResult();
+  }
+
+  function mask06ShowResult() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'result') return;
+    mask06StopAudio(r);
+    mask06ShowOverlay();
+    els.mask06Status.textContent = 'Le Masque a rendu sa sentence.';
+    const actual = Number.isFinite(r.before) && Number.isFinite(r.after)
+      ? r.after - r.before : 0;
+    els.mask06Result.textContent =
+      (r.choice === 'yes' ? 'VOUS AVEZ RÉPONDU OUI.' : 'VOUS AVEZ RÉPONDU NON.') +
+      '\n\nLe Masque n’a pas accepté votre réponse.\n\n' +
+      'Instabilité globale du groupe : ' + r.before + ' % → ' + r.after +
+      ' % (+' + actual + ' points).\n\n' +
+      (r.gameOver
+        ? 'Le seuil de 100 % est atteint : la fin de partie sera déclenchée après cette fenêtre.'
+        : 'La partie continue.');
+    els.mask06Result.classList.remove('hidden');
+    els.mask06Done.classList.remove('hidden');
+    els.mask06Done.focus();
+  }
+
+  function completeMask06() {
+    const r = currentMask06;
+    if (!r || r.stage !== 'result') return;
+    const delay = r.preview ? r.savedPreviewDelay : randomBetween(...EVENT_NEXT_DELAY);
+    const transition = Number.isFinite(r.before) && Number.isFinite(r.after)
+      && r.before !== r.after ? [r.before, r.after] : null;
+    const over = r.gameOver;
+    dismissMask06();
+    if (!r.preview) eventSession.pendingMask006 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+
+    if (transition || over) {
+      clearTimeout(mask06DeferredOutcomeTimer);
+      mask06DeferredOutcomeTimer = setTimeout(() => {
+        mask06DeferredOutcomeTimer = null;
+        if (over) checkGameOver();
+        else if (transition && state.value === transition[1]) {
+          handleThresholdTransition(transition[0], transition[1]);
+        }
+      }, REDUCED_MOTION ? 0 : 790);
+    }
+  }
+
+  function resumeMask06Audio() {
+    const r = currentMask06;
+    if (!r || document.visibilityState !== 'visible') return;
+    if (r.audioBroken) {
+      mask06StopAudio(r);
+      r.audioBroken = false;
+    }
+    mask06PlayStage();
+  }
+
+  function handleMask06Visibility() {
+    const r = currentMask06;
+    if (!r || document.visibilityState !== 'hidden') return;
+    if (r.audio && !r.audio.paused) {
+      r.audio.pause();
+      mask06AudioFallback(false);
+    }
+  }
+
+  function mask06OnPageHide() {
+    const r = currentMask06;
+    if (r?.audio) r.audio.pause();
+  }
+
+  function beginMask06(item, preview, restoring = false) {
+    const pending = restoring ? eventSession.pendingMask006 : null;
+    if (item?.id !== 'masque-006' || !eventSession.active
+      || currentMaskEvent || currentMask05 || currentMask06 || currentRadioEvent
+      || currentRadio02 || currentRadio03 || currentWeatherEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || !isPartieTabActive() || document.visibilityState !== 'visible'
+      || (state.value >= 100 && !(restoring && pending?.stage === 'result'))
+      || (!restoring && livingPlayerNumbers().length === 0)
+      || (restoring && !pending)) return false;
+
+    pauseAudioEventClock();
+    const r = {
+      token: ++mask06Token, item, preview,
+      savedPreviewDelay: eventSession.remainingMs,
+      stage: pending?.stage || 'intro',
+      choice: pending?.choice || null,
+      before: pending?.before ?? null,
+      after: pending?.after ?? null,
+      gameOver: pending?.gameOver === true,
+      audio: null, audioBroken: false
+    };
+    currentMask06 = r;
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.remainingMs = null;
+    }
+    saveMask06Stage();
+    mask06ShowOverlay();
+    silenceHauntSounds();
+    renderEventControls();
+
+    if (r.stage === 'choices') {
+      mask06ShowChoices();
+    } else if (r.stage === 'result') {
+      // Cas rare : F5 entre l'écriture du résultat et l'application des +5.
+      if (!preview && Number.isFinite(r.before) && Number.isFinite(r.after)
+        && state.value === r.before && r.after > r.before) {
+        applyInstabilityDelta(r.after - r.before, {
+          source: 'Le Masque — La Comptine des oubliés (reprise)',
+          deferThreshold: true, deferGameOver: true
+        });
+        saveMask06Stage();
+      }
+      mask06ShowResult();
+    } else {
+      mask06PlayStage();
+    }
+    return true;
+  }
+
+  function resumePendingMask06IfPossible() {
+    const pending = eventSession.pendingMask006;
+    if (!pending || !eventSession.active || gameOverShown
+      || document.visibilityState !== 'visible'
+      || (state.value >= 100 && pending.stage !== 'result')) return false;
+    const item = AUDIO_EVENTS.find(entry => entry.id === pending.id);
+    if (!item) {
+      eventSession.pendingMask006 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginMask06(item, false, true);
+  }
+
   // =========================================================
   // MASQUE 004 — LE REGARD DU VICE : DUEL EN TEMPS RÉEL
   // =========================================================
@@ -6280,6 +6670,7 @@ syncMusicForActiveTab();
     handleRadio02Visibility();
     handleRadio03Visibility();
     handleMask05Visibility();
+    handleMask06Visibility();
     if (currentRadioEvent && document.visibilityState === 'hidden'
       && currentRadioEvent.audio
       && !currentRadioEvent.audio.paused) {
@@ -8353,6 +8744,7 @@ syncMusicForActiveTab();
     scheduleMaskDisturbance();
 
     if (!resumePendingMask05IfPossible()
+      && !resumePendingMask06IfPossible()
       && !resumePendingRadio02IfPossible()
       && !resumePendingRadio03IfPossible()
       && !resumePendingWeatherIfPossible()) {
@@ -8367,7 +8759,7 @@ syncMusicForActiveTab();
 
     if (
       state.value >= 100 && !currentWeatherEvent && !currentRadio02
-      && !currentRadio03 && !currentMask05
+      && !currentRadio03 && !currentMask05 && !currentMask06
     ) {
       checkGameOver();
     }
@@ -8534,6 +8926,11 @@ syncMusicForActiveTab();
     els.mask05Play.addEventListener('click', resumeMask05Audio);
     els.mask05Skip.addEventListener('click', skipMask05Audio);
     els.mask05Done.addEventListener('click', completeMask05);
+    els.mask06Yes.addEventListener('click', () => chooseMask06('yes'));
+    els.mask06No.addEventListener('click', () => chooseMask06('no'));
+    els.mask06Play.addEventListener('click', resumeMask06Audio);
+    els.mask06Skip.addEventListener('click', skipMask06BrokenAudio);
+    els.mask06Done.addEventListener('click', completeMask06);
 
     els.radioMissionToggle.addEventListener('click', toggleRadioMissionPanel);
     els.radioMissionArrived.addEventListener('click', radioMissionArrived);
@@ -8648,6 +9045,7 @@ syncMusicForActiveTab();
     window.addEventListener('pagehide', () => {
       pauseAudioEventClock();
       radio03OnPageHide();
+      mask06OnPageHide();
     });
 
     document

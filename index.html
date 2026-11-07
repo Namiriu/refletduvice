@@ -1503,6 +1503,33 @@
     @media(max-height:530px){.radio03-content{padding:10px 13px}.radio03-icon{font-size:28px}.radio03-slot{min-height:36px}.radio03-color,.radio03-btn{min-height:42px}}
     @media(prefers-reduced-motion:reduce){.radio03-signal i{animation:none!important}.radio03-progress{transition:none}}
 
+
+    /* MASQUE-006 : représentation théâtrale, comptine et piège à deux réponses. */
+    .mask06-overlay{position:fixed;inset:0;z-index:10146;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(38,12,26,.965),rgba(2,3,8,.997) 77%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .65s ease,visibility 0s linear .65s}
+    .mask06-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
+    .mask06-content{width:min(100%,510px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:12px 14px 25px}
+    .mask06-kicker{font:clamp(13px,3.2vw,16px) var(--font-ui);color:#efd0d7;letter-spacing:1px;margin:2px 0 13px}
+    .mask06-portrait{display:block;width:min(64vw,235px);height:min(44dvh,300px);object-fit:contain;margin:7px auto 15px;filter:drop-shadow(0 0 20px rgba(162,33,71,.35));animation:mask-event-arrival .75s ease-out both}
+    .mask06-status{font:clamp(16px,4.2vw,20px)/1.45 var(--font-body);white-space:pre-line;color:#e7d7df;margin:12px 0 18px}
+    .mask06-overlay.is-choice .mask06-portrait{width:min(53vw,190px);height:min(31dvh,205px);margin:2px auto 9px}
+    .mask06-overlay.is-result .mask06-portrait{width:min(48vw,168px);height:min(24dvh,145px);margin:2px auto 8px}
+    .mask06-notes{display:none;gap:18px;justify-content:center;align-items:center;color:#eed9aa;letter-spacing:3px;font-size:25px;line-height:1.2;margin:0 auto 9px}
+    .mask06-overlay.is-singing .mask06-notes{display:flex}
+    .mask06-notes span:nth-child(2){animation:mask06-note 2.1s ease-in-out infinite alternate}
+    .mask06-notes span:nth-child(1){animation:mask06-note 2.5s ease-in-out infinite alternate-reverse}
+    .mask06-notes span:nth-child(3){animation:mask06-note 2.8s ease-in-out infinite alternate}
+    @keyframes mask06-note{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(-5px)}}
+    .mask06-actions{display:grid;gap:9px;margin:14px auto 0}
+    .mask06-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px auto 0}
+    .mask06-btn{width:100%;min-height:49px;padding:11px 9px;border:1px solid #a76e7e;border-radius:9px;background:#592e3c;color:#fff;font:clamp(11px,2.8vw,13px)/1.35 var(--font-ui);cursor:pointer}
+    .mask06-btn.secondary{border-color:#695761;background:#302931}
+    .mask06-btn:focus-visible{outline:2px solid #f2c7d4;outline-offset:3px}
+    .mask06-outcome{font:clamp(16px,4vw,19px)/1.45 var(--font-body);white-space:pre-line;color:#f5e4e9;border:1px solid #986275;border-radius:11px;background:rgba(35,20,30,.94);padding:17px 11px;margin:12px 0}
+    .mask06-overlay .hidden{display:none!important}
+    @media(max-height:570px){.mask06-content{padding:7px 10px 13px}.mask06-portrait{height:min(31dvh,145px);margin:2px auto 6px}.mask06-overlay.is-choice .mask06-portrait{height:min(24dvh,105px)}.mask06-status{margin:7px 0}.mask06-choices{margin:7px 0}}
+    @media(max-width:350px){.mask06-choices{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){.mask06-portrait,.mask06-notes span{animation:none!important}}
+
     /* Masque 005 : dialogue privé, mission secrète et horloge non intrusive */
     .mask05-overlay{position:fixed;inset:0;z-index:10145;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(37,9,14,.95),rgba(0,0,0,.99) 74%);isolation:isolate;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .7s ease,visibility 0s linear .7s}
     .mask05-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
@@ -1839,6 +1866,7 @@
             <option value="masque-003">003 · Le Prix du sacrifice</option>
             <option value="masque-004">004 · Le Regard du Vice</option>
             <option value="masque-005">005 · La Confidence empoisonnée</option>
+            <option value="masque-006">006 · La Comptine des oubliés</option>
             <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
             <option value="radio-002">📻 Radio 002 · Le Rapport impossible</option>
             <option value="radio-003">📻 Radio 003 · Vous écoutiez ?</option>
@@ -2003,7 +2031,7 @@
       </div>
     </section>
 
-    <div id="version">v1.3.2 RADIO-003 — Résultat (test)</div>
+    <div id="version">v1.4.0 MASQUE-006 — Comptine (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2280,6 +2308,27 @@
         <span id="weatherEventValues">40 % → 45 %</span>
       </div>
       <button id="weatherEventDone" class="weather-event-btn hidden" type="button">CONTINUER LA PARTIE</button>
+    </div>
+  </div>
+
+
+  <!-- MASQUE-006 : mini-spectacle du Masque, deux choix piégés. -->
+  <div id="mask06Overlay" class="mask06-overlay" role="dialog" aria-modal="true" aria-labelledby="mask06Heading" aria-hidden="true">
+    <div class="mask06-content">
+      <h2 id="mask06Heading" class="mask06-kicker">INTERVENTION DU MASQUE</h2>
+      <img id="mask06Portrait" class="mask06-portrait" src="img/masque0.png" alt="Le Masque">
+      <div class="mask06-notes" aria-hidden="true"><span>♪</span><span>♫</span><span>♪</span></div>
+      <p id="mask06Status" class="mask06-status" aria-live="polite">Le Masque vous prépare une surprise…</p>
+      <div id="mask06Choices" class="mask06-choices hidden">
+        <button id="mask06Yes" class="mask06-btn" type="button">❤️ OUI, C'ÉTAIT MAGNIFIQUE !</button>
+        <button id="mask06No" class="mask06-btn secondary" type="button">💀 NON, C'ÉTAIT HORRIBLE !</button>
+      </div>
+      <div id="mask06Result" class="mask06-outcome hidden" role="status"></div>
+      <div class="mask06-actions">
+        <button id="mask06Play" class="mask06-btn hidden" type="button">REPRENDRE L’AUDIO</button>
+        <button id="mask06Skip" class="mask06-btn secondary hidden" type="button">CONTINUER SANS CET AUDIO</button>
+        <button id="mask06Done" class="mask06-btn hidden" type="button">CONTINUER LA PARTIE</button>
+      </div>
     </div>
   </div>
 
