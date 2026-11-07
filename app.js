@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.4.0 MASQUE-006 — Comptine (test)';
+  const VERSION = 'v1.4.1 MASQUE-006 — Résultat (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6227,10 +6227,10 @@ syncMusicForActiveTab();
       (r.choice === 'yes' ? 'VOUS AVEZ RÉPONDU OUI.' : 'VOUS AVEZ RÉPONDU NON.') +
       '\n\nLe Masque n’a pas accepté votre réponse.\n\n' +
       'Instabilité globale du groupe : ' + r.before + ' % → ' + r.after +
-      ' % (+' + actual + ' points).\n\n' +
+      ' % (+' + actual + ' points).' +
       (r.gameOver
-        ? 'Le seuil de 100 % est atteint : la fin de partie sera déclenchée après cette fenêtre.'
-        : 'La partie continue.');
+        ? '\n\nLe seuil de 100 % est atteint : la fin de partie sera déclenchée après cette fenêtre.'
+        : '');
     els.mask06Result.classList.remove('hidden');
     els.mask06Done.classList.remove('hidden');
     els.mask06Done.focus();
