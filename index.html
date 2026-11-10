@@ -1511,14 +1511,12 @@
     .coin-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .25s ease}
     .coin-panel{width:min(100%,450px);max-height:calc(100dvh - 28px);overflow-y:auto;padding:20px 14px 24px;text-align:center}
     .coin-heading{font:clamp(14px,4vw,18px) var(--font-ui);color:#e6c99f;letter-spacing:1px;margin:5px 0 17px}
-    .coin-scene{width:min(64vw,220px);height:min(64vw,220px);max-width:220px;max-height:220px;margin:8px auto 23px;perspective:900px;border-radius:50%;background:radial-gradient(circle,#755638 45%,#241c1a 70%,transparent 73%)}
+    .coin-scene{width:min(64vw,220px);height:min(64vw,220px);max-width:220px;max-height:220px;margin:8px auto 23px;perspective:900px;border-radius:50%;background:transparent}
     .coin-disc{position:relative;width:100%;height:100%;border-radius:50%;transform-style:preserve-3d;will-change:transform}
-    .coin-side{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;border-radius:50%;border:9px ridge #a98552;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:inset 0 0 0 4px #422a1a,inset 0 0 22px rgba(0,0,0,.85),0 4px 16px rgba(0,0,0,.6);background:radial-gradient(circle at 32% 24%,#b99a62,#60442d 60%,#201718 100%)}
-    .coin-side.back{transform:rotateY(180deg);border-color:#9c4353;background:radial-gradient(circle at 35% 22%,#a66063,#652737 60%,#1a0c16 100%)}
-    .coin-side img{width:70%;height:69%;object-fit:contain;pointer-events:none;filter:grayscale(1) sepia(.85) contrast(1.25) drop-shadow(0 2px 2px #130f0d)}
-    .coin-side.back img{filter:grayscale(1) sepia(1) hue-rotate(300deg) contrast(1.5) drop-shadow(0 2px 2px #1a0206)}
-    .coin-side strong{font:clamp(13px,3.5vw,18px) var(--font-ui);letter-spacing:2px;color:#f9dfad;text-shadow:0 1px 2px #24180f;position:relative;z-index:1;margin-top:-6px}
-    .coin-side.back strong{color:#ffbec8}
+    /* Les PNG sont des pièces complètes : ni bordure CSS ni filtre qui altère les gravures. */
+    .coin-side{position:absolute;inset:0;overflow:hidden;border-radius:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:transparent}
+    .coin-side.back{transform:rotateY(180deg)}
+    .coin-side img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;filter:none}
     .coin-status{font:clamp(16px,4.2vw,21px)/1.4 var(--font-body);color:#f2ded8;min-height:58px;margin:15px auto 12px}
     .coin-controls{display:grid;gap:9px;max-width:340px;margin:10px auto 0}
     .coin-btn{min-height:49px;padding:12px;border:1px solid #c0a078;border-radius:9px;background:linear-gradient(#694635,#37232b);color:#fff;font:clamp(11px,3vw,13px) var(--font-ui);cursor:pointer}
@@ -2074,7 +2072,7 @@
       </div>
     </section>
 
-    <div id="version">v1.5.2 MASQUE-007 — Affichage du jeton (test)</div>
+    <div id="version">v1.5.3 MASQUE-007 — Jeton illustré et sonore (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2363,8 +2361,8 @@
       <h2 id="coinHeading" class="coin-heading">🪙 LE JETON DU MASQUE</h2>
       <div class="coin-scene" aria-hidden="true">
         <div id="coinDisc" class="coin-disc">
-          <div class="coin-side front"><img id="coinFrontImg" src="img/masque0.png" alt=""><strong>PILE</strong></div>
-          <div class="coin-side back"><img id="coinBackImg" src="img/masque90.png" alt=""><strong>FACE</strong></div>
+          <div class="coin-side front"><img id="coinFrontImg" src="img/jeton-masque-pile.png" alt=""></div>
+          <div class="coin-side back"><img id="coinBackImg" src="img/jeton-masque-face.png" alt=""></div>
         </div>
       </div>
       <p id="coinStatus" class="coin-status" role="status" aria-live="polite">Le sort vous attend…</p>

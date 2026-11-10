@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.2 MASQUE-007 — Affichage du jeton (test)';
+  const VERSION = 'v1.5.3 MASQUE-007 — Jeton illustré et sonore (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6087,6 +6087,148 @@ syncMusicForActiveTab();
   // 50/50 : résultat fixé avant le mouvement, jamais par l'animation.
   // =========================================================
 
+
+  // FX procédural : les souffles suivent exactement la courbe de rotation
+  // cubic-bezier(.15,.67,.13,1). Aucun MP3 ni boucle audio indépendante.
+  const COIN_SPIN_MS = 3500;
+  const COIN_SPIN_EASING = 'cubic-bezier(.15,.67,.13,1)';
+  let coinAudioContext = null;
+  let coinNoiseBuffer = null;
+
+  function coinPrepareAudio() {
+    const AudioContextClass = typeof window === 'undefined' ? null
+      : (window.AudioContext || window.webkitAudioContext);
+    if (!AudioContextClass) return null;
+    try {
+      if (!coinAudioContext || coinAudioContext.state === 'closed') {
+        coinAudioContext = new AudioContextClass();
+        coinNoiseBuffer = null;
+      }
+      // Appel déclenché par le geste du joueur (jeton manuel ou MASQUE-007).
+      if (coinAudioContext.state !== 'running') {
+        const resumed = coinAudioContext.resume();
+        resumed?.catch?.(() => {});
+      }
+      return coinAudioContext;
+    } catch (_) { return null; } // Audio facultatif : l'esquive fonctionne toujours.
+  }
+
+  function coinCubic(t, p1, p2) {
+    const u = 1 - t;
+    return 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t;
+  }
+
+  function coinElapsedForRotation(progress) {
+    // Inverser la composante Y (angle) pour retrouver le temps X de la
+    // même courbe CSS/WAAPI. Un frottement à chaque passage sur la tranche.
+    let low = 0, high = 1;
+    for (let i = 0; i < 28; i++) {
+      const m = (low + high) / 2;
+      if (coinCubic(m, .67, 1) < progress) low = m;
+      else high = m;
+    }
+    return COIN_SPIN_MS / 1000 * coinCubic((low + high) / 2, .15, .13);
+  }
+
+  function coinStopAudio(c) {
+    if (!c) return;
+    for (const node of c.soundSources || []) {
+      try { node.stop(); } catch (_) {}
+    }
+    c.soundSources = [];
+    if (c.soundBus) {
+      try { c.soundBus.disconnect(); } catch (_) {}
+      c.soundBus = null;
+    }
+  }
+
+  function coinScheduleSound(c, degrees) {
+    const ctx = coinPrepareAudio();
+    if (!ctx || ctx.state !== 'running' || !c) return;
+    try {
+      if (!coinNoiseBuffer || coinNoiseBuffer.sampleRate !== ctx.sampleRate) {
+        const length = Math.ceil(ctx.sampleRate * .15);
+        coinNoiseBuffer = ctx.createBuffer(1, length, ctx.sampleRate);
+        const data = coinNoiseBuffer.getChannelData(0);
+        for (let i = 0; i < length; i++) {
+          // Un souffle voilé, jamais de clics de machine à sous.
+          data[i] = (Math.random() * 2 - 1) * .65;
+        }
+      }
+
+      c.soundSources = [];
+      const bus = ctx.createGain();
+      bus.gain.value = .72;
+      bus.connect(ctx.destination);
+      c.soundBus = bus;
+
+      const begin = ctx.currentTime + .015;
+      const times = [];
+      for (let angle = 90; angle < degrees; angle += 180) {
+        times.push(coinElapsedForRotation(angle / degrees));
+      }
+
+      for (let i = 0; i < times.length; i++) {
+        const gapBefore = i === 0 ? times[0]
+          : times[i] - times[i - 1];
+        const speed = Math.min(1, .18 / Math.max(.025, gapBefore));
+        const at = begin + times[i];
+        const source = ctx.createBufferSource();
+        source.buffer = coinNoiseBuffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 680 + speed * 400;
+        filter.Q.value = .65;
+        const vol = ctx.createGain();
+        vol.gain.setValueAtTime(.0001, at);
+        vol.gain.linearRampToValueAtTime((.085 + speed * .09), at + .012);
+        vol.gain.exponentialRampToValueAtTime(.0001, at + .14);
+        source.connect(filter);
+        filter.connect(vol);
+        vol.connect(bus);
+        source.start(at);
+        source.stop(at + .145);
+        c.soundSources.push(source);
+
+        // Une résonance grave discrète pour éloigner l'effet mécanique.
+        const low = ctx.createOscillator();
+        low.type = 'sine';
+        low.frequency.setValueAtTime(240 + speed * 75, at);
+        low.frequency.exponentialRampToValueAtTime(145, at + .13);
+        const lowVol = ctx.createGain();
+        lowVol.gain.setValueAtTime(.0001, at);
+        lowVol.gain.linearRampToValueAtTime(.018 + speed * .011, at + .012);
+        lowVol.gain.exponentialRampToValueAtTime(.0001, at + .13);
+        low.connect(lowVol);
+        lowVol.connect(bus);
+        low.start(at);
+        low.stop(at + .135);
+        c.soundSources.push(low);
+      }
+
+      // Un seul tintement spectral, exactement à l'arrêt du jeton.
+      const stopAt = begin + COIN_SPIN_MS / 1000;
+      for (const [frequency, peak, duration] of [
+        [605, .065, .34], [907, .023, .24]
+      ]) {
+        const note = ctx.createOscillator();
+        note.type = 'sine';
+        note.frequency.value = frequency;
+        const envelope = ctx.createGain();
+        envelope.gain.setValueAtTime(.0001, stopAt);
+        envelope.gain.linearRampToValueAtTime(peak, stopAt + .009);
+        envelope.gain.exponentialRampToValueAtTime(.0001, stopAt + duration);
+        note.connect(envelope);
+        envelope.connect(bus);
+        note.start(stopAt);
+        note.stop(stopAt + duration + .01);
+        c.soundSources.push(note);
+      }
+    } catch (_) {
+      coinStopAudio(c); // Une API audio capricieuse ne bloque jamais le jeu.
+    }
+  }
+
   function drawCoinOutcome() {
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       const bytes = new Uint32Array(1);
@@ -6107,8 +6249,9 @@ syncMusicForActiveTab();
       spinning: false, revealed: false, animation: null,
       timeout: null
     };
-    els.coinFrontImg.src = getMaskState(state.value).src;
-    els.coinBackImg.src = 'img/masque90.png';
+    els.coinFrontImg.src = 'img/jeton-masque-pile.png';
+    els.coinBackImg.src = 'img/jeton-masque-face.png';
+    coinPrepareAudio();
     els.coinDisc.style.transform = 'rotateY(0deg)';
     els.coinStatus.textContent = mode === 'manual'
       ? 'PILE OU FACE — Prêts à tenter le sort ?'
@@ -6147,6 +6290,7 @@ syncMusicForActiveTab();
     if (c) {
       clearTimeout(c.timeout);
       c.animation?.cancel();
+      coinStopAudio(c);
     }
     currentCoin = null;
     els.coinOverlay.classList.remove('show');
@@ -6210,10 +6354,11 @@ syncMusicForActiveTab();
           { transform: 'rotateY(0deg)' },
           { transform: 'rotateY(' + endRotation + 'deg)' }
         ], {
-          duration: 3500,
-          easing: 'cubic-bezier(.15,.67,.13,1)',
+          duration: COIN_SPIN_MS,
+          easing: COIN_SPIN_EASING,
           fill: 'forwards'
         });
+        coinScheduleSound(c, endRotation);
         c.animation.finished.then(show).catch(() => {});
       } catch (_) { c.animation = null; c.timeout = setTimeout(show, 3500); }
     } else {
@@ -6233,12 +6378,18 @@ syncMusicForActiveTab();
   function handleCoinVisibility() {
     // En arrière-plan, on révèle immédiatement le résultat DÉJÀ tiré.
     const c = currentCoin;
-    if (c && c.spinning && document.visibilityState === 'hidden') revealCoin();
+    if (c && c.spinning && document.visibilityState === 'hidden') {
+      coinStopAudio(c);
+      revealCoin();
+    }
   }
 
   function coinOnPageHide() {
     // Un rechargement de MASQUE-007 restaure l'issue sauvegardée.
-    if (currentCoin?.spinning) revealCoin();
+    if (currentCoin?.spinning) {
+      coinStopAudio(currentCoin);
+      revealCoin();
+    }
   }
 
 

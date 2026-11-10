@@ -1,4 +1,4 @@
-const CACHE = 'instability-v97';
+const CACHE = 'instability-v98';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -23,6 +23,9 @@ const ASSETS = [
   './img/masque65.png',
   './img/masque75.png',
   './img/masque90.png',
+  // Les deux faces illustrées du jeton du Masque.
+  './img/jeton-masque-pile.png',
+  './img/jeton-masque-face.png',
   './img/icon-sac-a-dos.svg',
 
   // Boutons Instabilité
@@ -236,6 +239,8 @@ const MEDIA_REVISIONS = {
   "./img/masque65.png": "394d58c4abe5b075e481f20a5861efa4181cdccc",
   "./img/masque75.png": "047e5d0b4bec6aeae47d222b359a382c5486ace3",
   "./img/masque90.png": "70c5160a5cceafc5ea380245d6090da0a7fcc3d0",
+  "./img/jeton-masque-pile.png": "3116393e7ad5cc11145ef427ee24d1f70c9858d4",
+  "./img/jeton-masque-face.png": "fa9d67185e2038a906c43ca1ac238efdf9d4363d",
   "./img/icon-sac-a-dos.svg": "7bd86cdf6908dcb07aab9b7fe96ab5c242914adc",
   "./img/btn_moins5.png": "bc266bb683cc1c67d8e1612f8fd665f8172631f2",
   "./img/btn_plus5.png": "e0ca1b4352c22d14d1eebc316ec808a30664e82e",
