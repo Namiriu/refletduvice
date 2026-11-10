@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.4 MASQUE-007 — Souffle spectral du jeton (test)';
+  const VERSION = 'v1.5.5 MASQUE-007 — Verdict ElevenLabs (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6088,13 +6088,16 @@ syncMusicForActiveTab();
   // =========================================================
 
 
-  // FX procédural : les souffles suivent exactement la courbe de rotation
-  // cubic-bezier(.15,.67,.13,1). Aucun MP3 ni boucle audio indépendante.
+  // Les sons de rotation suivent la courbe CSS. Le verdict utilise l'audio
+  // ElevenLabs d'origine et continue naturellement après fermeture du jeton.
   const COIN_SPIN_MS = 3500;
   const COIN_SPIN_EASING = 'cubic-bezier(.15,.67,.13,1)';
+  const COIN_VERDICT_SFX = 'audio/events/sfx/jeton-verdict.mp3';
+  const COIN_VERDICT_VOLUME = .52;
   let coinAudioContext = null;
   let coinNoiseBuffer = null;
-  let coinFinalNoiseBuffer = null;
+  let coinVerdictBuffer = null;
+  let coinVerdictLoad = null;
 
   function coinPrepareAudio() {
     const AudioContextClass = typeof window === 'undefined' ? null
@@ -6104,7 +6107,8 @@ syncMusicForActiveTab();
       if (!coinAudioContext || coinAudioContext.state === 'closed') {
         coinAudioContext = new AudioContextClass();
         coinNoiseBuffer = null;
-        coinFinalNoiseBuffer = null;
+        coinVerdictBuffer = null;
+        coinVerdictLoad = null;
       }
       // Appel déclenché par le geste du joueur (jeton manuel ou MASQUE-007).
       if (coinAudioContext.state !== 'running') {
@@ -6113,6 +6117,52 @@ syncMusicForActiveTab();
       }
       return coinAudioContext;
     } catch (_) { return null; } // Audio facultatif : l'esquive fonctionne toujours.
+  }
+
+  function coinPreloadVerdict() {
+    const ctx = coinPrepareAudio();
+    if (!ctx) return Promise.resolve(null);
+    if (coinVerdictBuffer) return Promise.resolve(coinVerdictBuffer);
+    if (!coinVerdictLoad) {
+      coinVerdictLoad = fetch(COIN_VERDICT_SFX)
+        .then(response => {
+          if (!response.ok) throw new Error('Verdict introuvable : ' + response.status);
+          return response.arrayBuffer();
+        })
+        .then(bytes => ctx.decodeAudioData(bytes))
+        .then(buffer => {
+          coinVerdictBuffer = buffer;
+          return buffer;
+        })
+        .catch(() => {
+          // Le verdict reste visuel si le média est indisponible hors ligne.
+          coinVerdictLoad = null;
+          return null;
+        });
+    }
+    return coinVerdictLoad;
+  }
+
+  function coinPlayVerdict() {
+    const ctx = coinPrepareAudio();
+    if (!ctx) return;
+    // Source indépendante du jeton : CONTINUER ne coupe jamais sa résonance.
+    coinPreloadVerdict().then(buffer => {
+      if (!buffer || ctx.state !== 'running') return;
+      try {
+        const source = ctx.createBufferSource();
+        const volume = ctx.createGain();
+        source.buffer = buffer;
+        volume.gain.value = COIN_VERDICT_VOLUME;
+        source.connect(volume);
+        volume.connect(ctx.destination);
+        source.onended = () => {
+          try { source.disconnect(); } catch (_) {}
+          try { volume.disconnect(); } catch (_) {}
+        };
+        source.start(); // Vitesse et durée d'origine : environ 3,5 secondes.
+      } catch (_) { /* Le son facultatif ne bloque pas le résultat. */ }
+    });
   }
 
   function coinCubic(t, p1, p2) {
@@ -6208,58 +6258,9 @@ syncMusicForActiveTab();
         c.soundSources.push(low);
       }
 
-      // Verdict : un TAK bref suivi d'un KSHHH spectral étouffé.
-      // Aucun gong, aucune note de cloche et aucune différence PILE/FACE.
-      const stopAt = begin + COIN_SPIN_MS / 1000;
+      // Le bruitage final MP3 joue lors de revealCoin(), pas ici.
+      // Il n'est pas relié à soundBus, coupé quand la fenêtre se ferme.
 
-      // Attaque sèche, très courte : une tranche de métal qui s'immobilise.
-      const knock = ctx.createBufferSource();
-      knock.buffer = coinNoiseBuffer;
-      const knockFilter = ctx.createBiquadFilter();
-      knockFilter.type = 'highpass';
-      knockFilter.frequency.value = 1100;
-      const knockGain = ctx.createGain();
-      knockGain.gain.setValueAtTime(.0001, stopAt);
-      knockGain.gain.linearRampToValueAtTime(.19, stopAt + .002);
-      knockGain.gain.exponentialRampToValueAtTime(.0001, stopAt + .065);
-      knock.connect(knockFilter);
-      knockFilter.connect(knockGain);
-      knockGain.connect(bus);
-      knock.start(stopAt);
-      knock.stop(stopAt + .075);
-      c.soundSources.push(knock);
-
-      // Souffle grave et granuleux qui descend sans résonance musicale.
-      // Buffer court mémorisé, généré une fois puis réutilisé à chaque lancer.
-      if (!coinFinalNoiseBuffer
-        || coinFinalNoiseBuffer.sampleRate !== ctx.sampleRate) {
-        const length = Math.ceil(ctx.sampleRate * .52);
-        coinFinalNoiseBuffer = ctx.createBuffer(1, length, ctx.sampleRate);
-        const data = coinFinalNoiseBuffer.getChannelData(0);
-        let smoothed = 0;
-        for (let i = 0; i < length; i++) {
-          const noise = Math.random() * 2 - 1;
-          smoothed = smoothed * .58 + noise * .42;
-          data[i] = smoothed * .72 + noise * .14;
-        }
-      }
-      const breath = ctx.createBufferSource();
-      breath.buffer = coinFinalNoiseBuffer;
-      const breathFilter = ctx.createBiquadFilter();
-      breathFilter.type = 'bandpass';
-      breathFilter.frequency.setValueAtTime(1450, stopAt + .035);
-      breathFilter.frequency.exponentialRampToValueAtTime(380, stopAt + .48);
-      breathFilter.Q.value = .72;
-      const breathGain = ctx.createGain();
-      breathGain.gain.setValueAtTime(.0001, stopAt + .035);
-      breathGain.gain.linearRampToValueAtTime(.115, stopAt + .075);
-      breathGain.gain.exponentialRampToValueAtTime(.0001, stopAt + .49);
-      breath.connect(breathFilter);
-      breathFilter.connect(breathGain);
-      breathGain.connect(bus);
-      breath.start(stopAt + .035);
-      breath.stop(stopAt + .515);
-      c.soundSources.push(breath);
     } catch (_) {
       coinStopAudio(c); // Une API audio capricieuse ne bloque jamais le jeu.
     }
@@ -6288,6 +6289,8 @@ syncMusicForActiveTab();
     els.coinFrontImg.src = 'img/jeton-masque-pile.png';
     els.coinBackImg.src = 'img/jeton-masque-face.png';
     coinPrepareAudio();
+    // Précharger/décoder le verdict pendant les 3,5 secondes de rotation.
+    void coinPreloadVerdict();
     els.coinDisc.style.transform = 'rotateY(0deg)';
     els.coinStatus.textContent = mode === 'manual'
       ? 'PILE OU FACE — Prêts à tenter le sort ?'
@@ -6345,8 +6348,10 @@ syncMusicForActiveTab();
     c.timeout = null;
     c.animation?.cancel();
     c.animation = null;
+    const playVerdict = c.spinning && document.visibilityState === 'visible';
     c.spinning = false;
     c.revealed = true;
+    if (playVerdict) coinPlayVerdict();
     els.coinDisc.style.transform = 'rotateY(' + coinFaceAngle(c.outcome) + 'deg)';
     els.coinStatus.textContent = c.outcome === 'success'
       ? 'PILE ! — ESQUIVE RÉUSSIE.' : 'FACE ! — ESQUIVE RATÉE.';

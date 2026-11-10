@@ -1,4 +1,4 @@
-const CACHE = 'instability-v99';
+const CACHE = 'instability-v100';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -155,6 +155,7 @@ const ASSETS = [
   './audio/events/masque/interventions/masque-007-victime-apres.mp3',
   './audio/events/masque/interventions/masque-007-victime-avant.mp3',
   './audio/events/sfx/gong-fin-chronometre.mp3',
+  './audio/events/sfx/jeton-verdict.mp3',
   // Première transmission radio : appel monté + résolution narrée
   './audio/events/radio/radio-001-derriere-la-porte.MP3',
   './audio/events/radio/radio-001-resolution-local-vide.mp3',
@@ -357,6 +358,7 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-007-victime-apres.mp3": "7f68b70d2ae16bc934f3c3167654b693ece69ddf",
   "./audio/events/masque/interventions/masque-007-victime-avant.mp3": "8f037a81244befbed01e3342c47399985acb556e",
   "./audio/events/sfx/gong-fin-chronometre.mp3": "04009fb2cc462e133b0646d3c92fe47fb85c36df",
+  "./audio/events/sfx/jeton-verdict.mp3": "d787f17e4e95eacae71ed271d7e78d4be2f9457a",
   "./audio/events/radio/radio-001-derriere-la-porte.MP3": "f058d8962a4e843d4af550cabc36989d58a29d6b",
   "./audio/events/radio/radio-001-resolution-local-vide.mp3": "9af4f7ee68a2358f9287c91816b201604a34c41e",
   "./audio/events/radio/radio-002-rapport-impossible.mp3": "550bd2d4e932887bf8a89bf58ac7910951750217",
