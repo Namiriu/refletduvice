@@ -1,4 +1,4 @@
-const CACHE = 'instability-v94';
+const CACHE = 'instability-v95';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -138,6 +138,19 @@ const ASSETS = [
   './audio/events/masque/interventions/masque-006-non.mp3',
   './audio/events/masque/interventions/masque-006-oui.mp3',
   './audio/events/masque/interventions/masque-006-question.mp3',
+  // MASQUE-007 — 12 répliques, jeton entièrement construit en CSS
+  './audio/events/masque/interventions/masque-007-agresseur-apres.mp3',
+  './audio/events/masque/interventions/masque-007-agresseur-avant.mp3',
+  './audio/events/masque/interventions/masque-007-danger-mortel.mp3',
+  './audio/events/masque/interventions/masque-007-esquive-ratee-blessure.mp3',
+  './audio/events/masque/interventions/masque-007-esquive-reussie.mp3',
+  './audio/events/masque/interventions/masque-007-intro.mp3',
+  './audio/events/masque/interventions/masque-007-jeton.mp3',
+  './audio/events/masque/interventions/masque-007-revelation.mp3',
+  './audio/events/masque/interventions/masque-007-sacrifice-accepte.mp3',
+  './audio/events/masque/interventions/masque-007-sacrifice-refuse.mp3',
+  './audio/events/masque/interventions/masque-007-victime-apres.mp3',
+  './audio/events/masque/interventions/masque-007-victime-avant.mp3',
   './audio/events/sfx/gong-fin-chronometre.mp3',
   // Première transmission radio : appel monté + résolution narrée
   './audio/events/radio/radio-001-derriere-la-porte.MP3',
@@ -326,6 +339,18 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-006-non.mp3": "d9980065c8d99bc2925af557acfe9b7b43838d12",
   "./audio/events/masque/interventions/masque-006-oui.mp3": "d761872d14deb99a5b8ab3d054aa5ec7fe2c2e1d",
   "./audio/events/masque/interventions/masque-006-question.mp3": "e878a07088f43fc9de411c0d4a4f27f5d095076b",
+  "./audio/events/masque/interventions/masque-007-agresseur-apres.mp3": "876eb2220e3fcd9494772fc807a951fd31c6bab4",
+  "./audio/events/masque/interventions/masque-007-agresseur-avant.mp3": "0d5da1e3df336b6b774ff09e2a678482fd2695d5",
+  "./audio/events/masque/interventions/masque-007-danger-mortel.mp3": "0776a2f6763bce13bd7163eb713ea59b27fc1d49",
+  "./audio/events/masque/interventions/masque-007-esquive-ratee-blessure.mp3": "b55b673b1ba1da5dcaef02462c945480fafa5b76",
+  "./audio/events/masque/interventions/masque-007-esquive-reussie.mp3": "c780802a018129b851d0e03975357653b39fbd36",
+  "./audio/events/masque/interventions/masque-007-intro.mp3": "225a14663de46fe417e23131c7d7037f2547009d",
+  "./audio/events/masque/interventions/masque-007-jeton.mp3": "b52d4eab0ef3df7a8e8e42424da32914caf1ed64",
+  "./audio/events/masque/interventions/masque-007-revelation.mp3": "9be37f5abbc4d9494d772a5ea0614c46801b80d1",
+  "./audio/events/masque/interventions/masque-007-sacrifice-accepte.mp3": "025e7246ccb5c6a18c1ba8abe5ef3ad05e85fb6e",
+  "./audio/events/masque/interventions/masque-007-sacrifice-refuse.mp3": "bc5467abf55a60e1d6961ae53f8c83abbc02b28a",
+  "./audio/events/masque/interventions/masque-007-victime-apres.mp3": "7f68b70d2ae16bc934f3c3167654b693ece69ddf",
+  "./audio/events/masque/interventions/masque-007-victime-avant.mp3": "8f037a81244befbed01e3342c47399985acb556e",
   "./audio/events/sfx/gong-fin-chronometre.mp3": "04009fb2cc462e133b0646d3c92fe47fb85c36df",
   "./audio/events/radio/radio-001-derriere-la-porte.MP3": "f058d8962a4e843d4af550cabc36989d58a29d6b",
   "./audio/events/radio/radio-001-resolution-local-vide.mp3": "9af4f7ee68a2358f9287c91816b201604a34c41e",

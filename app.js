@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.4.1 MASQUE-006 — Résultat (test)';
+  const VERSION = 'v1.5.0 MASQUE-007 — Amitié et jeton (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -189,6 +189,7 @@ campAudio: $('campAudio'),
     effectsModal: $('effectsModal'),
     effectsList: $('effectsList'),
     effectsPreset: $('effectsPreset'),
+    effectsCoin: $('effectsCoin'),
     effectsForm: $('effectsForm'),
     effectsName: $('effectsName'),
     effectsDuration: $('effectsDuration'),
@@ -238,6 +239,23 @@ campAudio: $('campAudio'),
     mask06Play: $('mask06Play'),
     mask06Skip: $('mask06Skip'),
     mask06Done: $('mask06Done'),
+    mask07Overlay: $('mask07Overlay'),
+    mask07Portrait: $('mask07Portrait'),
+    mask07Status: $('mask07Status'),
+    mask07Detail: $('mask07Detail'),
+    mask07Pair: $('mask07Pair'),
+    mask07Primary: $('mask07Primary'),
+    mask07Secondary: $('mask07Secondary'),
+    mask07Confirm: $('mask07Confirm'),
+    mask07Play: $('mask07Play'),
+    mask07Skip: $('mask07Skip'),
+    coinOverlay: $('coinOverlay'),
+    coinDisc: $('coinDisc'),
+    coinFrontImg: $('coinFrontImg'),
+    coinBackImg: $('coinBackImg'),
+    coinStatus: $('coinStatus'),
+    coinStart: $('coinStart'),
+    coinDone: $('coinDone'),
     maskEventPortrait: $('maskEventPortrait'),
     maskEventTitle: $('maskEventTitle'),
     maskEventStatus: $('maskEventStatus'),
@@ -583,6 +601,10 @@ bestiaireNarration: $('bestiaireNarration'),
       noAudio: 'audio/events/masque/interventions/masque-006-non.mp3'
     },
     {
+      id: 'masque-007', type: 'masque', title: 'UNE PREUVE D’AMITIÉ',
+      audioRoot: 'audio/events/masque/interventions/masque-007-'
+    },
+    {
       id: 'radio-001',
       type: 'radio',
       title: 'DERRIÈRE LA PORTE',
@@ -646,6 +668,10 @@ bestiaireNarration: $('bestiaireNarration'),
   let currentMask06 = null;
   let mask06Token = 0;
   let mask06DeferredOutcomeTimer = null;
+  let currentMask07 = null;
+  let mask07Token = 0;
+  let currentCoin = null;
+  let coinToken = 0;
   let mask05CancelNoticeTimer = null;
   const MASK05_MISSION_MS = 5 * 60000;
   let currentRadioEvent = null;
@@ -1952,6 +1978,8 @@ function syncAmbientVolume() {
       || els.maskEventOverlay.classList.contains('show')
       || els.mask05Overlay.classList.contains('show')
       || els.mask06Overlay.classList.contains('show')
+      || els.mask07Overlay.classList.contains('show')
+      || els.coinOverlay.classList.contains('show')
       || els.radioEventOverlay.classList.contains('show')
       || els.radio02Overlay.classList.contains('show')
       || els.radio03Overlay.classList.contains('show')
@@ -4697,6 +4725,7 @@ syncMusicForActiveTab();
       pendingRadio003: null,
       pendingMask005: null,
       pendingMask006: null,
+      pendingMask007: null,
       lastEventType: null,
       weatherCount: 0,
       nextWeatherEligibleAt: 0,
@@ -4808,6 +4837,31 @@ syncMusicForActiveTab();
                 ? saved.pendingMask006.after : null,
               gameOver: saved.pendingMask006.gameOver === true
             } : null,
+        pendingMask007: saved.pendingMask007?.id === 'masque-007'
+          && [
+            'intro','aggressor-before','aggressor-number','aggressor-after',
+            'victim-before','victim-number','victim-after','revelation',
+            'coin-intro','coin-ready','coin-spinning','coin-reveal',
+            'success-audio','hp-choice','injury-audio','danger-audio',
+            'sacrifice-choice','death-confirm','sacrifice-audio',
+            'death-audio','outcome'
+          ].includes(saved.pendingMask007.stage)
+          && Number.isInteger(saved.pendingMask007.aggressor)
+          && Number.isInteger(saved.pendingMask007.victim)
+          && saved.pendingMask007.aggressor >= 1 && saved.pendingMask007.aggressor <= 4
+          && saved.pendingMask007.victim >= 1 && saved.pendingMask007.victim <= 4
+          && saved.pendingMask007.aggressor !== saved.pendingMask007.victim
+          && [null,'success','fail'].includes(saved.pendingMask007.coinOutcome ?? null)
+          && [null,'injury','sacrifice','death'].includes(saved.pendingMask007.penalty ?? null)
+          ? {
+              id: 'masque-007',
+              stage: saved.pendingMask007.stage,
+              aggressor: saved.pendingMask007.aggressor,
+              victim: saved.pendingMask007.victim,
+              coinOutcome: saved.pendingMask007.coinOutcome ?? null,
+              penalty: saved.pendingMask007.penalty ?? null,
+              deathApplied: saved.pendingMask007.deathApplied === true
+            } : null,
         lastEventType: ['masque', 'radio', 'meteo'].includes(saved.lastEventType)
           ? saved.lastEventType : null,
         weatherCount: Number.isInteger(saved.weatherCount)
@@ -4868,7 +4922,7 @@ syncMusicForActiveTab();
   function eligibleAudioEvents() {
     return unusedAudioEvents().filter(item =>
       state.value >= (item.minInstability || 0)
-      && (!['masque-004','masque-005'].includes(item.id)
+      && (!['masque-004','masque-005','masque-007'].includes(item.id)
         || livingPlayerNumbers().length >= 2)
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel'
@@ -4908,7 +4962,7 @@ syncMusicForActiveTab();
       item.id === els.testMaskEventSelect.value
     ) || AUDIO_EVENTS[0];
     const insufficientDuelPlayers =
-      ['masque-004','masque-005'].includes(testEvent.id) && alive < 2;
+      ['masque-004','masque-005','masque-007'].includes(testEvent.id) && alive < 2;
     const locked = state.value < (testEvent.minInstability || 0);
     els.btnTestMaskEvent.textContent = insufficientDuelPlayers
       ? 'TEST : 2 VIVANTS MINIMUM'
@@ -4923,8 +4977,11 @@ syncMusicForActiveTab();
       || currentWeatherEvent !== null
       || currentMask05 !== null
       || currentMask06 !== null
+      || currentMask07 !== null
+      || currentCoin !== null
       || eventSession.pendingMask005 !== null
       || eventSession.pendingMask006 !== null
+      || eventSession.pendingMask007 !== null
       || eventSession.pendingWeather !== null
       || eventSession.pendingRadio002 !== null
       || eventSession.pendingRadio003 !== null || alive === 0
@@ -5013,6 +5070,8 @@ syncMusicForActiveTab();
       && currentMaskEvent === null
       && currentMask05 === null
       && currentMask06 === null
+      && currentMask07 === null
+      && currentCoin === null
       && currentRadioEvent === null
       && currentRadio02 === null
       && currentRadio03 === null
@@ -5020,6 +5079,7 @@ syncMusicForActiveTab();
       && !eventSession.pendingWeather
       && !eventSession.pendingMask005
       && !eventSession.pendingMask006
+      && !eventSession.pendingMask007
       && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003
       && !(eventSession.radioMission
@@ -5106,6 +5166,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio003 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
+    eventSession.pendingMask007 = null;
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
     saveAudioEventSession();
@@ -5226,6 +5287,8 @@ syncMusicForActiveTab();
     dismissMaskEvent(true);
     dismissMask05();
     dismissMask06();
+    dismissMask07();
+    dismissCoin();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissRadio03();
@@ -5245,6 +5308,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio003 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
+    eventSession.pendingMask007 = null;
     eventSession.alive = [true, true, true, true];
     eventSession.played = [];
     eventSession.remainingMs = null;
@@ -5260,8 +5324,8 @@ syncMusicForActiveTab();
     hideMask05CancelNotice();
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
-    if (!eventSession.active && !currentMaskEvent && !currentMask05 && !currentMask06
-      && !eventSession.pendingMask006 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
+    if (!eventSession.active && !currentMaskEvent && !currentMask05 && !currentMask06 && !currentMask07
+      && !eventSession.pendingMask006 && !eventSession.pendingMask007 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
       && !eventSession.pendingWeather && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003) return;
     pauseAudioEventClock();
@@ -5283,6 +5347,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio003 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
+    eventSession.pendingMask007 = null;
     eventSession.remainingMs = null;
     saveAudioEventSession();
     renderEventControls();
@@ -5291,6 +5356,7 @@ syncMusicForActiveTab();
   function beginMaskEvent(item, preview) {
     if (item?.id === 'masque-005') return beginMask05(item, preview);
     if (item?.id === 'masque-006') return beginMask06(item, preview);
+    if (item?.id === 'masque-007') return beginMask07(item, preview);
     if (!eventSession.active || currentMask05 || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || specialAudioActive || anyBlockingModalOpen()) return false;
@@ -6015,6 +6081,548 @@ syncMusicForActiveTab();
   }
 
 
+
+  // =========================================================
+  // JETON DU MASQUE — pile ou face réutilisable, animation CSS/WAAPI
+  // 50/50 : résultat fixé avant le mouvement, jamais par l'animation.
+  // =========================================================
+
+  function drawCoinOutcome() {
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const bytes = new Uint32Array(1);
+      crypto.getRandomValues(bytes);
+      return (bytes[0] & 1) === 0 ? 'success' : 'fail';
+    }
+    return Math.random() < 0.5 ? 'success' : 'fail';
+  }
+
+  function coinFaceAngle(outcome) {
+    return outcome === 'success' ? 0 : 180;
+  }
+
+  function openCoin({ mode, outcome = null, onDone = null }) {
+    if (currentCoin || !['manual', 'masque-007'].includes(mode)) return false;
+    currentCoin = {
+      token: ++coinToken, mode, outcome, onDone,
+      spinning: false, revealed: false, animation: null,
+      timeout: null
+    };
+    els.coinFrontImg.src = getMaskState(state.value).src;
+    els.coinBackImg.src = 'img/masque90.png';
+    els.coinDisc.style.transform = 'rotateY(0deg)';
+    els.coinStatus.textContent = mode === 'manual'
+      ? 'PILE OU FACE — Prêts à tenter le sort ?'
+      : 'LE JETON DU MASQUE — Pile : esquive. Face : blessure.';
+    els.coinStart.textContent = 'LANCER LE JETON';
+    els.coinStart.classList.remove('hidden');
+    els.coinDone.classList.add('hidden');
+    els.coinOverlay.classList.add('show');
+    els.coinOverlay.setAttribute('aria-hidden', 'false');
+    els.coinStart.focus();
+    syncAmbientVolume();
+    return true;
+  }
+
+  function openManualCoin() {
+    if (!els.effectsModal.classList.contains('show') || currentMask07
+      || currentCoin || specialAudioActive) return;
+    closeEffectsModal();
+    pauseAudioEventClock();
+    openCoin({ mode: 'manual', onDone: () => {
+      openEffectsModal();
+      updateAudioEventClock();
+    } });
+  }
+
+  function dismissCoin() {
+    const c = currentCoin;
+    coinToken++;
+    if (c) {
+      clearTimeout(c.timeout);
+      c.animation?.cancel();
+    }
+    currentCoin = null;
+    els.coinOverlay.classList.remove('show');
+    els.coinOverlay.setAttribute('aria-hidden', 'true');
+    els.coinStart.classList.add('hidden');
+    els.coinDone.classList.add('hidden');
+    els.coinDisc.style.transform = 'rotateY(0deg)';
+  }
+
+  function revealCoin() {
+    const c = currentCoin;
+    if (!c || c.revealed || !c.outcome) return;
+    clearTimeout(c.timeout);
+    c.timeout = null;
+    c.animation?.cancel();
+    c.animation = null;
+    c.spinning = false;
+    c.revealed = true;
+    els.coinDisc.style.transform = 'rotateY(' + coinFaceAngle(c.outcome) + 'deg)';
+    els.coinStatus.textContent = c.outcome === 'success'
+      ? 'PILE ! — ESQUIVE RÉUSSIE.' : 'FACE ! — ESQUIVE RATÉE.';
+    if (c.mode === 'manual') {
+      els.coinStatus.textContent = c.outcome === 'success'
+        ? 'PILE !' : 'FACE !';
+    }
+    els.coinStart.classList.add('hidden');
+    els.coinDone.textContent = c.mode === 'manual'
+      ? 'RETOURNER AUX EFFETS' : 'VOIR LA CONSÉQUENCE';
+    els.coinDone.classList.remove('hidden');
+    els.coinDone.focus();
+  }
+
+  function flipCoin() {
+    const c = currentCoin;
+    if (!c || c.spinning || c.revealed) return;
+    if (!c.outcome) c.outcome = drawCoinOutcome();
+    if (c.mode === 'masque-007' && currentMask07) {
+      currentMask07.coinOutcome = c.outcome;
+      currentMask07.stage = 'coin-spinning';
+      saveMask07Stage();
+    }
+    c.spinning = true;
+    els.coinStart.classList.add('hidden');
+    els.coinStatus.textContent = 'Le hasard décide…';
+    const token = c.token;
+    const show = () => {
+      if (currentCoin?.token === token) revealCoin();
+    };
+    const reducedMotion = typeof window !== 'undefined'
+      && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      show();
+      return;
+    }
+    const endRotation = 360 * 7 + coinFaceAngle(c.outcome);
+    if (typeof els.coinDisc.animate === 'function') {
+      try {
+        c.animation = els.coinDisc.animate([
+          { transform: 'rotateY(0deg)' },
+          { transform: 'rotateY(' + endRotation + 'deg)' }
+        ], {
+          duration: 3500,
+          easing: 'cubic-bezier(.15,.67,.13,1)',
+          fill: 'forwards'
+        });
+        c.animation.finished.then(show).catch(() => {});
+      } catch (_) { c.animation = null; c.timeout = setTimeout(show, 3500); }
+    } else {
+      // Les navigateurs anciens voient le même résultat, sans moteur 3D.
+      c.timeout = setTimeout(show, 850);
+    }
+  }
+
+  function completeCoin() {
+    const c = currentCoin;
+    if (!c || !c.revealed) return;
+    const callback = c.onDone, outcome = c.outcome;
+    dismissCoin();
+    if (typeof callback === 'function') callback(outcome);
+  }
+
+  function handleCoinVisibility() {
+    // En arrière-plan, on révèle immédiatement le résultat DÉJÀ tiré.
+    const c = currentCoin;
+    if (c && c.spinning && document.visibilityState === 'hidden') revealCoin();
+  }
+
+  function coinOnPageHide() {
+    // Un rechargement de MASQUE-007 restaure l'issue sauvegardée.
+    if (currentCoin?.spinning) revealCoin();
+  }
+
+
+  // =========================================================
+  // MASQUE-007 — UNE PREUVE D'AMITIÉ
+  // 12 fichiers audio + désignations, jeton commun, effets notés à la main.
+  // Le Companion ne stocke ni PV ni inventaire. Mort : statut du joueur.
+  // =========================================================
+
+  const MASK07_AUDIO_STAGES = [
+    'intro', 'aggressor-before', 'aggressor-number', 'aggressor-after',
+    'victim-before', 'victim-number', 'victim-after', 'revelation', 'coin-intro'
+  ];
+
+  function mask07AudioPath(r) {
+    if (!r) return null;
+    const base = r.item.audioRoot;
+    const names = {
+      'intro': 'intro',
+      'aggressor-before': 'agresseur-avant',
+      'aggressor-after': 'agresseur-apres',
+      'victim-before': 'victime-avant',
+      'victim-after': 'victime-apres',
+      'revelation': 'revelation',
+      'coin-intro': 'jeton',
+      'success-audio': 'esquive-reussie',
+      'injury-audio': 'esquive-ratee-blessure',
+      'danger-audio': 'danger-mortel',
+      'sacrifice-audio': 'sacrifice-accepte',
+      'death-audio': 'sacrifice-refuse'
+    };
+    if (r.stage === 'aggressor-number') {
+      return 'audio/events/masque/designations/joueur-' + r.aggressor + '.mp3';
+    }
+    if (r.stage === 'victim-number') {
+      return 'audio/events/masque/designations/joueur-' + r.victim + '.mp3';
+    }
+    return names[r.stage] ? base + names[r.stage] + '.mp3' : null;
+  }
+
+  function saveMask07Stage() {
+    const r = currentMask07;
+    if (!r || r.preview) return;
+    eventSession.pendingMask007 = {
+      id: 'masque-007', stage: r.stage, aggressor: r.aggressor,
+      victim: r.victim, coinOutcome: r.coinOutcome,
+      penalty: r.penalty, deathApplied: r.deathApplied === true
+    };
+    saveAudioEventSession();
+  }
+
+  function mask07StopAudio(r) {
+    if (!r?.audio) return;
+    r.audio.pause();
+    r.audio.onended = null;
+    r.audio.onerror = null;
+    r.audio = null;
+  }
+
+  function dismissMask07() {
+    mask07Token++;
+    const r = currentMask07;
+    mask07StopAudio(r);
+    currentMask07 = null;
+    if (currentCoin?.mode === 'masque-007') dismissCoin();
+    els.mask07Overlay.classList.remove('show', 'is-result', 'is-choice');
+    els.mask07Overlay.setAttribute('aria-hidden', 'true');
+    specialAudioActive = false;
+    syncAmbientVolume();
+    renderEventControls();
+  }
+
+  function mask07SetStage(stage) {
+    const r = currentMask07;
+    if (!r) return;
+    mask07StopAudio(r);
+    r.stage = stage;
+    r.audioBroken = false;
+    saveMask07Stage();
+    mask07Render();
+    if (mask07AudioPath(r)) mask07PlayAudio();
+  }
+
+  function mask07Render() {
+    const r = currentMask07;
+    if (!r) return;
+    const stage = r.stage;
+    els.mask07Overlay.classList.add('show');
+    els.mask07Overlay.classList.toggle('is-result', stage === 'outcome');
+    els.mask07Overlay.classList.toggle('is-choice', [
+      'coin-ready','hp-choice','sacrifice-choice','death-confirm'
+    ].includes(stage));
+    els.mask07Overlay.setAttribute('aria-hidden', 'false');
+    els.mask07Portrait.src = getMaskState(state.value).src;
+    els.mask07Pair.textContent =
+      'JOUEUR ' + r.aggressor + ' — OFFRE  •  JOUEUR ' + r.victim + ' — REÇOIT';
+    els.mask07Pair.classList.toggle('hidden', [
+      'intro','aggressor-before','aggressor-number','aggressor-after',
+      'victim-before','victim-number'
+    ].includes(stage));
+    for (const id of ['mask07Primary','mask07Secondary','mask07Confirm',
+      'mask07Play','mask07Skip']) {
+      els[id].classList.add('hidden');
+    }
+    els.mask07Detail.classList.add('hidden');
+    els.mask07Detail.textContent = '';
+
+    if (mask07AudioPath(r)) {
+      els.mask07Status.textContent = stage === 'intro'
+        ? 'Le Masque vous prépare une épreuve d’amitié…'
+        : stage === 'revelation'
+          ? 'Le Masque révèle son petit jeu…'
+          : stage === 'coin-intro'
+            ? 'Le Masque présente son jeton…'
+            : ['success-audio','injury-audio','danger-audio',
+               'sacrifice-audio','death-audio'].includes(stage)
+              ? 'Le Masque rend son verdict…'
+              : 'Le Masque désigne ses deux heureux élus…';
+      return;
+    }
+    function button(id,label) {
+      els[id].textContent = label;
+      els[id].classList.remove('hidden');
+    }
+    const showDetail = text => {
+      els.mask07Detail.textContent = text;
+      els.mask07Detail.classList.remove('hidden');
+    };
+
+    if (stage === 'coin-ready') {
+      els.mask07Status.textContent = 'La victime doit tenter d’esquiver !';
+      showDetail('PILE : esquive réussie. FACE : esquive ratée.\nChaque issue a une chance sur deux.');
+      button('mask07Primary','🪙 LANCER LE JETON DU MASQUE');
+    } else if (stage === 'coin-spinning' || stage === 'coin-reveal') {
+      els.mask07Status.textContent = 'Le hasard a choisi…';
+      showDetail('Le résultat du jeton est conservé, même après actualisation.');
+    } else if (stage === 'hp-choice') {
+      els.mask07Status.textContent = 'ESQUIVE RATÉE !';
+      showDetail('JOUEUR ' + r.victim + ', combien de PV te reste-t-il AVANT le coup ?\nLe Companion ne connaît pas tes PV.');
+      button('mask07Primary','2 PV OU PLUS — PERDRE 1 PV');
+      button('mask07Secondary','1 PV — COUP POTENTIELLEMENT MORTEL');
+    } else if (stage === 'sacrifice-choice') {
+      els.mask07Status.textContent = 'LA VIE CONTRE UN OBJET';
+      showDetail('JOUEUR ' + r.victim +
+        ', pour conserver ton dernier PV, défausse un objet de ton sac à dos. ' +
+        'Si ton sac est vide, sacrifie une arme ou une armure équipée.\n' +
+        'Sans sacrifice, le coup est mortel.');
+      button('mask07Primary','J’AI DÉFAUSSÉ UN OBJET — JE SURVIS');
+      button('mask07Secondary','AUCUN OBJET / JE REFUSE — RISQUE DE MORT');
+    } else if (stage === 'death-confirm') {
+      els.mask07Status.textContent = 'CONFIRMER LA MORT DU SURVIVANT';
+      showDetail('Attention : JOUEUR ' + r.victim + ' va mourir. ' +
+        'Le Companion le marquera comme MORT dans la liste des joueurs.\n' +
+        'Confirmez uniquement si aucun objet n’est sacrifié.');
+      button('mask07Confirm','CONFIRMER : JOUEUR ' + r.victim + ' MEURT');
+      button('mask07Secondary','REVENIR AU SACRIFICE');
+    } else if (stage === 'outcome') {
+      els.mask07Status.textContent = 'ÉPREUVE TERMINÉE';
+      let result = '';
+      if (r.coinOutcome === 'success') {
+        result = 'PILE — ESQUIVE RÉUSSIE.\n\nAucune blessure ni perte d’objet.';
+      } else if (r.penalty === 'injury') {
+        result = 'FACE — ESQUIVE RATÉE.\n\nJOUEUR ' + r.victim
+          + ' perd 1 PV.\nReportez cette blessure sur sa feuille de personnage.';
+      } else if (r.penalty === 'sacrifice') {
+        result = 'FACE — ESQUIVE RATÉE.\n\nJOUEUR ' + r.victim
+          + ' conserve son dernier PV en sacrifiant un objet.\n'
+          + 'L’objet doit avoir été défaussé sur le plateau.';
+      } else if (r.penalty === 'death') {
+        result = 'FACE — ESQUIVE RATÉE.\n\nAucun objet sacrifié : JOUEUR '
+          + r.victim + ' meurt.\nMettez sa feuille de personnage à jour.';
+      }
+      showDetail(result);
+      button('mask07Primary','CONTINUER LA PARTIE');
+    }
+  }
+
+  function mask07AudioFallback(broken = false) {
+    const r = currentMask07;
+    if (!r || !mask07AudioPath(r)) return;
+    r.audioBroken = broken;
+    els.mask07Status.textContent = broken
+      ? 'Enregistrement indisponible. Réessayez ou continuez sans cet audio.'
+      : 'Intervention suspendue. Touchez pour reprendre.';
+    els.mask07Play.textContent = broken
+      ? 'RÉESSAYER L’ENREGISTREMENT' : 'REPRENDRE L’AUDIO';
+    els.mask07Play.classList.remove('hidden');
+    els.mask07Skip.classList.toggle('hidden', !broken);
+  }
+
+  function mask07PlayAudio() {
+    const r = currentMask07;
+    if (!r || !mask07AudioPath(r)) return;
+    if (document.visibilityState !== 'visible') {
+      mask07AudioFallback(false);
+      return;
+    }
+    if (!r.audio) {
+      r.audio = new Audio(mask07AudioPath(r));
+      r.audio.preload = 'auto';
+      r.audio.volume = 1;
+    }
+    const audio = r.audio, stage = r.stage, token = r.token;
+    audio.onended = () => {
+      if (currentMask07?.token === token && r.stage === stage && r.audio === audio) {
+        mask07NextAudio();
+      }
+    };
+    audio.onerror = () => {
+      if (currentMask07?.token === token && r.stage === stage && r.audio === audio) {
+        mask07AudioFallback(true);
+      }
+    };
+    r.audioBroken = false;
+    els.mask07Play.classList.add('hidden');
+    els.mask07Skip.classList.add('hidden');
+    try {
+      audio.play().catch(() => {
+        if (currentMask07?.token === token && r.stage === stage) {
+          mask07AudioFallback(false);
+        }
+      });
+    } catch (_) { mask07AudioFallback(false); }
+  }
+
+  function mask07ResumeAudio() {
+    const r = currentMask07;
+    if (!r || document.visibilityState !== 'visible') return;
+    if (r.audioBroken) mask07StopAudio(r);
+    mask07PlayAudio();
+  }
+
+  function mask07SkipAudio() {
+    const r = currentMask07;
+    if (r?.audioBroken && mask07AudioPath(r)) mask07NextAudio();
+  }
+
+  function mask07NextAudio() {
+    const r = currentMask07;
+    if (!r) return;
+    const index = MASK07_AUDIO_STAGES.indexOf(r.stage);
+    if (index >= 0 && index < MASK07_AUDIO_STAGES.length - 1) {
+      mask07SetStage(MASK07_AUDIO_STAGES[index + 1]);
+    } else if (r.stage === 'coin-intro') {
+      mask07SetStage('coin-ready');
+    } else if (r.stage === 'danger-audio') {
+      mask07SetStage('sacrifice-choice');
+    } else if (['success-audio','injury-audio',
+      'sacrifice-audio','death-audio'].includes(r.stage)) {
+      mask07SetStage('outcome');
+    }
+  }
+
+  function mask07AfterCoin(outcome) {
+    const r = currentMask07;
+    if (!r || !['coin-spinning','coin-reveal'].includes(r.stage)
+      || r.coinOutcome !== outcome) return;
+    mask07SetStage(outcome === 'success' ? 'success-audio' : 'hp-choice');
+  }
+
+  function mask07OpenSavedCoin() {
+    const r = currentMask07;
+    if (!r || !r.coinOutcome || !['coin-spinning','coin-reveal'].includes(r.stage)) return;
+    // Au rechargement, ne jamais relancer le hasard : montrer le tirage mémorisé.
+    r.stage = 'coin-reveal';
+    saveMask07Stage();
+    openCoin({mode:'masque-007',outcome:r.coinOutcome,onDone:mask07AfterCoin});
+    revealCoin();
+  }
+
+  function mask07Choose(action) {
+    const r = currentMask07;
+    if (!r) return;
+    if (r.stage === 'coin-ready' && action === 'primary') {
+      const outcome = drawCoinOutcome();
+      r.coinOutcome = outcome;
+      // Résultat sauvegardé avant le mouvement, aussi en cas de F5.
+      mask07SetStage('coin-spinning');
+      if (openCoin({mode:'masque-007',outcome,onDone:mask07AfterCoin})) flipCoin();
+    } else if (r.stage === 'hp-choice') {
+      if (action === 'primary') {
+        r.penalty = 'injury';
+        mask07SetStage('injury-audio');
+      } else if (action === 'secondary') mask07SetStage('danger-audio');
+    } else if (r.stage === 'sacrifice-choice') {
+      if (action === 'primary') {
+        r.penalty = 'sacrifice';
+        mask07SetStage('sacrifice-audio');
+      } else if (action === 'secondary') mask07SetStage('death-confirm');
+    } else if (r.stage === 'death-confirm') {
+      if (action === 'secondary') {
+        mask07SetStage('sacrifice-choice');
+      } else if (action === 'confirm') {
+        // Le personnage doit toujours être reporté mort sur sa feuille.
+        // Sa mort est synchronisée avec la liste des survivants de l'application.
+        r.penalty = 'death';
+        r.deathApplied = true;
+        eventSession.alive[r.victim - 1] = false;
+        mask07SetStage('death-audio');
+        // Persist even in ?test-events=1: the test must apply real consequences.
+        saveAudioEventSession();
+        renderPlayerStatuses();
+        renderEventControls();
+      }
+    } else if (r.stage === 'outcome' && action === 'primary') {
+      completeMask07();
+    }
+  }
+
+  function completeMask07() {
+    const r = currentMask07;
+    if (!r || r.stage !== 'outcome') return;
+    const delay = r.preview ? r.savedPreviewDelay : randomBetween(...EVENT_NEXT_DELAY);
+    dismissMask07();
+    if (!r.preview) eventSession.pendingMask007 = null;
+    eventSession.remainingMs = delay;
+    saveAudioEventSession();
+    renderEventControls();
+    updateAudioEventClock();
+    if (state.musicOn) syncMusicForActiveTab();
+  }
+
+  function handleMask07Visibility() {
+    const r = currentMask07;
+    if (r?.audio && document.visibilityState === 'hidden' && !r.audio.paused) {
+      r.audio.pause();
+      mask07AudioFallback(false);
+    }
+  }
+
+  function mask07OnPageHide() {
+    if (currentMask07?.audio) currentMask07.audio.pause();
+  }
+
+  function beginMask07(item, preview, restoring = false) {
+    const pending = restoring ? eventSession.pendingMask007 : null;
+    if (item?.id !== 'masque-007' || !eventSession.active
+      || currentMaskEvent || currentMask05 || currentMask06 || currentMask07
+      || currentCoin || currentRadioEvent || currentRadio02 || currentRadio03
+      || currentWeatherEvent || specialAudioActive || anyBlockingModalOpen()
+      || !isPartieTabActive() || document.visibilityState !== 'visible'
+      || state.value >= 100 || (restoring && !pending)) return false;
+
+    const pool = livingPlayerNumbers();
+    if (!restoring && pool.length < 2) return false;
+    const aggressor = restoring ? pending.aggressor
+      : pool[randomBetween(0, pool.length - 1)];
+    const remaining = pool.filter(n => n !== aggressor);
+    const victim = restoring ? pending.victim
+      : remaining[randomBetween(0, remaining.length - 1)];
+    if (victim === aggressor) return false;
+
+    pauseAudioEventClock();
+    currentMask07 = {
+      token: ++mask07Token, item, preview, aggressor, victim,
+      savedPreviewDelay: eventSession.remainingMs,
+      stage: restoring ? pending.stage : 'intro',
+      coinOutcome: pending?.coinOutcome || null,
+      penalty: pending?.penalty || null,
+      deathApplied: pending?.deathApplied === true,
+      audio: null, audioBroken: false
+    };
+    if (!preview && !restoring) {
+      eventSession.played.push(item.id);
+      eventSession.remainingMs = null;
+    }
+    saveMask07Stage();
+    specialAudioActive = true;
+    silenceHauntSounds();
+    syncAmbientVolume();
+    renderEventControls();
+    mask07Render();
+    if (['coin-spinning','coin-reveal'].includes(currentMask07.stage)) {
+      mask07OpenSavedCoin();
+    } else if (mask07AudioPath(currentMask07)) {
+      mask07PlayAudio();
+    }
+    return true;
+  }
+
+  function resumePendingMask07IfPossible() {
+    const pending = eventSession.pendingMask007;
+    if (!pending || !eventSession.active || gameOverShown
+      || document.visibilityState !== 'visible' || state.value >= 100) return false;
+    const item = AUDIO_EVENTS.find(entry => entry.id === pending.id);
+    if (!item) {
+      eventSession.pendingMask007 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginMask07(item, false, true);
+  }
+
   // =========================================================
   // MASQUE-006 : LA COMPTINE DES OUBLIÉS
   // Introduction → comptine → question → OUI/NON → réaction → +5 global.
@@ -6671,6 +7279,8 @@ syncMusicForActiveTab();
     handleRadio03Visibility();
     handleMask05Visibility();
     handleMask06Visibility();
+    handleMask07Visibility();
+    handleCoinVisibility();
     if (currentRadioEvent && document.visibilityState === 'hidden'
       && currentRadioEvent.audio
       && !currentRadioEvent.audio.paused) {
@@ -8745,6 +9355,7 @@ syncMusicForActiveTab();
 
     if (!resumePendingMask05IfPossible()
       && !resumePendingMask06IfPossible()
+      && !resumePendingMask07IfPossible()
       && !resumePendingRadio02IfPossible()
       && !resumePendingRadio03IfPossible()
       && !resumePendingWeatherIfPossible()) {
@@ -8759,7 +9370,7 @@ syncMusicForActiveTab();
 
     if (
       state.value >= 100 && !currentWeatherEvent && !currentRadio02
-      && !currentRadio03 && !currentMask05 && !currentMask06
+      && !currentRadio03 && !currentMask05 && !currentMask06 && !currentMask07
     ) {
       checkGameOver();
     }
@@ -8778,6 +9389,7 @@ syncMusicForActiveTab();
     });
     els.effectsPreset.addEventListener('click', () =>
       setTemporaryEffect('equipements', 'Équipements et Objets inutilisables', 2));
+    els.effectsCoin.addEventListener('click', openManualCoin);
     els.effectsForm.addEventListener('submit', e => {
       e.preventDefault();
       addManualEffect();
@@ -8931,6 +9543,13 @@ syncMusicForActiveTab();
     els.mask06Play.addEventListener('click', resumeMask06Audio);
     els.mask06Skip.addEventListener('click', skipMask06BrokenAudio);
     els.mask06Done.addEventListener('click', completeMask06);
+    els.mask07Primary.addEventListener('click', () => mask07Choose('primary'));
+    els.mask07Secondary.addEventListener('click', () => mask07Choose('secondary'));
+    els.mask07Confirm.addEventListener('click', () => mask07Choose('confirm'));
+    els.mask07Play.addEventListener('click', mask07ResumeAudio);
+    els.mask07Skip.addEventListener('click', mask07SkipAudio);
+    els.coinStart.addEventListener('click', flipCoin);
+    els.coinDone.addEventListener('click', completeCoin);
 
     els.radioMissionToggle.addEventListener('click', toggleRadioMissionPanel);
     els.radioMissionArrived.addEventListener('click', radioMissionArrived);
@@ -9046,6 +9665,8 @@ syncMusicForActiveTab();
       pauseAudioEventClock();
       radio03OnPageHide();
       mask06OnPageHide();
+      mask07OnPageHide();
+      coinOnPageHide();
     });
 
     document

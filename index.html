@@ -1504,6 +1504,45 @@
     @media(prefers-reduced-motion:reduce){.radio03-signal i{animation:none!important}.radio03-progress{transition:none}}
 
 
+
+    /* Le jeton est un outil commun, indépendant des effets temporaires. */
+    .effects-coin{width:100%;margin:4px 0 9px!important;background:linear-gradient(120deg,#493324,#241b22);border-color:#aa8460}
+    .coin-overlay{position:fixed;inset:0;z-index:10280;display:flex;align-items:center;justify-content:center;overflow:auto;padding:14px;background:radial-gradient(ellipse at center,rgba(29,20,26,.97),rgba(2,3,5,.995) 80%);visibility:hidden;opacity:0;pointer-events:none;transition:opacity .3s ease,visibility 0s linear .3s}
+    .coin-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .25s ease}
+    .coin-panel{width:min(100%,450px);max-height:calc(100dvh - 28px);overflow-y:auto;padding:20px 14px 24px;text-align:center}
+    .coin-heading{font:clamp(14px,4vw,18px) var(--font-ui);color:#e6c99f;letter-spacing:1px;margin:5px 0 17px}
+    .coin-scene{width:min(64vw,220px);height:min(64vw,220px);max-width:220px;max-height:220px;margin:8px auto 23px;perspective:900px;contain:layout}
+    .coin-disc{position:relative;width:100%;height:100%;border-radius:50%;transform-style:preserve-3d;will-change:transform}
+    .coin-side{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;border-radius:50%;border:9px ridge #a98552;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:inset 0 0 0 4px #422a1a,inset 0 0 22px rgba(0,0,0,.85),0 4px 16px rgba(0,0,0,.6);background:radial-gradient(circle at 32% 24%,#b99a62,#60442d 60%,#201718 100%)}
+    .coin-side.back{transform:rotateY(180deg);border-color:#9c4353;background:radial-gradient(circle at 35% 22%,#a66063,#652737 60%,#1a0c16 100%)}
+    .coin-side img{width:70%;height:69%;object-fit:contain;pointer-events:none;filter:grayscale(1) sepia(.85) contrast(1.25) drop-shadow(0 2px 2px #130f0d)}
+    .coin-side.back img{filter:grayscale(1) sepia(1) hue-rotate(300deg) contrast(1.5) drop-shadow(0 2px 2px #1a0206)}
+    .coin-side strong{font:clamp(13px,3.5vw,18px) var(--font-ui);letter-spacing:2px;color:#f9dfad;text-shadow:0 1px 2px #24180f;position:relative;z-index:1;margin-top:-6px}
+    .coin-side.back strong{color:#ffbec8}
+    .coin-status{font:clamp(16px,4.2vw,21px)/1.4 var(--font-body);color:#f2ded8;min-height:58px;margin:15px auto 12px}
+    .coin-controls{display:grid;gap:9px;max-width:340px;margin:10px auto 0}
+    .coin-btn{min-height:49px;padding:12px;border:1px solid #c0a078;border-radius:9px;background:linear-gradient(#694635,#37232b);color:#fff;font:clamp(11px,3vw,13px) var(--font-ui);cursor:pointer}
+    .coin-btn:focus-visible{outline:2px solid #f8dfb0;outline-offset:3px}
+    .coin-overlay .hidden{display:none!important}
+    .mask07-overlay{position:fixed;inset:0;z-index:10152;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(38,13,23,.965),rgba(1,2,6,.995) 78%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s ease,visibility 0s linear .4s}
+    .mask07-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s ease}
+    .mask07-content{width:min(100%,515px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:10px 13px 20px}
+    .mask07-heading{font:clamp(12px,3.5vw,16px) var(--font-ui);color:#edd1dc;letter-spacing:1px;margin:4px 0 10px}
+    .mask07-portrait{display:block;object-fit:contain;width:min(60vw,215px);height:min(40dvh,275px);margin:3px auto 9px;filter:drop-shadow(0 0 19px rgba(145,25,45,.27))}
+    .mask07-overlay.is-choice .mask07-portrait{width:min(47vw,175px);height:min(27dvh,185px)}
+    .mask07-overlay.is-result .mask07-portrait{width:min(42vw,150px);height:min(22dvh,142px)}
+    .mask07-pair{font:clamp(11px,2.75vw,14px)/1.4 var(--font-ui);color:#e5bf96;margin:7px 0;padding:8px;border:1px solid #674443;border-radius:8px}
+    .mask07-status{font:clamp(16px,4.2vw,20px)/1.4 var(--font-body);color:#efe0e4;white-space:pre-line;margin:12px 0}
+    .mask07-detail{font:clamp(15px,3.8vw,18px)/1.45 var(--font-body);color:#d9c7c9;white-space:pre-line;background:rgba(35,21,27,.87);border:1px solid #74545e;border-radius:9px;padding:12px;margin:12px 0}
+    .mask07-actions{display:grid;gap:9px;margin:16px auto 0}
+    .mask07-btn{min-height:48px;padding:11px 12px;background:#64313d;border:1px solid #ad6477;border-radius:9px;color:#fff;font:clamp(11px,2.95vw,13px)/1.4 var(--font-ui);cursor:pointer}
+    .mask07-btn.secondary{background:#302932;border-color:#6f5b63}
+    .mask07-btn.danger{background:#69232f;border-color:#ca6674}
+    .mask07-btn:focus-visible{outline:2px solid #ffd1d7;outline-offset:3px}
+    .mask07-overlay .hidden{display:none!important}
+    @media(max-height:575px){.mask07-content{padding:6px 10px 12px}.mask07-portrait{height:min(27dvh,140px);margin:0 auto 6px}.mask07-status{margin:7px 0}.mask07-detail{margin:7px 0;padding:8px}.mask07-actions{margin:9px 0}.coin-scene{height:min(38dvh,160px);width:min(38dvh,160px);margin:3px auto 13px}.coin-panel{padding:8px 10px 12px}}
+    @media(prefers-reduced-motion:reduce){.coin-overlay,.mask07-overlay{transition:none}}
+
     /* MASQUE-006 : représentation théâtrale, comptine et piège à deux réponses. */
     .mask06-overlay{position:fixed;inset:0;z-index:10146;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(38,12,26,.965),rgba(2,3,8,.997) 77%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .65s ease,visibility 0s linear .65s}
     .mask06-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .4s ease}
@@ -1867,6 +1906,7 @@
             <option value="masque-004">004 · Le Regard du Vice</option>
             <option value="masque-005">005 · La Confidence empoisonnée</option>
             <option value="masque-006">006 · La Comptine des oubliés</option>
+            <option value="masque-007">007 · Une preuve d'amitié</option>
             <option value="radio-001">📻 Radio 001 · Derrière la porte</option>
             <option value="radio-002">📻 Radio 002 · Le Rapport impossible</option>
             <option value="radio-003">📻 Radio 003 · Vous écoutiez ?</option>
@@ -2031,7 +2071,7 @@
       </div>
     </section>
 
-    <div id="version">v1.4.1 MASQUE-006 — Résultat (test)</div>
+    <div id="version">v1.5.0 MASQUE-007 — Amitié et jeton (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2078,6 +2118,7 @@
       <h2 id="effectsTitle">⏳ Effets temporaires</h2>
       <p>Une manche = un tour de table complet. Comptez deux manches complètes APRÈS l'apparition.</p>
       <div id="effectsList" class="effects-list"></div>
+      <button id="effectsCoin" class="effects-btn effects-coin" type="button">🪙 PILE OU FACE · JETON DU MASQUE</button>
       <button id="effectsPreset" class="effects-btn" type="button">🔒 Équipements et Objets inutilisables · 2 manches</button>
       <form id="effectsForm" class="effects-form" autocomplete="off">
         <label for="effectsName">Ajouter un effet personnalisé</label>
@@ -2311,6 +2352,43 @@
     </div>
   </div>
 
+
+
+  <!-- JETON DU MASQUE : même composant pour MASQUE-007 et lancer manuel dans Effets. -->
+  <div id="coinOverlay" class="coin-overlay" role="dialog" aria-modal="true" aria-labelledby="coinHeading" aria-hidden="true">
+    <div class="coin-panel">
+      <h2 id="coinHeading" class="coin-heading">🪙 LE JETON DU MASQUE</h2>
+      <div class="coin-scene" aria-hidden="true">
+        <div id="coinDisc" class="coin-disc">
+          <div class="coin-side front"><img id="coinFrontImg" src="img/masque0.png" alt=""><strong>PILE</strong></div>
+          <div class="coin-side back"><img id="coinBackImg" src="img/masque90.png" alt=""><strong>FACE</strong></div>
+        </div>
+      </div>
+      <p id="coinStatus" class="coin-status" role="status" aria-live="polite">Le sort vous attend…</p>
+      <div class="coin-controls">
+        <button id="coinStart" class="coin-btn" type="button">LANCER LE JETON</button>
+        <button id="coinDone" class="coin-btn hidden" type="button">RETOURNER À LA PARTIE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASQUE-007 : épreuve d'amitié, choix de PV et éventuel sacrifice. -->
+  <div id="mask07Overlay" class="mask07-overlay" role="dialog" aria-modal="true" aria-labelledby="mask07Heading" aria-hidden="true">
+    <div class="mask07-content">
+      <h2 id="mask07Heading" class="mask07-heading">INTERVENTION DU MASQUE</h2>
+      <img id="mask07Portrait" class="mask07-portrait" src="img/masque0.png" alt="Le Masque">
+      <p id="mask07Pair" class="mask07-pair hidden"></p>
+      <p id="mask07Status" class="mask07-status" aria-live="polite">Le Masque vous prépare une épreuve d'amitié…</p>
+      <p id="mask07Detail" class="mask07-detail hidden"></p>
+      <div class="mask07-actions">
+        <button id="mask07Primary" class="mask07-btn hidden" type="button"></button>
+        <button id="mask07Secondary" class="mask07-btn secondary hidden" type="button"></button>
+        <button id="mask07Confirm" class="mask07-btn danger hidden" type="button"></button>
+        <button id="mask07Play" class="mask07-btn hidden" type="button">REPRENDRE L’AUDIO</button>
+        <button id="mask07Skip" class="mask07-btn secondary hidden" type="button">CONTINUER SANS CET AUDIO</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MASQUE-006 : mini-spectacle du Masque, deux choix piégés. -->
   <div id="mask06Overlay" class="mask06-overlay" role="dialog" aria-modal="true" aria-labelledby="mask06Heading" aria-hidden="true">
