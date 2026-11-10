@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.3 MASQUE-007 — Jeton illustré et sonore (test)';
+  const VERSION = 'v1.5.4 MASQUE-007 — Souffle spectral du jeton (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6094,6 +6094,7 @@ syncMusicForActiveTab();
   const COIN_SPIN_EASING = 'cubic-bezier(.15,.67,.13,1)';
   let coinAudioContext = null;
   let coinNoiseBuffer = null;
+  let coinFinalNoiseBuffer = null;
 
   function coinPrepareAudio() {
     const AudioContextClass = typeof window === 'undefined' ? null
@@ -6103,6 +6104,7 @@ syncMusicForActiveTab();
       if (!coinAudioContext || coinAudioContext.state === 'closed') {
         coinAudioContext = new AudioContextClass();
         coinNoiseBuffer = null;
+        coinFinalNoiseBuffer = null;
       }
       // Appel déclenché par le geste du joueur (jeton manuel ou MASQUE-007).
       if (coinAudioContext.state !== 'running') {
@@ -6206,24 +6208,58 @@ syncMusicForActiveTab();
         c.soundSources.push(low);
       }
 
-      // Un seul tintement spectral, exactement à l'arrêt du jeton.
+      // Verdict : un TAK bref suivi d'un KSHHH spectral étouffé.
+      // Aucun gong, aucune note de cloche et aucune différence PILE/FACE.
       const stopAt = begin + COIN_SPIN_MS / 1000;
-      for (const [frequency, peak, duration] of [
-        [605, .065, .34], [907, .023, .24]
-      ]) {
-        const note = ctx.createOscillator();
-        note.type = 'sine';
-        note.frequency.value = frequency;
-        const envelope = ctx.createGain();
-        envelope.gain.setValueAtTime(.0001, stopAt);
-        envelope.gain.linearRampToValueAtTime(peak, stopAt + .009);
-        envelope.gain.exponentialRampToValueAtTime(.0001, stopAt + duration);
-        note.connect(envelope);
-        envelope.connect(bus);
-        note.start(stopAt);
-        note.stop(stopAt + duration + .01);
-        c.soundSources.push(note);
+
+      // Attaque sèche, très courte : une tranche de métal qui s'immobilise.
+      const knock = ctx.createBufferSource();
+      knock.buffer = coinNoiseBuffer;
+      const knockFilter = ctx.createBiquadFilter();
+      knockFilter.type = 'highpass';
+      knockFilter.frequency.value = 1100;
+      const knockGain = ctx.createGain();
+      knockGain.gain.setValueAtTime(.0001, stopAt);
+      knockGain.gain.linearRampToValueAtTime(.19, stopAt + .002);
+      knockGain.gain.exponentialRampToValueAtTime(.0001, stopAt + .065);
+      knock.connect(knockFilter);
+      knockFilter.connect(knockGain);
+      knockGain.connect(bus);
+      knock.start(stopAt);
+      knock.stop(stopAt + .075);
+      c.soundSources.push(knock);
+
+      // Souffle grave et granuleux qui descend sans résonance musicale.
+      // Buffer court mémorisé, généré une fois puis réutilisé à chaque lancer.
+      if (!coinFinalNoiseBuffer
+        || coinFinalNoiseBuffer.sampleRate !== ctx.sampleRate) {
+        const length = Math.ceil(ctx.sampleRate * .52);
+        coinFinalNoiseBuffer = ctx.createBuffer(1, length, ctx.sampleRate);
+        const data = coinFinalNoiseBuffer.getChannelData(0);
+        let smoothed = 0;
+        for (let i = 0; i < length; i++) {
+          const noise = Math.random() * 2 - 1;
+          smoothed = smoothed * .58 + noise * .42;
+          data[i] = smoothed * .72 + noise * .14;
+        }
       }
+      const breath = ctx.createBufferSource();
+      breath.buffer = coinFinalNoiseBuffer;
+      const breathFilter = ctx.createBiquadFilter();
+      breathFilter.type = 'bandpass';
+      breathFilter.frequency.setValueAtTime(1450, stopAt + .035);
+      breathFilter.frequency.exponentialRampToValueAtTime(380, stopAt + .48);
+      breathFilter.Q.value = .72;
+      const breathGain = ctx.createGain();
+      breathGain.gain.setValueAtTime(.0001, stopAt + .035);
+      breathGain.gain.linearRampToValueAtTime(.115, stopAt + .075);
+      breathGain.gain.exponentialRampToValueAtTime(.0001, stopAt + .49);
+      breath.connect(breathFilter);
+      breathFilter.connect(breathGain);
+      breathGain.connect(bus);
+      breath.start(stopAt + .035);
+      breath.stop(stopAt + .515);
+      c.soundSources.push(breath);
     } catch (_) {
       coinStopAudio(c); // Une API audio capricieuse ne bloque jamais le jeu.
     }
