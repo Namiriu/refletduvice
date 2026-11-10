@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.1 MASQUE-007 — Résultat sans spoiler (test)';
+  const VERSION = 'v1.5.2 MASQUE-007 — Affichage du jeton (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6116,6 +6116,13 @@ syncMusicForActiveTab();
     els.coinStart.textContent = 'LANCER LE JETON';
     els.coinStart.classList.remove('hidden');
     els.coinDone.classList.add('hidden');
+    // Sur certains mobiles, deux modales 3D superposées peuvent entrer
+    // en conflit de composition graphique. Masquer la scène de MASQUE-007
+    // pendant le lancer reproduit le fonctionnement fiable du lancer manuel.
+    if (mode === 'masque-007') {
+      els.mask07Overlay.classList.add('coin-behind');
+      els.mask07Overlay.setAttribute('aria-hidden', 'true');
+    }
     els.coinOverlay.classList.add('show');
     els.coinOverlay.setAttribute('aria-hidden', 'false');
     els.coinStart.focus();
@@ -6144,6 +6151,8 @@ syncMusicForActiveTab();
     currentCoin = null;
     els.coinOverlay.classList.remove('show');
     els.coinOverlay.setAttribute('aria-hidden', 'true');
+    els.mask07Overlay.classList.remove('coin-behind');
+    if (currentMask07) els.mask07Overlay.setAttribute('aria-hidden', 'false');
     els.coinStart.classList.add('hidden');
     els.coinDone.classList.add('hidden');
     els.coinDisc.style.transform = 'rotateY(0deg)';
@@ -6508,7 +6517,21 @@ syncMusicForActiveTab();
       r.coinOutcome = outcome;
       // Résultat sauvegardé avant le mouvement, aussi en cas de F5.
       mask07SetStage('coin-spinning');
-      if (openCoin({mode:'masque-007',outcome,onDone:mask07AfterCoin})) flipCoin();
+      if (openCoin({mode:'masque-007',outcome,onDone:mask07AfterCoin})) {
+        // Contrairement au lancer manuel, cette fenêtre s'ouvre et se lance
+        // automatiquement. Laisser deux images au navigateur pour afficher
+        // ses faces AVANT de démarrer la transformation 3D (Android/WebView).
+        const coinId = currentCoin?.token;
+        const launch = () => {
+          if (currentCoin?.token === coinId && currentMask07 === r
+            && r.stage === 'coin-spinning') flipCoin();
+        };
+        if (typeof requestAnimationFrame === 'function') {
+          requestAnimationFrame(() => requestAnimationFrame(launch));
+        } else {
+          setTimeout(launch, 40);
+        }
+      }
     } else if (r.stage === 'hp-choice') {
       if (action === 'primary') {
         r.penalty = 'injury';

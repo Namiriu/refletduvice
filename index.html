@@ -1511,7 +1511,7 @@
     .coin-overlay.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .25s ease}
     .coin-panel{width:min(100%,450px);max-height:calc(100dvh - 28px);overflow-y:auto;padding:20px 14px 24px;text-align:center}
     .coin-heading{font:clamp(14px,4vw,18px) var(--font-ui);color:#e6c99f;letter-spacing:1px;margin:5px 0 17px}
-    .coin-scene{width:min(64vw,220px);height:min(64vw,220px);max-width:220px;max-height:220px;margin:8px auto 23px;perspective:900px;contain:layout}
+    .coin-scene{width:min(64vw,220px);height:min(64vw,220px);max-width:220px;max-height:220px;margin:8px auto 23px;perspective:900px;border-radius:50%;background:radial-gradient(circle,#755638 45%,#241c1a 70%,transparent 73%)}
     .coin-disc{position:relative;width:100%;height:100%;border-radius:50%;transform-style:preserve-3d;will-change:transform}
     .coin-side{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;overflow:hidden;border-radius:50%;border:9px ridge #a98552;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:inset 0 0 0 4px #422a1a,inset 0 0 22px rgba(0,0,0,.85),0 4px 16px rgba(0,0,0,.6);background:radial-gradient(circle at 32% 24%,#b99a62,#60442d 60%,#201718 100%)}
     .coin-side.back{transform:rotateY(180deg);border-color:#9c4353;background:radial-gradient(circle at 35% 22%,#a66063,#652737 60%,#1a0c16 100%)}
@@ -1526,6 +1526,9 @@
     .coin-overlay .hidden{display:none!important}
     .mask07-overlay{position:fixed;inset:0;z-index:10152;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px;background:radial-gradient(ellipse at center,rgba(38,13,23,.965),rgba(1,2,6,.995) 78%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s ease,visibility 0s linear .4s}
     .mask07-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .3s ease}
+    /* Masquer la seconde fenêtre pendant le rendu 3D du jeton.
+       L'état de MASQUE-007 reste intact et revient après CONTINUER. */
+    .mask07-overlay.show.coin-behind{visibility:hidden;opacity:0;pointer-events:none;transition:none}
     .mask07-content{width:min(100%,515px);max-height:calc(100dvh - 32px);overflow-y:auto;text-align:center;padding:10px 13px 20px}
     .mask07-heading{font:clamp(12px,3.5vw,16px) var(--font-ui);color:#edd1dc;letter-spacing:1px;margin:4px 0 10px}
     .mask07-portrait{display:block;object-fit:contain;width:min(60vw,215px);height:min(40dvh,275px);margin:3px auto 9px;filter:drop-shadow(0 0 19px rgba(145,25,45,.27))}
@@ -2071,7 +2074,7 @@
       </div>
     </section>
 
-    <div id="version">v1.5.1 MASQUE-007 — Résultat sans spoiler (test)</div>
+    <div id="version">v1.5.2 MASQUE-007 — Affichage du jeton (test)</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
