@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.0 MASQUE-007 — Amitié et jeton (test)';
+  const VERSION = 'v1.5.1 MASQUE-007 — Résultat sans spoiler (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -6112,7 +6112,7 @@ syncMusicForActiveTab();
     els.coinDisc.style.transform = 'rotateY(0deg)';
     els.coinStatus.textContent = mode === 'manual'
       ? 'PILE OU FACE — Prêts à tenter le sort ?'
-      : 'LE JETON DU MASQUE — Pile : esquive. Face : blessure.';
+      : 'LE JETON DU MASQUE — Pile : esquive réussie. Face : esquive ratée.';
     els.coinStart.textContent = 'LANCER LE JETON';
     els.coinStart.classList.remove('hidden');
     els.coinDone.classList.add('hidden');
@@ -6167,7 +6167,7 @@ syncMusicForActiveTab();
     }
     els.coinStart.classList.add('hidden');
     els.coinDone.textContent = c.mode === 'manual'
-      ? 'RETOURNER AUX EFFETS' : 'VOIR LA CONSÉQUENCE';
+      ? 'RETOURNER AUX EFFETS' : 'CONTINUER';
     els.coinDone.classList.remove('hidden');
     els.coinDone.focus();
   }
@@ -6390,7 +6390,7 @@ syncMusicForActiveTab();
       els.mask07Status.textContent = 'ÉPREUVE TERMINÉE';
       let result = '';
       if (r.coinOutcome === 'success') {
-        result = 'PILE — ESQUIVE RÉUSSIE.\n\nAucune blessure ni perte d’objet.';
+        result = 'PILE — ESQUIVE RÉUSSIE.';
       } else if (r.penalty === 'injury') {
         result = 'FACE — ESQUIVE RATÉE.\n\nJOUEUR ' + r.victim
           + ' perd 1 PV.\nReportez cette blessure sur sa feuille de personnage.';
