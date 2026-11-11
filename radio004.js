@@ -7,8 +7,8 @@ window.RdVRadio04 = function createRadio04(api) {
   for (const id of [
     'Overlay','Display','Rx','Status','Tuning','Prev','Next',
     'ReadyPanel','ReadyClock','ReadyProgress','ChallengePanel','ChallengeClock',
-    'Cursor','QualityText','QualityTrack','QualityBar','Touch',
-    'Instruction','Result','Main','Replay','Skip'
+    'Cursor','Zone','QualityText','QualityTrack','QualityBar','Touch',
+    'Instruction','Result','Main','Replay'
   ]) ui[id] = $('radio04'+id);
   const FREQUENCIES=['88.4','94.7','107.3'];
   const AUDIO={
@@ -23,10 +23,12 @@ window.RdVRadio04 = function createRadio04(api) {
   const VOLUME={
     intro:.95,a:.91,b:.91,interruption:.9,whisper:.93,alert:.93,
     win0:.96,win1:.96,win2:.96,failure:.96,
-    static:.12,rail:.21,breath:.42,tune:.64,glitch:.42,
+    static:.12,rail:.21,breath:.70,tune:.64,glitch:.42,
     interference:.3,good:.77,bad:.77
   };
-  const READY_MS=15000, GAME_SECONDS=20;
+  const READY_MS=15000, GAME_SECONDS=20, POST_GAME_LOCK_MS=2200;
+  const RADIO04_ZONE_HALF_WIDTH=11;
+  const RADIO04_QUALITY_GAIN=6.5, RADIO04_QUALITY_LOSS=3.5;
   let current=null, sequence=0;
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
   const hidden=(el,isHidden)=>el.classList.toggle('hidden',Boolean(isHidden));
@@ -56,7 +58,7 @@ window.RdVRadio04 = function createRadio04(api) {
     const r=current;if(!r)return;
     ++r.clipSerial;
     pauseAudio(r.clip);
-    r.clip=null;r.clipKey=null;r.clipDone=null;
+    r.clip=null;r.clipKey=null;r.clipDone=null;r.clipFailed=false;
     clearTimeout(r.delayedClip);r.delayedClip=null;
   }
   function stopScan(){
@@ -77,9 +79,10 @@ window.RdVRadio04 = function createRadio04(api) {
   function clear(){
     const r=current;if(!r)return;
     stopClip();stopScan();stopTiming();
-    clearTimeout(r.glitch);pauseAudio(r.sfx);
+    clearTimeout(r.glitch);clearTimeout(r.unlockTimer);pauseAudio(r.sfx);
     for(const a of Object.values(r.media))pauseAudio(a);
     current=null;
+    ui.Main.disabled=false;
     ui.Overlay.className='radio04-overlay';
     ui.Overlay.setAttribute('aria-hidden','true');
     api.markActive(false);
@@ -98,9 +101,8 @@ window.RdVRadio04 = function createRadio04(api) {
     hidden(ui.Touch,next!=='challenge');
     hidden(ui.Instruction,next!=='challenge');
     hidden(ui.Result,next!=='result');
-    hidden(ui.Main,next==='challenge'||next==='countdown');
+    hidden(ui.Main,['intro','alert','resultvoice','challenge','countdown'].includes(next));
     hidden(ui.Replay,true);
-    hidden(ui.Skip,!['intro','alert','resultvoice'].includes(next));
     ui.Display.textContent=next==='intro'?'---.-':FREQUENCIES[r.index];
     ui.Rx.textContent=next==='intro'?'RX: RECHERCHE'
       :next==='scan'?'RX: SIGNAL INTERCEPTÉ'
@@ -110,12 +112,16 @@ window.RdVRadio04 = function createRadio04(api) {
   }
   function playClip(key,done){
     const r=current;if(!r)return;
+    const previous=r.clipKey;
     stopClip();
+    r.clipAttempts=previous===key?(r.clipAttempts||0)+1:1;
     const token=r.clipSerial;
     const a=r.media[key];
     r.clip=a;r.clipKey=key;r.clipDone=done;
     if(!a){
+      r.clipFailed=true;
       ui.Status.textContent='Audio indisponible. Vous pouvez continuer.';
+      ui.Replay.textContent='CONTINUER SANS AUDIO';hidden(ui.Replay,false);
       return;
     }
     a.loop=false;
@@ -125,7 +131,9 @@ window.RdVRadio04 = function createRadio04(api) {
     };
     a.onerror=()=>{
       if(current!==r||r.clipSerial!==token)return;
+      r.clipFailed=true;
       ui.Status.textContent='Audio indisponible. Vous pouvez continuer.';
+      ui.Replay.textContent='CONTINUER SANS AUDIO';hidden(ui.Replay,false);
     };
     try{
       a.currentTime=0;
@@ -134,18 +142,19 @@ window.RdVRadio04 = function createRadio04(api) {
         if(current===r&&r.clipSerial===token)hidden(ui.Replay,true);
       })?.catch?.(()=>{
         if(current!==r||r.clipSerial!==token)return;
-        ui.Replay.textContent='ÉCOUTER LA TRANSMISSION';
+        r.clipFailed=r.clipAttempts>=2;
+        ui.Replay.textContent=r.clipFailed?'CONTINUER SANS AUDIO':'ACTIVER LE SON';
         hidden(ui.Replay,false);
       });
     }catch(_){
-      ui.Replay.textContent='ÉCOUTER LA TRANSMISSION';
+      r.clipFailed=r.clipAttempts>=2;
+      ui.Replay.textContent=r.clipFailed?'CONTINUER SANS AUDIO':'ACTIVER LE SON';
       hidden(ui.Replay,false);
     }
   }
   function intro(){
     stage('intro');
     ui.Status.textContent='Une conversation surgit des parasites…';
-    ui.Main.textContent="PASSER L'INTRODUCTION";
     playClip('intro',enterScan);
   }
   function enterScan(){
@@ -186,7 +195,12 @@ window.RdVRadio04 = function createRadio04(api) {
     let key=null,seek=0;
     if(r.index===0){
       const d=duration('a',25);
-      key='a';seek=(sec+offset)%d;
+      // Intervalle de parasites pour un raccord propre et un début intelligible.
+      const lead=.65,tail=1.55,t=(sec+offset)%(lead+d+tail);
+      if(t>=lead&&t<lead+d){
+        key='a';
+        seek=t-lead<.4?0:t-lead;
+      }
     }else if(r.index===1){
       const d1=duration('b',25),d2=duration('interruption',3);
       const t=(sec+offset)%(d1+d2+2);
@@ -194,18 +208,29 @@ window.RdVRadio04 = function createRadio04(api) {
       else if(t<d1+d2){key='interruption';seek=t-d1;}
     }else{
       const d=duration('whisper',3);
-      const t=(sec+offset)%29;
-      if(t>=16&&t<16+d){key='whisper';seek=t-16;}
+      // Murmure rapproché, puis respiration avant la répétition.
+      const arrival=4.5,cycle=Math.max(13,arrival+d+3.5);
+      const t=(sec+offset)%cycle;
+      if(t>=arrival&&t<arrival+d){key='whisper';seek=t-arrival;}
     }
     if(!force&&key===r.scanKey)return;
     pauseAudio(r.voice);r.voice=null;r.scanKey=key;r.scanBlocked=false;
     if(!key)return;
     const a=r.media[key];if(!a)return;
     if(a.readyState<1){
-      a.addEventListener('loadedmetadata',()=>{
-        if(current===r&&r.stage==='scan'&&!r.hidden)syncScan(true);
-      },{once:true});
-      a.load();return;
+      // Ne pas jouer une fréquence à 0 avant de connaître sa durée.
+      r.scanKey=null;
+      if(!r.metadataLoading.has(key)){
+        r.metadataLoading.add(key);
+        const selectedIndex=r.index;
+        a.addEventListener('loadedmetadata',()=>{
+          r.metadataLoading.delete(key);
+          if(current===r&&r.stage==='scan'&&!r.hidden
+            &&r.index===selectedIndex)syncScan(true);
+        },{once:true});
+        a.load();
+      }
+      return;
     }
     try{
       a.loop=false;
@@ -259,7 +284,6 @@ window.RdVRadio04 = function createRadio04(api) {
     }
     stopScan();stage('alert');
     ui.Status.textContent='SIGNAL INCONTRÔLABLE';
-    ui.Main.textContent="PASSER L'ALERTE";
     playClip('alert',enterReady);
   }
   function readyDraw(){
@@ -298,6 +322,8 @@ window.RdVRadio04 = function createRadio04(api) {
   function drawGame(r){
     ui.ChallengeClock.textContent='00:'+String(Math.ceil(Math.max(0,GAME_SECONDS-r.elapsed))).padStart(2,'0');
     ui.Cursor.style.left=r.cursor.toFixed(3)+'%';
+    ui.Zone.style.left=(r.zone-RADIO04_ZONE_HALF_WIDTH).toFixed(3)+'%';
+    ui.Zone.style.width=(RADIO04_ZONE_HALF_WIDTH*2)+'%';
     const q=Math.floor(r.quality+1e-8);
     ui.QualityText.textContent=q+' %';
     ui.QualityBar.style.width=r.quality.toFixed(3)+'%';
@@ -308,24 +334,27 @@ window.RdVRadio04 = function createRadio04(api) {
     const dt=Math.min(.07,Math.max(0,(now-r.lastFrame)/1000));
     r.lastFrame=now;r.elapsed=Math.min(GAME_SECONDS,r.elapsed+dt);
     const progress=r.elapsed/GAME_SECONDS;
-    // Pression : vers la droite ; relâchement : vers la gauche.
-    // Les interférences font dévier la vitesse, jamais téléporter le curseur.
+    // La réception glisse continuellement : mouvement prévisible, amplitude croissante.
+    r.zone=50+(10+8*progress)*Math.sin(r.elapsed*.83+.35)
+      +(2+2*progress)*Math.sin(r.elapsed*1.7);
     const interference=(Math.sin(r.elapsed*3.1)+.43*Math.sin(r.elapsed*9.3+.7))
       *(3+progress*10);
     r.cursor=clamp(r.cursor+((r.pressed?27:-27)+interference)*dt,1,99);
-    const inside=Math.abs(r.cursor-50)<=13;
-    r.quality=clamp(r.quality+(inside?8.8:-5.4)*dt,0,100);
+    const inside=Math.abs(r.cursor-r.zone)<=RADIO04_ZONE_HALF_WIDTH;
+    r.quality=clamp(r.quality+(inside?RADIO04_QUALITY_GAIN:-RADIO04_QUALITY_LOSS)*dt,0,100);
     drawGame(r);
-    if(r.elapsed>=GAME_SECONDS){
-      resolve(r.quality>=99.999?'success':'failure');return;
+    if(r.quality>=99.999){
+      r.quality=100;drawGame(r);resolve('success');return;
     }
+    if(r.elapsed>=GAME_SECONDS){resolve('failure');return;}
     r.gameFrame=requestAnimationFrame(step);
   }
+
   function startGame(){
     const r=current;if(!r)return;
     stopTiming();stage('challenge');
     ui.Status.textContent='MAINTENEZ LA FRÉQUENCE !';
-    r.cursor=50;r.quality=0;r.elapsed=0;r.pressed=false;r.pointer=null;
+    r.cursor=50;r.zone=50+10*Math.sin(.35);r.quality=0;r.elapsed=0;r.pressed=false;r.pointer=null;
     r.lastFrame=performance.now();drawGame(r);
     const a=r.media.interference;a.loop=true;
     try{a.play()?.catch?.(()=>{});}catch(_){}
@@ -343,6 +372,21 @@ window.RdVRadio04 = function createRadio04(api) {
     if(!r||r.stage!=='challenge'||r.pointer!==e.pointerId)return;
     r.pressed=false;r.pointer=null;ui.Touch.classList.remove('is-pressed');
   }
+  function protectAfterChallenge(r){
+    if(current!==r)return;
+    clearTimeout(r.unlockTimer);
+    const wait=Math.max(0,(r.lockUntil||0)-Date.now());
+    ui.Main.disabled=wait>0;
+    ui.Overlay.classList.toggle('is-input-locked',wait>0);
+    if(wait>0){
+      r.unlockTimer=setTimeout(()=>{
+        if(current!==r)return;
+        ui.Main.disabled=false;
+        ui.Overlay.classList.remove('is-input-locked');
+      },wait+10);
+    }
+  }
+
   function resolve(outcome){
     const r=current;if(!r||r.stage!=='challenge')return;
     stopTiming();
@@ -351,6 +395,9 @@ window.RdVRadio04 = function createRadio04(api) {
     r.after=clamp(r.before+delta,0,100);
     r.gameOver=r.after>=100;
     stage('resultvoice'); // Sauvegarde préventive : ne jamais appliquer deux fois.
+    // Neutraliser les gestes encore en cours après une séquence tactile intense.
+    r.lockUntil=Date.now()+POST_GAME_LOCK_MS;
+    protectAfterChallenge(r);
     if(r.before!==r.after){
       const effect=api.applyDelta(delta,
         'Radio — La Fréquence interdite ('+FREQUENCIES[r.index]+' MHz)');
@@ -358,7 +405,6 @@ window.RdVRadio04 = function createRadio04(api) {
       save();
     }
     ui.Status.textContent=outcome==='success'?'SIGNAL STABILISÉ':'TRANSMISSION PERDUE';
-    ui.Main.textContent='AFFICHER LES CONSÉQUENCES';
     playSfx(outcome==='success'?'good':'bad');
     const key=outcome==='failure'?'failure':'win'+r.index;
     r.delayedClip=setTimeout(()=>{
@@ -369,6 +415,7 @@ window.RdVRadio04 = function createRadio04(api) {
     const r=current;if(!r)return;
     stopClip();stage('result');
     ui.Main.textContent='CONTINUER LA PARTIE';
+    protectAfterChallenge(r);
     ui.Status.textContent=r.outcome==='success'?'TRANSMISSION TERMINÉE':'SIGNAL PERDU';
     const diff=r.after-r.before;
     const summary='Instabilité globale : '+r.before+' % → '+r.after+' % ('+
@@ -385,27 +432,21 @@ window.RdVRadio04 = function createRadio04(api) {
     ui.Main.focus();
   }
   function primary(){
-    const r=current;if(!r)return;
-    if(r.stage==='intro')enterScan();
-    else if(r.stage==='scan')lock();
-    else if(r.stage==='alert')enterReady();
+    const r=current;
+    if(!r||r.hidden||Date.now()<(r.lockUntil||0))return;
+    if(r.stage==='scan')lock();
     else if(r.stage==='ready')startCountdown();
-    else if(r.stage==='resultvoice')showResult();
     else if(r.stage==='result')complete();
   }
   function replay(){
-    const r=current;if(!r||r.hidden)return;
+    const r=current;
+    if(!r||r.hidden||Date.now()<(r.lockUntil||0))return;
+    if(r.clipFailed){const done=r.clipDone;stopClip();done?.();return;}
     if(r.stage==='scan'){r.scanBlocked=false;syncScan(true);}
     else if(r.stage==='intro')playClip('intro',enterScan);
     else if(r.stage==='alert')playClip('alert',enterReady);
     else if(r.stage==='resultvoice')
       playClip(r.outcome==='failure'?'failure':'win'+r.index,showResult);
-  }
-  function skip(){
-    const r=current;if(!r)return;
-    if(r.stage==='intro')enterScan();
-    else if(r.stage==='alert')enterReady();
-    else if(r.stage==='resultvoice')showResult();
   }
   function complete(){
     const r=current;if(!r||r.stage!=='result')return;
@@ -434,6 +475,10 @@ window.RdVRadio04 = function createRadio04(api) {
       const a=new Audio('audio/events/radio/radio-004-'+suffix+'.mp3');
       a.preload='auto';a.volume=VOLUME[key]??1;
       media[key]=a;
+      // Récupérer les durées et préparer les sauts avant la première sélection.
+      if(['a','b','interruption','whisper'].includes(key)){
+        try{a.load();}catch(_){}
+      }
     }
     const r={
       id:++sequence,preview,stage:'intro',
@@ -441,9 +486,10 @@ window.RdVRadio04 = function createRadio04(api) {
       restoreElapsed:pending?.scanElapsed??0,scanOrigin:0,
       confirm:false,media,hidden:false,
       clip:null,clipSerial:0,clipKey:null,clipDone:null,delayedClip:null,
+      clipFailed:false,clipAttempts:0,metadataLoading:new Set(),unlockTimer:null,lockUntil:0,
       scanTick:null,voice:null,scanKey:null,scanBlocked:false,glitch:null,sfx:null,
       readyTick:null,readyDeadline:0,readyRemaining:READY_MS,countdownTick:null,
-      gameFrame:null,lastFrame:0,cursor:50,quality:0,elapsed:0,pressed:false,pointer:null,
+      gameFrame:null,lastFrame:0,cursor:50,zone:50,quality:0,elapsed:0,pressed:false,pointer:null,
       outcome:pending?.outcome??null,before:pending?.before??null,
       after:pending?.after??null,gameOver:pending?.gameOver===true,
       savedPreviewDelay:api.session.remainingMs
@@ -502,7 +548,6 @@ window.RdVRadio04 = function createRadio04(api) {
   ui.Next.addEventListener('click',()=>tune(1));
   ui.Main.addEventListener('click',primary);
   ui.Replay.addEventListener('click',replay);
-  ui.Skip.addEventListener('click',skip);
   ui.Touch.addEventListener('pointerdown',touchDown);
   for(const event of ['pointerup','pointercancel','lostpointercapture'])
     ui.Touch.addEventListener(event,touchUp);
