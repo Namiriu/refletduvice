@@ -1,0 +1,60 @@
+/* RADIO-004 — talkie-walkie militaire rafistolé, fréquences fantômes. */
+.radio04-overlay{position:fixed;inset:0;z-index:10135;display:grid;place-items:center;overflow:auto;padding:42px 10px 16px;background:radial-gradient(ellipse at 50% 36%,#1d2521 0%,#090d10 62%,#040507 100%);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility 0s linear .35s;color:#e7e7d9}
+.radio04-overlay.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .32s ease}
+.radio04-scene{width:min(100%,440px);max-height:calc(100dvh - 55px);overflow-y:auto;overflow-x:visible;text-align:center;padding:8px 9px 18px;scrollbar-width:thin}
+.radio04-eyebrow{margin:0 0 10px;font:clamp(10px,2.6vw,12px)/1.4 var(--font-ui);letter-spacing:2.3px;color:#afc4ac;text-transform:uppercase}
+.radio04-device{position:relative;width:min(100%,334px);margin:58px auto 12px;padding:23px 20px 22px;border:3px solid #0c1211;border-radius:23px 24px 35px 35px;background:repeating-linear-gradient(155deg,transparent,transparent 25px,rgba(255,255,255,.02) 27px,transparent 28px),linear-gradient(112deg,#404940 0%,#28332d 13%,#141f1c 46%,#3c4641 79%,#252c29 100%);box-shadow:inset 2px 2px 2px rgba(210,220,190,.16),inset -8px -11px 13px rgba(0,0,0,.64),0 17px 30px rgba(0,0,0,.73),0 0 0 4px #1c2320}
+.radio04-device:before{content:"";position:absolute;left:39px;bottom:calc(100% - 4px);width:20px;height:75px;border:2px solid #0e1414;border-radius:7px 7px 3px 3px;background:repeating-linear-gradient(90deg,#181c19 0 3px,#303a33 4px 6px);box-shadow:inset -5px 0 6px rgba(0,0,0,.7),3px 0 5px rgba(0,0,0,.3);transform:rotate(-8deg);transform-origin:bottom}
+.radio04-device:after{content:"";position:absolute;right:44px;bottom:calc(100% - 1px);width:42px;height:18px;border:3px solid #141917;border-radius:10px 10px 2px 2px;background:linear-gradient(#535a4d,#1c2420);box-shadow:inset 0 4px 3px rgba(255,255,255,.1)}
+.radio04-screw{position:absolute;z-index:2;width:10px;height:10px;border-radius:50%;background:linear-gradient(125deg,#4b514a,#121815);border:1px solid #090c0b}
+.radio04-screw:after{content:"";display:block;width:7px;height:1px;margin:4px auto;background:#060a08;transform:rotate(37deg)}
+.radio04-screw.a{top:13px;left:11px}.radio04-screw.b{top:13px;right:11px}.radio04-screw.c{bottom:12px;left:13px}.radio04-screw.d{bottom:12px;right:13px}
+.radio04-panel{padding:14px 10px 13px;border:2px solid #0b100e;border-radius:9px;background:linear-gradient(110deg,#070d0b,#23312a 48%,#0b120f);box-shadow:inset 0 0 12px #000,0 2px 0 rgba(144,153,130,.22)}
+.radio04-brand{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font:10px/1 var(--font-ui);letter-spacing:1.5px;color:#a6ada1}
+.radio04-led{width:9px;height:9px;border-radius:50%;background:#68c99c;box-shadow:0 0 9px #57dba9;animation:radio04-led 2.3s linear infinite}
+.radio04-overlay.is-alert .radio04-led,.radio04-overlay.is-ready .radio04-led,.radio04-overlay.is-challenge .radio04-led{background:#e3b574;box-shadow:0 0 12px #f5a85c;animation-duration:.75s}
+.radio04-overlay.is-failed .radio04-led{background:#7b3c36;box-shadow:none;animation:none}
+@keyframes radio04-led{0%,10%,57%,100%{opacity:1}3%,7%,59%,64%,83%{opacity:.1}}
+.radio04-lcd{position:relative;isolation:isolate;overflow:hidden;min-height:128px;padding:17px 9px 16px;border:7px solid #070d0c;border-radius:6px;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(8,32,16,.11) 3px),linear-gradient(145deg,#c3dd9c,#769d69 50%,#4a765b);box-shadow:inset 0 0 24px rgba(19,40,27,.52),0 0 16px rgba(112,210,146,.15);color:#173528;animation:radio04-screen 8s steps(1) infinite}
+@keyframes radio04-screen{0%,68%,72%,100%{filter:brightness(1)}69%,71%{filter:brightness(.54)}70%{filter:brightness(1.2)}}
+.radio04-lcd:before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.18) 30%,transparent 32%,transparent 67%,rgba(22,38,30,.08) 80%,transparent);pointer-events:none}
+.radio04-cracks{position:absolute;z-index:3;inset:0;width:100%;height:100%;pointer-events:none;opacity:.5}
+.radio04-frequency{position:relative;z-index:1;display:flex;align-items:baseline;justify-content:center;gap:8px;font:clamp(31px,9.5vw,42px)/1.25 'Courier New',monospace;letter-spacing:-1.5px;font-weight:bold;text-shadow:1px 1px 1px rgba(192,229,176,.45)}
+.radio04-frequency small{font:12px/1 'Courier New',monospace;font-weight:bold;letter-spacing:0}
+.radio04-rx{position:relative;z-index:1;margin:4px auto 0;font:bold 10px/1.3 'Courier New',monospace;letter-spacing:1.5px}
+.radio04-overlay.is-glitch .radio04-frequency{transform:translateX(2px);opacity:.7;filter:contrast(2)}
+.radio04-screen-work{position:relative;z-index:1;margin-top:7px}
+.radio04-speaker{display:grid;gap:5px;margin:18px auto 10px;width:83%;transform:skewY(-2deg)}
+.radio04-speaker i{display:block;height:5px;border-radius:8px;background:linear-gradient(#0a100d,#26332a 65%,#536057);box-shadow:inset 0 2px 3px #000,0 1px 0 rgba(186,205,170,.1)}
+.radio04-controls{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:9px 20px 0}
+.radio04-tune{width:66px;height:49px;border-radius:12px;border:2px solid #101713;background:linear-gradient(145deg,#687469,#25322b 37%,#151f1b 100%);color:#d6e5d5;font-size:21px;font-weight:900;box-shadow:inset 1px 2px 2px rgba(255,255,255,.16),0 4px 2px #0a100e;cursor:pointer}
+.radio04-tune:active{transform:translateY(3px);box-shadow:inset 0 3px 8px #040806}
+.radio04-tune:disabled{opacity:.33;cursor:default}
+.radio04-dial-tag{font:bold 9px var(--font-ui);letter-spacing:1px;color:#c3c9b6}
+.radio04-text{margin:12px auto 10px;max-width:390px;min-height:35px;font:clamp(15px,4vw,18px)/1.35 var(--font-body);white-space:pre-line;color:#dce4d9}
+.radio04-actions{display:grid;gap:8px;max-width:360px;margin:10px auto 0}
+.radio04-btn{width:100%;min-height:47px;padding:10px 13px;border-radius:10px;border:1px solid #6c9d7b;background:linear-gradient(145deg,#365840,#20392f);color:#f3f8ec;font:clamp(11px,3vw,13px)/1.35 var(--font-ui);letter-spacing:.25px;cursor:pointer}
+.radio04-btn.secondary{border-color:#626c63;background:#272d2b;color:#c4d0c5}
+.radio04-btn:disabled{opacity:.42;cursor:default}
+.radio04-btn:focus-visible,.radio04-tune:focus-visible,.radio04-touch:focus-visible{outline:3px solid #d9df9e;outline-offset:3px}
+.radio04-clock{margin:3px auto 6px;font:clamp(35px,11vw,47px)/1 'Courier New',monospace;font-weight:bold;color:#183c2f}
+.radio04-count-label{font:10px/1.3 'Courier New',monospace;letter-spacing:1.1px;margin:6px auto 0}
+.radio04-progress{height:7px;border-radius:7px;overflow:hidden;background:#294536;margin:9px 0 1px}
+.radio04-progress>i{display:block;width:100%;height:100%;background:linear-gradient(90deg,#1b5741,#235640);transition:width .1s linear}
+.radio04-wave-track{position:relative;height:23px;margin:10px auto 4px;border:2px solid #224332;border-radius:4px;background:linear-gradient(#3c6c4b,#547956);box-shadow:inset 0 0 5px rgba(0,0,0,.5)}
+.radio04-zone{position:absolute;top:0;bottom:0;left:37%;width:26%;background:rgba(176,234,97,.8);border-left:2px solid #c7ff97;border-right:2px solid #c7ff97;box-shadow:0 0 7px rgba(172,255,111,.4)}
+.radio04-cursor{position:absolute;top:-5px;bottom:-5px;width:3px;left:50%;transform:translateX(-50%);background:#f8fff2;border:1px solid #345645;box-shadow:0 0 7px #fff}
+.radio04-quality{display:flex;justify-content:space-between;font:bold 10px/1.2 'Courier New',monospace;margin-top:8px}
+.radio04-quality-track{height:11px;border:2px solid #254a36;border-radius:4px;overflow:hidden;margin-top:4px;background:#467151}
+.radio04-quality-bar{width:0;height:100%;background:linear-gradient(90deg,#395e3f,#d8f5a0);transition:width .1s linear}
+.radio04-touch{display:grid;place-items:center;min-height:115px;width:100%;margin:10px auto 0;padding:12px 15px;border:2px dashed #839a79;border-radius:14px;background:radial-gradient(ellipse,#35483e 0%,#1b2923 100%);box-shadow:inset 0 0 13px #050a08;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;color:#eaf1e2;font:clamp(12px,3.2vw,15px)/1.4 var(--font-ui);cursor:pointer}
+.radio04-touch:active,.radio04-touch.is-pressed{background:radial-gradient(ellipse,#627969,#284436);border-style:solid;color:#fff}
+.radio04-touch strong{display:block;font:18px/1.3 'Courier New',monospace;letter-spacing:2px}
+.radio04-instruction{max-width:370px;margin:5px auto 0;font:13px/1.35 var(--font-body);color:#b8cbbc}
+.radio04-result{padding:15px 13px;margin:12px auto;border:1px solid #77937e;border-radius:10px;background:rgba(13,23,19,.88);color:#e9f1e5;white-space:pre-line;font:clamp(15px,4.1vw,18px)/1.5 var(--font-body)}
+.radio04-overlay.is-failed .radio04-lcd{filter:grayscale(.68) brightness(.62);animation:none}
+.radio04-overlay.is-failed .radio04-result{border-color:#8b4b4d}
+.radio04-overlay .hidden{display:none!important}
+@media(max-height:720px){.radio04-scene{max-height:calc(100dvh - 30px);padding-bottom:12px}.radio04-device{margin-top:38px;padding:13px 17px 12px}.radio04-device:before{height:57px}.radio04-lcd{min-height:112px;padding-top:9px;padding-bottom:9px}.radio04-speaker{margin:10px auto 6px;gap:3px}.radio04-speaker i{height:4px}.radio04-text{margin:7px auto}.radio04-touch{min-height:87px}}
+@media(max-height:540px){.radio04-device{margin-top:25px;width:min(100%,285px);padding:8px 13px}.radio04-device:before{height:42px}.radio04-lcd{min-height:91px;padding:5px 8px}.radio04-brand{margin-bottom:4px}.radio04-speaker{margin:7px auto 5px;gap:2px}.radio04-speaker i{height:3px}.radio04-controls{padding-top:3px}.radio04-tune{width:51px;height:36px}.radio04-text{font-size:14px;min-height:0}.radio04-eyebrow{margin-bottom:2px}.radio04-clock{font-size:31px}.radio04-touch{min-height:64px}}
+@media(prefers-reduced-motion:reduce){.radio04-led,.radio04-lcd{animation:none}.radio04-overlay{transition:none}}

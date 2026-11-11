@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.5 MASQUE-007 — Verdict ElevenLabs (test)';
+  const VERSION = 'v1.5.6 RADIO-004 — La Fréquence interdite (test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -159,6 +159,7 @@ campAudio: $('campAudio'),
     radio03Play: $('radio03Play'),
     radio03Cancel: $('radio03Cancel'),
     radio03Done: $('radio03Done'),
+    radio04Overlay: $('radio04Overlay'),
     weather04Overlay: $('weather04Overlay'),
     weather04Stage: $('weather04Stage'),
     weather04Video: $('weather04Video'),
@@ -632,6 +633,10 @@ bestiaireNarration: $('bestiaireNarration'),
       failure:'audio/events/radio/radio-003-masque-echec.mp3'
     },
     {
+      id: 'radio-004', type: 'radio', title: 'LA FRÉQUENCE INTERDITE',
+      audioRoot: 'audio/events/radio/radio-004-'
+    },
+    {
       id: 'meteo-001', type: 'meteo', title: 'LA PRESSION FANTÔME', icon: '🌫️',
       audio: 'audio/events/meteo/meteo-001-pression-fantome.mp3', delta: 5
     },
@@ -681,6 +686,8 @@ bestiaireNarration: $('bestiaireNarration'),
   let currentRadio03 = null;
   let radio03Token = 0;
   let radio03DeferredOutcomeTimer = null;
+  let currentRadio04 = null;
+  let radio04Engine = null;
   let radio02DeferredOutcomeTimer = null;
   let currentWeatherEvent = null;
   let weatherEventToken = 0;
@@ -1983,6 +1990,7 @@ function syncAmbientVolume() {
       || els.radioEventOverlay.classList.contains('show')
       || els.radio02Overlay.classList.contains('show')
       || els.radio03Overlay.classList.contains('show')
+      || els.radio04Overlay.classList.contains('show')
       || els.weatherEventOverlay.classList.contains('show')
       || els.weather04Overlay.classList.contains('show')
       || els.effectsModal.classList.contains('show')
@@ -4723,6 +4731,7 @@ syncMusicForActiveTab();
       radioMission: null,
       pendingRadio002: null,
       pendingRadio003: null,
+      pendingRadio004: null,
       pendingMask005: null,
       pendingMask006: null,
       pendingMask007: null,
@@ -4778,6 +4787,24 @@ syncMusicForActiveTab();
                 ? saved.pendingRadio002.after : null,
               gameOver: saved.pendingRadio002.gameOver === true
             } : null,
+        pendingRadio004: saved.pendingRadio004?.id === 'radio-004'
+          && ['intro','scan','alert','ready','countdown','challenge',
+              'resultvoice','result'].includes(saved.pendingRadio004.stage)
+          ? {
+              id:'radio-004',
+              stage:saved.pendingRadio004.stage,
+              index:Number.isInteger(saved.pendingRadio004.index)
+                ? clamp(saved.pendingRadio004.index,0,2):0,
+              scanElapsed:Number.isFinite(saved.pendingRadio004.scanElapsed)
+                ? clamp(saved.pendingRadio004.scanElapsed,0,3600000):0,
+              outcome:['success','failure'].includes(saved.pendingRadio004.outcome)
+                ? saved.pendingRadio004.outcome:null,
+              before:Number.isFinite(saved.pendingRadio004.before)
+                ? saved.pendingRadio004.before:null,
+              after:Number.isFinite(saved.pendingRadio004.after)
+                ? saved.pendingRadio004.after:null,
+              gameOver:saved.pendingRadio004.gameOver===true
+            }:null,
         pendingRadio003: saved.pendingRadio003?.id === 'radio-003'
           && ['transmission','glitch','maskintro','designation','maskepreuve',
             'choices','gong','reaction','result','cancelled'].includes(saved.pendingRadio003.stage)
@@ -4929,6 +4956,7 @@ syncMusicForActiveTab();
         && item.type === 'radio')
       && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003
+      && !eventSession.pendingRadio004
       && !eventSession.pendingMask005
       && !eventSession.pendingMask006
       && (item.type !== 'meteo'
@@ -4974,6 +5002,7 @@ syncMusicForActiveTab();
     els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
       || currentRadioEvent !== null || currentRadio02 !== null
       || currentRadio03 !== null
+      || currentRadio04 !== null
       || currentWeatherEvent !== null
       || currentMask05 !== null
       || currentMask06 !== null
@@ -4984,7 +5013,8 @@ syncMusicForActiveTab();
       || eventSession.pendingMask007 !== null
       || eventSession.pendingWeather !== null
       || eventSession.pendingRadio002 !== null
-      || eventSession.pendingRadio003 !== null || alive === 0
+      || eventSession.pendingRadio003 !== null
+      || eventSession.pendingRadio004 !== null || alive === 0
       || state.value >= 100 || locked || insufficientDuelPlayers
       || (testEvent.type === 'radio' && eventSession.radioMission
           && eventSession.radioMission.stage !== 'travel');
@@ -5075,6 +5105,7 @@ syncMusicForActiveTab();
       && currentRadioEvent === null
       && currentRadio02 === null
       && currentRadio03 === null
+      && currentRadio04 === null
       && currentWeatherEvent === null
       && !eventSession.pendingWeather
       && !eventSession.pendingMask005
@@ -5082,6 +5113,7 @@ syncMusicForActiveTab();
       && !eventSession.pendingMask007
       && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003
+      && !eventSession.pendingRadio004
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel')
       && livingPlayerNumbers().length > 0
@@ -5164,6 +5196,7 @@ syncMusicForActiveTab();
     eventSession.pendingWeather = null;
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
+    eventSession.pendingRadio004 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
     eventSession.pendingMask007 = null;
@@ -5292,6 +5325,7 @@ syncMusicForActiveTab();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissRadio03();
+    dismissRadio04();
     dismissWeatherEvent(true);
     clearTimeout(weatherReadyTimer);
     weatherReadyTimer = null;
@@ -5306,6 +5340,7 @@ syncMusicForActiveTab();
     eventSession.pendingWeather = null;
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
+    eventSession.pendingRadio004 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
     eventSession.pendingMask007 = null;
@@ -5327,7 +5362,7 @@ syncMusicForActiveTab();
     if (!eventSession.active && !currentMaskEvent && !currentMask05 && !currentMask06 && !currentMask07
       && !eventSession.pendingMask006 && !eventSession.pendingMask007 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
       && !eventSession.pendingWeather && !eventSession.pendingRadio002
-      && !eventSession.pendingRadio003) return;
+      && !eventSession.pendingRadio003 && !eventSession.pendingRadio004 && !currentRadio04) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
     dismissMask05();
@@ -5335,6 +5370,7 @@ syncMusicForActiveTab();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissRadio03();
+    dismissRadio04();
     dismissWeatherEvent(true);
     clearTimeout(weatherReadyTimer);
     weatherReadyTimer = null;
@@ -5345,6 +5381,7 @@ syncMusicForActiveTab();
     eventSession.pendingWeather = null;
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
+    eventSession.pendingRadio004 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
     eventSession.pendingMask007 = null;
@@ -7492,6 +7529,7 @@ syncMusicForActiveTab();
     }
     handleRadio02Visibility();
     handleRadio03Visibility();
+    handleRadio04Visibility();
     handleMask05Visibility();
     handleMask06Visibility();
     handleMask07Visibility();
@@ -7640,6 +7678,7 @@ syncMusicForActiveTab();
   function beginRadioEvent(item, preview) {
     if (item?.id === 'radio-002') return beginRadio02(item, preview);
     if (item?.id === 'radio-003') return beginRadio03(item, preview);
+    if (item?.id === 'radio-004') return beginRadio04(item, preview);
     if (!item || item.type !== 'radio' || !eventSession.active
       || currentMask05 || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
@@ -8624,6 +8663,75 @@ syncMusicForActiveTab();
     return beginRadio03(item,false,true);
   }
 
+
+  // RADIO-004 est encapsulé dans radio004.js pour préserver les événements existants.
+  function getRadio04Engine() {
+    if (!radio04Engine) {
+      if (typeof window.RdVRadio04 !== 'function') return null;
+      radio04Engine = window.RdVRadio04({
+        session: eventSession,
+        save: saveAudioEventSession,
+        pauseClock: pauseAudioEventClock,
+        updateClock: updateAudioEventClock,
+        renderControls: renderEventControls,
+        onOpen: r => { currentRadio04 = r; },
+        onClose: () => { currentRadio04 = null; },
+        markActive: active => { specialAudioActive = active; },
+        syncAmbient: syncAmbientVolume,
+        silenceHaunts: silenceHauntSounds,
+        value: () => state.value,
+        applyDelta: (delta, source) => applyInstabilityDelta(delta, {
+          source, deferThreshold: true, deferGameOver: true
+        }),
+        threshold: handleThresholdTransition,
+        gameOver: checkGameOver,
+        nextDelay: () => randomBetween(...EVENT_NEXT_DELAY),
+        reducedMotion: REDUCED_MOTION
+      });
+    }
+    return radio04Engine;
+  }
+
+  function beginRadio04(item, preview, restoring = false) {
+    const pending = restoring ? eventSession.pendingRadio004 : null;
+    if (!eventSession.active || !item || item.id !== 'radio-004'
+      || currentMaskEvent || currentMask05 || currentMask06 || currentMask07
+      || currentRadioEvent || currentRadio02 || currentRadio03 || currentRadio04
+      || currentWeatherEvent || specialAudioActive || anyBlockingModalOpen()
+      || !isPartieTabActive() || document.visibilityState !== 'visible'
+      || (state.value >= 100 && !(restoring && ['result','resultvoice'].includes(pending?.stage)))
+      || (!restoring && livingPlayerNumbers().length === 0)
+      || (restoring && !pending)) return false;
+    return getRadio04Engine()?.begin(item, preview, restoring) || false;
+  }
+
+  function dismissRadio04() {
+    radio04Engine?.stop();
+  }
+
+  function handleRadio04Visibility() {
+    radio04Engine?.visibility();
+  }
+
+  function radio04OnPageHide() {
+    radio04Engine?.pageHide();
+  }
+
+  function resumePendingRadio04IfPossible() {
+    const pending = eventSession.pendingRadio004;
+    if (!pending || !eventSession.active || gameOverShown
+      || document.visibilityState !== 'visible'
+      || (state.value >= 100 && !['result','resultvoice'].includes(pending.stage)))
+      return false;
+    const item = AUDIO_EVENTS.find(x => x.id === 'radio-004');
+    if (!item) {
+      eventSession.pendingRadio004 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginRadio04(item, false, true);
+  }
+
   // =========================================================
   // MÉTÉO : NARRATION DU MONDE ET CONSÉQUENCE AUTOMATIQUE
   // =========================================================
@@ -9573,6 +9681,7 @@ syncMusicForActiveTab();
       && !resumePendingMask07IfPossible()
       && !resumePendingRadio02IfPossible()
       && !resumePendingRadio03IfPossible()
+      && !resumePendingRadio04IfPossible()
       && !resumePendingWeatherIfPossible()) {
       updateAudioEventClock();
     }
@@ -9585,7 +9694,7 @@ syncMusicForActiveTab();
 
     if (
       state.value >= 100 && !currentWeatherEvent && !currentRadio02
-      && !currentRadio03 && !currentMask05 && !currentMask06 && !currentMask07
+      && !currentRadio03 && !currentRadio04 && !currentMask05 && !currentMask06 && !currentMask07
     ) {
       checkGameOver();
     }
@@ -9879,6 +9988,7 @@ syncMusicForActiveTab();
     window.addEventListener('pagehide', () => {
       pauseAudioEventClock();
       radio03OnPageHide();
+      radio04OnPageHide();
       mask06OnPageHide();
       mask07OnPageHide();
       coinOnPageHide();

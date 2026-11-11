@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#0b0b0c">
 
   <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="radio004.css">
   <link rel="icon" href="icons/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
 
@@ -2297,6 +2298,63 @@
     </div>
   </div>
 
+  <!-- RADIO-004 : un talkie-walkie militaire rafistolé, sans nom des fréquences. -->
+  <div id="radio04Overlay" class="radio04-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="radio04Heading" aria-hidden="true">
+    <div class="radio04-scene">
+      <h2 id="radio04Heading" class="radio04-eyebrow">TRANSMISSION INCONNUE</h2>
+      <div class="radio04-device" aria-label="Ancien talkie-walkie militaire modifié">
+        <i class="radio04-screw a" aria-hidden="true"></i><i class="radio04-screw b" aria-hidden="true"></i>
+        <i class="radio04-screw c" aria-hidden="true"></i><i class="radio04-screw d" aria-hidden="true"></i>
+        <div class="radio04-panel">
+          <div class="radio04-brand"><span>MR-87 // MODIFIÉ</span><span class="radio04-led" aria-hidden="true"></span><span>RX / FM</span></div>
+          <div class="radio04-lcd">
+            <svg class="radio04-cracks" viewBox="0 0 280 150" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M230 0 L205 32 L227 60 L213 78 L246 96 L234 129 L280 150 M205 32 L182 26 L168 46 M227 60 L255 52 L269 67 M213 78 L187 104 L174 144 M246 96 L274 108" stroke="#223f31" stroke-width="1.4" fill="none"/>
+              <path d="M28 140 L45 120 L39 101 L54 78 M45 120 L73 131" stroke="#d9ead1" stroke-width=".8" fill="none"/>
+            </svg>
+            <div class="radio04-frequency"><span id="radio04Display">---.-</span><small>MHz</small></div>
+            <div id="radio04Rx" class="radio04-rx">RX: AUCUN SIGNAL</div>
+            <div id="radio04ReadyPanel" class="radio04-screen-work hidden">
+              <div id="radio04ReadyClock" class="radio04-clock" role="timer" aria-live="off">00:15</div>
+              <div class="radio04-count-label">PRÉPARATION AVANT STABILISATION</div>
+              <div class="radio04-progress"><i id="radio04ReadyProgress"></i></div>
+            </div>
+            <div id="radio04ChallengePanel" class="radio04-screen-work hidden">
+              <div id="radio04ChallengeClock" class="radio04-clock" role="timer" aria-live="off">00:20</div>
+              <div class="radio04-wave-track" role="img" aria-label="Fréquence à maintenir dans la zone verte">
+                <div id="radio04Zone" class="radio04-zone"></div>
+                <div id="radio04Cursor" class="radio04-cursor"></div>
+              </div>
+              <div class="radio04-quality"><span>QUALITÉ DU SIGNAL</span><span id="radio04QualityText">0 %</span></div>
+              <div id="radio04QualityTrack" class="radio04-quality-track" role="progressbar"
+                   aria-label="Qualité du signal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="radio04QualityBar" class="radio04-quality-bar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="radio04-speaker" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div id="radio04Tuning" class="radio04-controls hidden">
+          <button id="radio04Prev" class="radio04-tune" type="button" aria-label="Fréquence précédente">◀</button>
+          <span class="radio04-dial-tag">FREQ. / TUNING</span>
+          <button id="radio04Next" class="radio04-tune" type="button" aria-label="Fréquence suivante">▶</button>
+        </div>
+      </div>
+      <p id="radio04Status" class="radio04-text" role="status" aria-live="polite">L'appareil émet un signal inconnu…</p>
+      <button id="radio04Touch" class="radio04-touch hidden" type="button" aria-label="Maintenir le signal : appuyer pour déplacer le curseur vers la droite, relâcher pour le déplacer vers la gauche">
+        <span><strong>MAINTENEZ / RELÂCHEZ</strong>Appuyez : vers la droite<br>Relâchez : vers la gauche<br><small>TOUTE CETTE ZONE EST TACTILE</small></span>
+      </button>
+      <p id="radio04Instruction" class="radio04-instruction hidden">Maintenez la qualité à 100 % jusqu'à la fin. Une seule tentative.</p>
+      <div id="radio04Result" class="radio04-result hidden" role="status"></div>
+      <div class="radio04-actions">
+        <button id="radio04Main" class="radio04-btn" type="button">CONTINUER</button>
+        <button id="radio04Replay" class="radio04-btn secondary hidden" type="button">ACTIVER LA TRANSMISSION</button>
+        <button id="radio04Skip" class="radio04-btn secondary hidden" type="button">PASSER LA NARRATION</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MÉTÉO 004 : le nom et l'identité de la présence restent secrets -->
   <div id="weather04Overlay" class="weather04-overlay" role="dialog" aria-modal="true" aria-labelledby="weather04Heading" aria-hidden="true">
     <div id="weather04Stage" class="weather04-stage">
@@ -2612,6 +2670,7 @@
     avant la logique principale.
   -->
   <script src="bestiaire-data.js"></script>
+  <script src="radio004.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
