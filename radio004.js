@@ -29,6 +29,7 @@ window.RdVRadio04 = function createRadio04(api) {
   const READY_MS=15000, GAME_SECONDS=20, POST_GAME_LOCK_MS=2200;
   const RADIO04_ZONE_HALF_WIDTH=11;
   const RADIO04_QUALITY_GAIN=6.5, RADIO04_QUALITY_LOSS=3.5;
+  const RADIO04_FINAL_SPRINT_AT=15, RADIO04_FINAL_SPEED_MULTIPLIER=1.4;
   let current=null, sequence=0;
   const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
   const hidden=(el,isHidden)=>el.classList.toggle('hidden',Boolean(isHidden));
@@ -334,9 +335,13 @@ window.RdVRadio04 = function createRadio04(api) {
     const dt=Math.min(.07,Math.max(0,(now-r.lastFrame)/1000));
     r.lastFrame=now;r.elapsed=Math.min(GAME_SECONDS,r.elapsed+dt);
     const progress=r.elapsed/GAME_SECONDS;
-    // La réception glisse continuellement : mouvement prévisible, amplitude croissante.
-    r.zone=50+(10+8*progress)*Math.sin(r.elapsed*.83+.35)
-      +(2+2*progress)*Math.sin(r.elapsed*1.7);
+    // À 15 s, accélération nette de 40 % de la zone verte uniquement.
+    // Phase continue : le mouvement accélère sans téléporter la zone.
+    const zoneTime=r.elapsed<=RADIO04_FINAL_SPRINT_AT?r.elapsed
+      :RADIO04_FINAL_SPRINT_AT+
+        (r.elapsed-RADIO04_FINAL_SPRINT_AT)*RADIO04_FINAL_SPEED_MULTIPLIER;
+    r.zone=50+(10+8*progress)*Math.sin(zoneTime*.83+.35)
+      +(2+2*progress)*Math.sin(zoneTime*1.7);
     const interference=(Math.sin(r.elapsed*3.1)+.43*Math.sin(r.elapsed*9.3+.7))
       *(3+progress*10);
     r.cursor=clamp(r.cursor+((r.pressed?27:-27)+interference)*dt,1,99);

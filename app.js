@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.8 RADIO-004 — Ajustements immersion et défi';
+  const VERSION = 'v1.5.9 RADIO-004 — Accélération finale et aiguille ambrée';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
