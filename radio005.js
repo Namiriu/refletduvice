@@ -22,6 +22,7 @@ window.RdVRadio05=function createRadio05(api){
   const SFX=new Set(['opening','pubj','fanfare','draw','acceptj','applause',
     'knocks','impact','returnj','endj']);
   const DECISION_MS=15000;
+  const ANGER_FALLBACK_LEAD_SEC=.38; // Raccord du coup de micro sur la dernière syllabe.
   let current=null, serial=0, analyzed=new Map(), audioContext=null;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const show=(el,yes)=>el.classList.toggle('hidden',!yes);
@@ -110,7 +111,8 @@ window.RdVRadio05=function createRadio05(api){
     }catch(_){/* Pas d'échec de lecture si WebAudio est indisponible. */}
   }
   function prepareSfx(){
-    Object.keys(FILES).filter(k=>SFX.has(k)).forEach(k=>{analyzeSfx(k);});
+    Object.keys(FILES).filter(k=>SFX.has(k)||k==='anger')
+      .forEach(k=>{analyzeSfx(k);});
   }
   function audio(key){
     const r=current;if(!r)return null;
@@ -133,9 +135,15 @@ window.RdVRadio05=function createRadio05(api){
     a.onerror=()=>{if(current===r&&token===r.playSerial)
       soundFallback(done,'Audio indisponible.');};
     const audible=analyzed.get(key);
-    if(SFX.has(key)&&Number.isFinite(audible)){
+    // Pour la colère, faire tomber le micro à la fin audible de « bande de… » :
+    // les secondes de silence exportées par ElevenLabs ne retardent plus l'impact.
+    // Repli : avance très légère si l'analyse audio n'est pas disponible.
+    const endAt=Number.isFinite(audible)?audible
+      :key==='anger'&&Number.isFinite(a.duration)&&a.duration>1
+        ?a.duration-ANGER_FALLBACK_LEAD_SEC:null;
+    if((SFX.has(key)||key==='anger')&&Number.isFinite(endAt)){
       a.ontimeupdate=()=>{
-        if(current===r&&token===r.playSerial&&a.currentTime>=audible){
+        if(current===r&&token===r.playSerial&&a.currentTime>=endAt){
           silence(a);r.main=null;done?.();
         }
       };
@@ -357,6 +365,8 @@ window.RdVRadio05=function createRadio05(api){
     ui.Overlay.classList.add('show');
     ui.Overlay.setAttribute('aria-hidden','false');
     api.markActive(true);api.silenceHaunts();api.syncAmbient();api.renderControls();
+    // Nouvelle demande de maintien de l'écran, notamment lors du lancement tactile.
+    api.keepAwake?.();
     prepareSfx();
     if(restoring){
       if(pending.phase==='result'){finish();}
@@ -385,6 +395,7 @@ window.RdVRadio05=function createRadio05(api){
       save();
     }else if(r.hidden){
       r.hidden=false;
+      api.keepAwake?.();
       // Ne pas reprendre un chrono depuis l'arrière-plan.
       if(r.phase==='decision')decision();
       else if(r.phase==='result')finish();

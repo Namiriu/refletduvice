@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.12 RADIO-005 — Radio du Vice (version de test)';
+  const VERSION = 'v1.5.13 RADIO-005 — Écran actif et micro synchronisé';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -524,6 +524,7 @@ bestiaireNarration: $('bestiaireNarration'),
   let maskReactionTimer = null;
 
   let wakeLock = null;
+  let wakeLockRequest = null;
   let appStarted = false;
   let specialAudioActive = false;
   let bestiaireNarrationActive = false;
@@ -4391,25 +4392,29 @@ window.addEventListener(
   }
 
   async function requestWakeLock() {
-    if (
-      !('wakeLock' in navigator)
-      || document.visibilityState
-        !== 'visible'
-    ) {
-      return;
-    }
-
-    try {
-      wakeLock =
-        await navigator
-          .wakeLock
-          .request('screen');
-    }
-
-    catch (_) {
-      wakeLock =
-        null;
-    }
+    // Le Screen Wake Lock reste soumis au navigateur / système d'exploitation.
+    // Éviter les demandes concurrentes et réacquérir après perte/veille.
+    if (!('wakeLock' in navigator)
+      || document.visibilityState !== 'visible'
+      || (wakeLock && !wakeLock.released)) return;
+    if (wakeLockRequest) return wakeLockRequest;
+    wakeLockRequest = (async () => {
+      try {
+        const acquired = await navigator.wakeLock.request('screen');
+        if (document.visibilityState !== 'visible') {
+          await acquired.release();
+          return;
+        }
+        wakeLock = acquired;
+        acquired.addEventListener?.('release', () => {
+          if (wakeLock === acquired) wakeLock = null;
+        });
+      } catch (_) {
+        wakeLock = null;
+      }
+    })();
+    try { await wakeLockRequest; }
+    finally { wakeLockRequest = null; }
   }
 
   // =========================================================
@@ -8785,6 +8790,7 @@ syncMusicForActiveTab();
         markActive: active => { specialAudioActive = active; },
         syncAmbient: syncAmbientVolume,
         silenceHaunts: silenceHauntSounds,
+        keepAwake: requestWakeLock,
         value: () => state.value,
         living: livingPlayerNumbers,
         // Les noms seront associés aux emplacements de joueurs ultérieurement.
