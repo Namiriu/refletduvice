@@ -14,7 +14,7 @@ window.RdVRadio04 = function createRadio04(api) {
   const AUDIO={
     intro:'intro',a:'884-annonce',b:'947-consigne',interruption:'947-interruption',
     whisper:'1073-murmure',alert:'alerte',
-    win0:'884-reussite',win1:'947-reussite',win2:'1073-reussite_FAIREPAUSE',
+    win0:'884-reussite',win1:'947-reussite',win2:'1073-reussite',
     failure:'echec',static:'parasites',rail:'ambiance-ferroviaire',
     breath:'respiration',tune:'changement-frequence',
     glitch:'glitch-ecran',interference:'interferences',

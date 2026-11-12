@@ -1,4 +1,4 @@
-const CACHE = 'instability-v105';
+const CACHE = 'instability-v106';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -157,7 +157,7 @@ const ASSETS = [
   './audio/events/masque/interventions/masque-007-victime-apres.mp3',
   './audio/events/masque/interventions/masque-007-victime-avant.mp3',
   './audio/events/radio/radio-004-1073-murmure.mp3',
-  './audio/events/radio/radio-004-1073-reussite_FAIREPAUSE.mp3',
+  './audio/events/radio/radio-004-1073-reussite.mp3',
   './audio/events/radio/radio-004-884-annonce.mp3',
   './audio/events/radio/radio-004-884-reussite.mp3',
   './audio/events/radio/radio-004-947-consigne.mp3',
@@ -380,7 +380,7 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-007-victime-apres.mp3": "7f68b70d2ae16bc934f3c3167654b693ece69ddf",
   "./audio/events/masque/interventions/masque-007-victime-avant.mp3": "8f037a81244befbed01e3342c47399985acb556e",
   "./audio/events/radio/radio-004-1073-murmure.mp3": "6610e2300aabc7fee60b00c7ebebfb796f395773",
-  "./audio/events/radio/radio-004-1073-reussite_FAIREPAUSE.mp3": "a205e90e8f376b1faadc60742fc5f0c41ea7729c",
+  "./audio/events/radio/radio-004-1073-reussite.mp3": "24380d5487e8968bcfd89a1dc2113f63485afd32",
   "./audio/events/radio/radio-004-884-annonce.mp3": "e2d23c7c687032390ef5574962e60ae745bb9729",
   "./audio/events/radio/radio-004-884-reussite.mp3": "e1771de707ff6b898dcc16d89e09957a5fe25855",
   "./audio/events/radio/radio-004-947-consigne.mp3": "40f96cdd69d91a13f1dbad5dea5b758b3fd67f0d",

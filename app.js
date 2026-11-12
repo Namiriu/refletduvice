@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.10 RADIO-004 — Accélération sur les 10 dernières secondes';
+  const VERSION = 'v1.5.11 RADIO-004 — Audio 107.3 définitif';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
