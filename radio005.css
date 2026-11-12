@@ -1,0 +1,46 @@
+/* RADIO-005 — Radio du Vice. Interface autonome, comédie noire / jeu télévisé. */
+.radio05-overlay{position:fixed;inset:0;z-index:5500;background:radial-gradient(ellipse at 50% 4%,#452736 0%,#140b20 48%,#07070b 100%);color:#fff4da;display:none;overflow-y:auto;overscroll-behavior:contain;padding:16px 10px 24px;box-sizing:border-box}
+.radio05-overlay.show{display:flex;justify-content:center;align-items:flex-start}
+.radio05-stage{position:relative;width:min(100%,480px);margin:auto;padding:15px 14px 24px;border:3px solid #eab65e;border-radius:19px;box-sizing:border-box;box-shadow:0 0 0 4px #643d26,0 0 45px #000,inset 0 0 38px #63132f;background:repeating-linear-gradient(90deg,transparent 0 26px,rgba(251,203,97,.035) 28px 29px),linear-gradient(155deg,#36152e 0%,#1a142e 54%,#281229 100%);text-align:center}
+.radio05-stage:before{content:"";position:absolute;inset:5px;border:2px dotted #db8d53;border-radius:12px;pointer-events:none;opacity:.7}
+.radio05-live{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:1px 8px 10px;text-transform:uppercase;font:700 11px/1.3 'Courier New',monospace;letter-spacing:1px;color:#ffe3a0}
+.radio05-led{width:10px;height:10px;display:inline-block;border-radius:50%;background:#ed4949;box-shadow:0 0 8px 4px #e33b3b}
+.radio05-logo{padding:13px 6px 10px;border:4px double #e3af5b;border-radius:14px;background:radial-gradient(ellipse at center,#81294d,#3a1b4e 64%,#241331);box-shadow:inset 0 0 22px #b94d35,0 7px 25px #0009}
+.radio05-star{font-size:22px;line-height:1;color:#ffd680;text-shadow:0 0 8px #eac252}
+.radio05-logo h2{margin:4px 0 0;font:900 clamp(29px,8vw,47px)/.99 Impact,'Arial Black',system-ui,sans-serif;letter-spacing:1px;color:#ffdf86;text-shadow:3px 3px 0 #772d35,-2px -2px 0 #1b0813,0 0 12px #df8a30}
+.radio05-logo h2 small{display:block;font:800 18px/1.1 Impact,'Arial Black',system-ui,sans-serif;letter-spacing:5px;color:#f7a9c9;margin:3px 0}
+.radio05-subtitle{margin:8px 0 2px;font:700 12px/1.35 'Courier New',monospace;letter-spacing:2px;color:#fff0bd}
+.radio05-bulbs{display:flex;gap:7px;justify-content:center;margin:12px 0 8px}
+.radio05-bulbs i{width:10px;height:10px;border-radius:50%;background:#ffe57f;box-shadow:0 0 9px 3px #ef9c37;animation:radio05blink 1.2s ease-in-out infinite alternate}
+.radio05-bulbs i:nth-child(even){background:#ef89ad;box-shadow:0 0 8px 2px #da4f78;animation-delay:-.6s}
+.radio05-eq{height:50px;border:3px inset #90583e;border-radius:7px;margin:10px 0;background:repeating-linear-gradient(90deg,#19151f 0 10px,#211825 11px 16px);display:flex;align-items:flex-end;justify-content:space-evenly;padding:5px 12px;gap:5px;overflow:hidden}
+.radio05-eq b{display:block;width:12px;border-radius:3px 3px 0 0;height:32%;background:linear-gradient(#e9ac54,#a54460);box-shadow:0 0 5px #edb257;animation:radio05equal 1.1s ease-in-out infinite alternate}
+.radio05-eq b:nth-child(2n){animation-delay:-.5s;height:75%}.radio05-eq b:nth-child(3n){animation-delay:-.9s;height:55%}
+.radio05-status{min-height:38px;margin:15px 8px 12px;font:800 clamp(14px,3.6vw,18px)/1.35 system-ui,sans-serif;color:#ffe4a3;text-shadow:0 2px 4px #000;text-transform:uppercase;white-space:pre-line}
+.radio05-winner{border:3px solid #e6b254;border-radius:13px;margin:13px 0;padding:16px 8px;background:radial-gradient(ellipse,#9b4f49,#41152f);box-shadow:0 0 18px #f0bb4755;min-height:95px;box-sizing:border-box}
+.radio05-winner-label{font:800 12px/1.4 'Courier New',monospace;color:#ffe6ab;letter-spacing:2px}
+.radio05-winner-name{font:900 clamp(24px,6.5vw,36px)/1.35 Impact,'Arial Black',sans-serif;overflow-wrap:anywhere;letter-spacing:.5px;text-transform:uppercase;color:#fff2ba;text-shadow:2px 3px #7b2638,0 0 12px #f5b951}
+.radio05-winner.is-revealed{animation:radio05reveal .38s ease-out}
+.radio05-decision-title{font:800 17px/1.3 system-ui,sans-serif;color:#fff0c4;margin:9px 0}
+.radio05-clock{font:900 38px/1.15 'Courier New',monospace;color:#fbd26c;text-shadow:0 0 13px #cc5637;margin:12px auto}
+.radio05-choices{display:grid;gap:11px;margin:14px auto;max-width:370px}
+.radio05-btn{appearance:none;border:2px solid #fbdc89;border-radius:11px;min-height:53px;padding:12px 14px;font:900 clamp(14px,3.6vw,17px)/1.3 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;background:linear-gradient(#f2b64d,#bf572c);color:#250f22;box-shadow:0 4px 0 #823d29,0 6px 12px #0009;cursor:pointer;touch-action:manipulation}
+.radio05-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #823d29}
+.radio05-btn:disabled{cursor:default;opacity:.48;transform:none}
+.radio05-btn.secondary{background:linear-gradient(#6b5979,#34274c);color:#fff4e5;border-color:#e1b994;box-shadow:0 4px 0 #29182f}
+.radio05-btn:focus-visible{outline:3px solid #fff2ac;outline-offset:4px}
+.radio05-result{margin:16px auto;max-width:410px;padding:16px 12px;border:2px solid #eac46c;border-radius:10px;background:#27152e;white-space:pre-line;text-align:center;font:800 16px/1.6 system-ui,sans-serif;color:#ffdeb5}
+.radio05-credits{font:700 11px/1.3 'Courier New',monospace;color:#f4c183;opacity:.8;margin:14px 8px 1px}
+.radio05-overlay.is-dark{background:radial-gradient(ellipse at center,#231522 0%,#08080b 70%)}
+.radio05-overlay.is-dark .radio05-logo{filter:brightness(.55) saturate(.7)}
+.radio05-overlay.is-dark .radio05-eq b{animation-duration:2.5s;background:linear-gradient(#b04848,#481f33)}
+.radio05-overlay.is-dark .radio05-led{background:#c32b23;box-shadow:0 0 6px #b92121}
+.radio05-overlay[data-phase="pause"] .radio05-eq b{height:2px!important;animation:none}
+.radio05-overlay.is-dark .radio05-bulbs i{opacity:.25}
+.radio05-hidden{display:none!important}
+.radio05-overlay .hidden{display:none!important}
+@keyframes radio05blink{from{opacity:.4}to{opacity:1}}
+@keyframes radio05equal{from{transform:scaleY(.3);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}
+@keyframes radio05reveal{from{transform:scale(.84);filter:brightness(1.7)}to{transform:scale(1);filter:brightness(1)}}
+@media(max-height:690px){.radio05-stage{margin:auto;padding:10px 12px 12px}.radio05-logo{padding:7px 6px}.radio05-logo h2{font-size:clamp(27px,8vw,38px)}.radio05-bulbs{margin:7px 0}.radio05-eq{height:30px;margin:5px 0}.radio05-status{margin:9px 4px;min-height:0}.radio05-winner{padding:9px 5px;margin:8px 0}}
+@media(prefers-reduced-motion:reduce){.radio05-bulbs i,.radio05-eq b,.radio05-winner.is-revealed{animation:none}}

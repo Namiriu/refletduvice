@@ -8,6 +8,7 @@
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="radio004.css">
+  <link rel="stylesheet" href="radio005.css">
   <link rel="icon" href="icons/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=EB+Garamond:wght@400;600&display=swap" rel="stylesheet">
 
@@ -1913,6 +1914,7 @@
             <option value="radio-002">📻 Radio 002 · Le Rapport impossible</option>
             <option value="radio-003">📻 Radio 003 · Vous écoutiez ?</option>
             <option value="radio-004">📻 Radio 004 · La Fréquence interdite</option>
+            <option value="radio-005">📻 Radio 005 · Radio du Vice</option>
             <option value="meteo-001">🌫️ Météo 001 · La Pression fantôme</option>
             <option value="meteo-002">🌧️ Météo 002 · La Pluie à rebours</option>
             <option value="meteo-003">◇ Météo 003 · La Fracture du Réel</option>
@@ -2355,6 +2357,35 @@
     </div>
   </div>
 
+  <!-- RADIO-005 : émission déjantée et tirage au sort par prénom, sans doublage vocal. -->
+  <div id="radio05Overlay" class="radio05-overlay" role="dialog" aria-modal="true"
+       aria-labelledby="radio05Heading" aria-hidden="true">
+    <div class="radio05-stage">
+      <div class="radio05-live"><span><i id="radio05Led" class="radio05-led" aria-hidden="true"></i> FM / DIRECT</span><span id="radio05Sound">◉ EN DIRECT</span></div>
+      <div class="radio05-logo">
+        <div class="radio05-star" aria-hidden="true">★ ★ ★ ★ ★</div>
+        <h2 id="radio05Heading">RADIO <small>DU</small> VICE !</h2>
+        <p class="radio05-subtitle">LA BONNE HUMEUR JUSQU'AU BOUT !</p>
+      </div>
+      <div class="radio05-bulbs" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div id="radio05Equalizer" class="radio05-eq" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+      <div id="radio05Status" class="radio05-status" role="status" aria-live="polite">RADIO DU VICE, BONSOIR !</div>
+      <div id="radio05Winner" class="radio05-winner hidden" role="status">
+        <div id="radio05Spinner" class="radio05-winner-label">TIRAGE EN COURS</div>
+        <div id="radio05WinnerName" class="radio05-winner-name">???</div>
+      </div>
+      <div id="radio05Countdown" class="hidden"><div class="radio05-decision-title">ACCEPTEZ-VOUS NOTRE CADEAU MYSTÈRE ?</div><div id="radio05Count" class="radio05-clock" role="timer" aria-live="off">00:15</div></div>
+      <div id="radio05Choices" class="radio05-choices hidden">
+        <button id="radio05Accept" class="radio05-btn" type="button">🎁 ACCEPTER LE CADEAU</button>
+        <button id="radio05Refuse" class="radio05-btn secondary" type="button">✕ REFUSER L'OFFRE</button>
+      </div>
+      <div id="radio05Outcome" class="radio05-result hidden" role="status"></div>
+      <button id="radio05Next" class="radio05-btn hidden" type="button">CONTINUER LA PARTIE</button>
+      <button id="radio05Retry" class="radio05-btn secondary hidden" type="button">ACTIVER LE SON / CONTINUER</button>
+      <p class="radio05-credits">RADIO DU VICE — LE SEUL DIRECT QUE VOUS NE POUVEZ PAS QUITTER</p>
+    </div>
+  </div>
+
   <!-- MÉTÉO 004 : le nom et l'identité de la présence restent secrets -->
   <div id="weather04Overlay" class="weather04-overlay" role="dialog" aria-modal="true" aria-labelledby="weather04Heading" aria-hidden="true">
     <div id="weather04Stage" class="weather04-stage">
@@ -2671,6 +2702,7 @@
   -->
   <script src="bestiaire-data.js"></script>
   <script src="radio004.js"></script>
+  <script src="radio005.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

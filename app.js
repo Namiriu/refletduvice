@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.11 RADIO-004 — Audio 107.3 définitif';
+  const VERSION = 'v1.5.12 RADIO-005 — Radio du Vice (version de test)';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -636,6 +636,8 @@ bestiaireNarration: $('bestiaireNarration'),
       id: 'radio-004', type: 'radio', title: 'LA FRÉQUENCE INTERDITE',
       audioRoot: 'audio/events/radio/radio-004-'
     },
+    { id:'radio-005',type:'radio',title:'RADIO DU VICE',
+      audioRoot:'audio/events/radio/radio-005-' },
     {
       id: 'meteo-001', type: 'meteo', title: 'LA PRESSION FANTÔME', icon: '🌫️',
       audio: 'audio/events/meteo/meteo-001-pression-fantome.mp3', delta: 5
@@ -688,6 +690,8 @@ bestiaireNarration: $('bestiaireNarration'),
   let radio03DeferredOutcomeTimer = null;
   let currentRadio04 = null;
   let radio04Engine = null;
+  let currentRadio05 = null;
+  let radio05Engine = null;
   let radio02DeferredOutcomeTimer = null;
   let currentWeatherEvent = null;
   let weatherEventToken = 0;
@@ -4732,6 +4736,7 @@ syncMusicForActiveTab();
       pendingRadio002: null,
       pendingRadio003: null,
       pendingRadio004: null,
+      pendingRadio005: null,
       pendingMask005: null,
       pendingMask006: null,
       pendingMask007: null,
@@ -4804,6 +4809,26 @@ syncMusicForActiveTab();
               after:Number.isFinite(saved.pendingRadio004.after)
                 ? saved.pendingRadio004.after:null,
               gameOver:saved.pendingRadio004.gameOver===true
+            }:null,
+        pendingRadio005: saved.pendingRadio005?.id === 'radio-005'
+          && ['opening','intro','pubj','pub','fanfare','game','draw',
+              'winner','question','decision','reaction','acceptj','accept',
+              'refuse','publicIntro','crowd','anger','impact','pause',
+              'returnj','outro','endj','result'].includes(saved.pendingRadio005.phase)
+          ? {
+              id:'radio-005',
+              phase:saved.pendingRadio005.phase,
+              winner:Number.isInteger(saved.pendingRadio005.winner)
+                && saved.pendingRadio005.winner>=1
+                && saved.pendingRadio005.winner<=4?saved.pendingRadio005.winner:null,
+              choice:['accept','refuse'].includes(saved.pendingRadio005.choice)
+                ?saved.pendingRadio005.choice:null,
+              applied:saved.pendingRadio005.applied===true,
+              before:Number.isFinite(saved.pendingRadio005.before)
+                ?saved.pendingRadio005.before:null,
+              after:Number.isFinite(saved.pendingRadio005.after)
+                ?saved.pendingRadio005.after:null,
+              over:saved.pendingRadio005.over===true
             }:null,
         pendingRadio003: saved.pendingRadio003?.id === 'radio-003'
           && ['transmission','glitch','maskintro','designation','maskepreuve',
@@ -4957,6 +4982,7 @@ syncMusicForActiveTab();
       && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003
       && !eventSession.pendingRadio004
+      && !eventSession.pendingRadio005
       && !eventSession.pendingMask005
       && !eventSession.pendingMask006
       && (item.type !== 'meteo'
@@ -5003,6 +5029,7 @@ syncMusicForActiveTab();
       || currentRadioEvent !== null || currentRadio02 !== null
       || currentRadio03 !== null
       || currentRadio04 !== null
+      || currentRadio05 !== null
       || currentWeatherEvent !== null
       || currentMask05 !== null
       || currentMask06 !== null
@@ -5014,7 +5041,8 @@ syncMusicForActiveTab();
       || eventSession.pendingWeather !== null
       || eventSession.pendingRadio002 !== null
       || eventSession.pendingRadio003 !== null
-      || eventSession.pendingRadio004 !== null || alive === 0
+      || eventSession.pendingRadio004 !== null
+      || eventSession.pendingRadio005 !== null || alive === 0
       || state.value >= 100 || locked || insufficientDuelPlayers
       || (testEvent.type === 'radio' && eventSession.radioMission
           && eventSession.radioMission.stage !== 'travel');
@@ -5114,6 +5142,7 @@ syncMusicForActiveTab();
       && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003
       && !eventSession.pendingRadio004
+      && !eventSession.pendingRadio005
       && !(eventSession.radioMission
         && eventSession.radioMission.stage !== 'travel')
       && livingPlayerNumbers().length > 0
@@ -5197,6 +5226,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
     eventSession.pendingRadio004 = null;
+    eventSession.pendingRadio005 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
     eventSession.pendingMask007 = null;
@@ -5326,6 +5356,7 @@ syncMusicForActiveTab();
     dismissRadio02();
     dismissRadio03();
     dismissRadio04();
+    dismissRadio05();
     dismissWeatherEvent(true);
     clearTimeout(weatherReadyTimer);
     weatherReadyTimer = null;
@@ -5341,6 +5372,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
     eventSession.pendingRadio004 = null;
+    eventSession.pendingRadio005 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
     eventSession.pendingMask007 = null;
@@ -5362,7 +5394,8 @@ syncMusicForActiveTab();
     if (!eventSession.active && !currentMaskEvent && !currentMask05 && !currentMask06 && !currentMask07
       && !eventSession.pendingMask006 && !eventSession.pendingMask007 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
       && !eventSession.pendingWeather && !eventSession.pendingRadio002
-      && !eventSession.pendingRadio003 && !eventSession.pendingRadio004 && !currentRadio04) return;
+      && !eventSession.pendingRadio003 && !eventSession.pendingRadio004 && !currentRadio04
+      && !eventSession.pendingRadio005 && !currentRadio05) return;
     pauseAudioEventClock();
     dismissMaskEvent(true);
     dismissMask05();
@@ -5371,6 +5404,7 @@ syncMusicForActiveTab();
     dismissRadio02();
     dismissRadio03();
     dismissRadio04();
+    dismissRadio05();
     dismissWeatherEvent(true);
     clearTimeout(weatherReadyTimer);
     weatherReadyTimer = null;
@@ -5382,6 +5416,7 @@ syncMusicForActiveTab();
     eventSession.pendingRadio002 = null;
     eventSession.pendingRadio003 = null;
     eventSession.pendingRadio004 = null;
+    eventSession.pendingRadio005 = null;
     eventSession.pendingMask005 = null;
     eventSession.pendingMask006 = null;
     eventSession.pendingMask007 = null;
@@ -7530,6 +7565,7 @@ syncMusicForActiveTab();
     handleRadio02Visibility();
     handleRadio03Visibility();
     handleRadio04Visibility();
+    handleRadio05Visibility();
     handleMask05Visibility();
     handleMask06Visibility();
     handleMask07Visibility();
@@ -7679,6 +7715,7 @@ syncMusicForActiveTab();
     if (item?.id === 'radio-002') return beginRadio02(item, preview);
     if (item?.id === 'radio-003') return beginRadio03(item, preview);
     if (item?.id === 'radio-004') return beginRadio04(item, preview);
+    if (item?.id === 'radio-005') return beginRadio05(item, preview);
     if (!item || item.type !== 'radio' || !eventSession.active
       || currentMask05 || currentMaskEvent || currentRadioEvent || currentRadio02 || currentWeatherEvent
       || specialAudioActive || anyBlockingModalOpen()
@@ -8732,6 +8769,86 @@ syncMusicForActiveTab();
     return beginRadio04(item, false, true);
   }
 
+
+  // RADIO-005 : l'animateur du Vice, séquence isolée dans radio005.js.
+  function getRadio05Engine() {
+    if (!radio05Engine) {
+      if (typeof window.RdVRadio05 !== 'function') return null;
+      radio05Engine = window.RdVRadio05({
+        session: eventSession,
+        save: saveAudioEventSession,
+        pauseClock: pauseAudioEventClock,
+        updateClock: updateAudioEventClock,
+        renderControls: renderEventControls,
+        onOpen: r => { currentRadio05 = r; },
+        onClose: () => { currentRadio05 = null; },
+        markActive: active => { specialAudioActive = active; },
+        syncAmbient: syncAmbientVolume,
+        silenceHaunts: silenceHauntSounds,
+        value: () => state.value,
+        living: livingPlayerNumbers,
+        // Les noms seront associés aux emplacements de joueurs ultérieurement.
+        // Aucun fichier « Joueur X » n'est prononcé par cet animateur.
+        playerName: n => {
+          const value = eventSession.playerNames?.[n - 1];
+          return typeof value === 'string' && value.trim()
+            ? value.trim() : 'Joueur ' + n;
+        },
+        applyDelta: (delta, source) => applyInstabilityDelta(delta, {
+          source, deferThreshold: true, deferGameOver: true
+        }),
+        threshold: handleThresholdTransition,
+        gameOver: checkGameOver,
+        nextDelay: () => randomBetween(...EVENT_NEXT_DELAY),
+        reducedMotion: REDUCED_MOTION
+      });
+    }
+    return radio05Engine;
+  }
+
+  function beginRadio05(item, preview, restoring = false) {
+    const pending = restoring ? eventSession.pendingRadio005 : null;
+    if (!eventSession.active || !item || item.id !== 'radio-005'
+      || currentMaskEvent || currentMask05 || currentMask06 || currentMask07
+      || currentRadioEvent || currentRadio02 || currentRadio03
+      || currentRadio04 || currentRadio05 || currentWeatherEvent
+      || specialAudioActive || anyBlockingModalOpen()
+      || !isPartieTabActive() || document.visibilityState !== 'visible'
+      || (state.value >= 100 && !(restoring
+        && (pending?.applied === true || pending?.phase === 'result')))
+      || (!restoring && livingPlayerNumbers().length === 0)
+      || (restoring && !pending)) return false;
+    return getRadio05Engine()?.begin(item, preview, restoring) || false;
+  }
+
+  function dismissRadio05() {
+    radio05Engine?.stop();
+  }
+
+  function handleRadio05Visibility() {
+    radio05Engine?.visibility();
+  }
+
+  function radio05OnPageHide() {
+    radio05Engine?.pageHide();
+  }
+
+  function resumePendingRadio05IfPossible() {
+    const pending = eventSession.pendingRadio005;
+    if (!pending || !eventSession.active || gameOverShown
+      || document.visibilityState !== 'visible'
+      || (state.value >= 100
+        && !(pending.applied === true || pending.phase === 'result')))
+      return false;
+    const item = AUDIO_EVENTS.find(x => x.id === 'radio-005');
+    if (!item) {
+      eventSession.pendingRadio005 = null;
+      saveAudioEventSession();
+      return false;
+    }
+    return beginRadio05(item, false, true);
+  }
+
   // =========================================================
   // MÉTÉO : NARRATION DU MONDE ET CONSÉQUENCE AUTOMATIQUE
   // =========================================================
@@ -9682,6 +9799,7 @@ syncMusicForActiveTab();
       && !resumePendingRadio02IfPossible()
       && !resumePendingRadio03IfPossible()
       && !resumePendingRadio04IfPossible()
+      && !resumePendingRadio05IfPossible()
       && !resumePendingWeatherIfPossible()) {
       updateAudioEventClock();
     }
@@ -9694,7 +9812,7 @@ syncMusicForActiveTab();
 
     if (
       state.value >= 100 && !currentWeatherEvent && !currentRadio02
-      && !currentRadio03 && !currentRadio04 && !currentMask05 && !currentMask06 && !currentMask07
+      && !currentRadio03 && !currentRadio04 && !currentRadio05 && !currentMask05 && !currentMask06 && !currentMask07
     ) {
       checkGameOver();
     }
@@ -9989,6 +10107,7 @@ syncMusicForActiveTab();
       pauseAudioEventClock();
       radio03OnPageHide();
       radio04OnPageHide();
+      radio05OnPageHide();
       mask06OnPageHide();
       mask07OnPageHide();
       coinOnPageHide();
