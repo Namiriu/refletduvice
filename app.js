@@ -118,7 +118,6 @@ campAudio: $('campAudio'),
     adminModal: $('adminModal'),
     adminClose: $('adminClose'),
     adminAuth: $('adminAuth'),
-    adminGateTitle: $('adminGateTitle'),
     adminPassword: $('adminPassword'),
     adminUnlock: $('adminUnlock'),
     adminGateError: $('adminGateError'),
@@ -5095,7 +5094,6 @@ syncMusicForActiveTab();
     els.adminForceStatus.textContent = '';
     els.adminAuth.classList.remove('hidden');
     els.adminPanel.classList.add('hidden');
-    els.adminGateTitle.textContent = 'ACCÈS ADMINISTRATEUR';
     els.adminUnlock.textContent = 'DÉVERROUILLER';
     els.adminModal.classList.add('show');
     els.adminModal.setAttribute('aria-hidden', 'false');
