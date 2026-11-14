@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.21 — Panneau administrateur et cadence audio';
+  const VERSION = 'v1.5.22 — Cadence validée et panneau administrateur';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -120,8 +120,6 @@ campAudio: $('campAudio'),
     adminAuth: $('adminAuth'),
     adminGateTitle: $('adminGateTitle'),
     adminPassword: $('adminPassword'),
-    adminPasswordConfirmWrap: $('adminPasswordConfirmWrap'),
-    adminPasswordConfirm: $('adminPasswordConfirm'),
     adminUnlock: $('adminUnlock'),
     adminGateError: $('adminGateError'),
     adminPanel: $('adminPanel'),
@@ -129,6 +127,9 @@ campAudio: $('campAudio'),
     adminFirstMax: $('adminFirstMax'),
     adminNextMin: $('adminNextMin'),
     adminNextMax: $('adminNextMax'),
+    adminWeightMask: $('adminWeightMask'),
+    adminWeightRadio: $('adminWeightRadio'),
+    adminWeightWeather: $('adminWeightWeather'),
     adminSave: $('adminSave'),
     adminDefaults: $('adminDefaults'),
     adminStatus: $('adminStatus'),
@@ -562,13 +563,14 @@ bestiaireNarration: $('bestiaireNarration'),
 
   // Interventions : progression propre à la partie, distincte du Bestiaire.
   const AUDIO_EVENT_STORAGE = LSK('audio_events_session_v1');
-  // Cadence indicative jusqu'aux playtests : première intervention 6–10 min,
-  // puis 10–18 min. L'administrateur peut l'ajuster sans recompiler.
+  // Cadence approuvée : première intervention 10–13 min, puis 15–20 min.
+  // L'intervalle normal entre interventions dépasse ainsi 12 min.
+  // Le panneau admin peut abréger les délais uniquement pour les playtests.
   const EVENT_DEFAULT_DELAYS = Object.freeze({
-    firstMin: 6, firstMax: 10, nextMin: 10, nextMax: 18
+    firstMin: 10, firstMax: 13, nextMin: 15, nextMax: 20
   });
+  const EVENT_DEFAULT_WEIGHTS = Object.freeze({masque:45, radio:40, meteo:15});
   const ADMIN_CONFIG_KEY = LSK('audio_admin_schedule_v1');
-  const ADMIN_PIN_HASH_KEY = LSK('audio_admin_pin_hash_v1');
   const MASK_INTRO_AUDIO = 'audio/events/masque/introduction/masque-000-presentation.mp3';
   function readAudioDelays() {
     try {
@@ -582,14 +584,32 @@ bestiaireNarration: $('bestiaireNarration'),
       return Object.fromEntries(keys.map(k => [k, obj[k]]));
     } catch (_) { return {...EVENT_DEFAULT_DELAYS}; }
   }
+  function readAudioWeights() {
+    try {
+      const obj = JSON.parse(localStorage.getItem(ADMIN_CONFIG_KEY) || 'null');
+      const weights = obj?.weights;
+      const types = ['masque', 'radio', 'meteo'];
+      if (!weights || !types.every(type =>
+        Number.isInteger(weights[type]) && weights[type] >= 0 && weights[type] <= 100)
+        || types.every(type => weights[type] === 0)) {
+        return {...EVENT_DEFAULT_WEIGHTS};
+      }
+      return Object.fromEntries(types.map(type => [type, weights[type]]));
+    } catch (_) { return {...EVENT_DEFAULT_WEIGHTS}; }
+  }
   let audioDelays = readAudioDelays();
+  let audioWeights = readAudioWeights();
   function randomAudioDelay(first = false) {
     const a = first ? audioDelays.firstMin : audioDelays.nextMin;
     const b = first ? audioDelays.firstMax : audioDelays.nextMax;
     return randomBetween(a, b) * 60000;
   }
+  function resetAudioAdminForNewGame() {
+    audioDelays = {...EVENT_DEFAULT_DELAYS};
+    audioWeights = {...EVENT_DEFAULT_WEIGHTS};
+    try { localStorage.removeItem(ADMIN_CONFIG_KEY); } catch (_) {}
+  }
   let adminUnlocked = false;
-  const EVENT_TYPE_WEIGHTS = Object.freeze({masque:45, radio:40, meteo:15});
   const EVENT_RETRY_DELAY = 20000;
   const WEATHER_MIN_GAP_MS = 45 * 60000;
   const WEATHER_MAX_PER_GAME = 4;
@@ -3986,6 +4006,7 @@ L’Instabilité, le Camp de fortune, la Profanation de la chair, le Journal, le
     gameOverShown =
       false;
 
+    resetAudioAdminForNewGame();
     resetAudioEventSession();
     resetTemporaryEffects();
     closeEffectsModal();
@@ -5065,27 +5086,17 @@ syncMusicForActiveTab();
   // =========================================================
   // Cette protection locale limite les manipulations accidentelles pendant
   // un playtest ; ce n'est pas une authentification serveur sécurisée.
-  function adminSavedHash() {
-    try { return localStorage.getItem(ADMIN_PIN_HASH_KEY); }
-    catch (_) { return null; }
-  }
-
   function openAdminModal() {
     if (anyBlockingModalOpen()) return;
     adminUnlocked = false;
     els.adminPassword.value = '';
-    els.adminPasswordConfirm.value = '';
     els.adminGateError.textContent = '';
     els.adminStatus.textContent = '';
     els.adminForceStatus.textContent = '';
     els.adminAuth.classList.remove('hidden');
     els.adminPanel.classList.add('hidden');
-    const setup = !adminSavedHash();
-    els.adminGateTitle.textContent = setup
-      ? 'CRÉER UN CODE ADMIN LOCAL' : 'ACCÈS ADMINISTRATEUR';
-    els.adminPasswordConfirmWrap.classList.toggle('hidden', !setup);
-    els.adminUnlock.textContent = setup
-      ? 'DÉFINIR MON CODE' : 'DÉVERROUILLER';
+    els.adminGateTitle.textContent = 'ACCÈS ADMINISTRATEUR';
+    els.adminUnlock.textContent = 'DÉVERROUILLER';
     els.adminModal.classList.add('show');
     els.adminModal.setAttribute('aria-hidden', 'false');
     pauseAudioEventClock();
@@ -5097,7 +5108,6 @@ syncMusicForActiveTab();
     if (!els.adminModal.classList.contains('show')) return;
     adminUnlocked = false;
     els.adminPassword.value = '';
-    els.adminPasswordConfirm.value = '';
     els.adminModal.classList.remove('show');
     els.adminModal.setAttribute('aria-hidden', 'true');
     renderEventControls();
@@ -5105,47 +5115,23 @@ syncMusicForActiveTab();
     els.btnAdmin.focus();
   }
 
-  async function unlockAdmin() {
+  function unlockAdmin() {
     if (!els.adminModal.classList.contains('show')
       || els.adminUnlock.disabled) return;
-    const password = els.adminPassword.value;
-    const existing = adminSavedHash();
-    if (password.length < 6 && !existing) {
-      els.adminGateError.textContent = 'Choisissez au moins 6 caractères.';
+    if (els.adminPassword.value !== 'namiriu') {
+      els.adminGateError.textContent = 'Code incorrect.';
+      els.adminPassword.select();
       return;
     }
-    if (!existing && password !== els.adminPasswordConfirm.value) {
-      els.adminGateError.textContent = 'Les deux saisies sont différentes.';
-      return;
-    }
-    if (!existing && !password.trim()) {
-      els.adminGateError.textContent = 'Choisissez un vrai code.';
-      return;
-    }
-    els.adminUnlock.disabled = true;
-    try {
-      const hash = 'sha256:' + await sha256Hex('rdv-admin-local-v1:' + password);
-      if (existing && existing !== hash) {
-        els.adminGateError.textContent = 'Code incorrect.';
-        els.adminPassword.select();
-        return;
-      }
-      if (!existing) localStorage.setItem(ADMIN_PIN_HASH_KEY, hash);
-      if (!els.adminModal.classList.contains('show')) return;
-      adminUnlocked = true;
-      els.adminPassword.value = '';
-      els.adminPasswordConfirm.value = '';
-      els.adminGateError.textContent = '';
-      els.adminAuth.classList.add('hidden');
-      els.adminPanel.classList.remove('hidden');
-      populateAdminDelays();
-      renderEventControls();
-      els.adminFirstMin.focus();
-    } catch (_) {
-      els.adminGateError.textContent = 'Enregistrement du code indisponible sur cet appareil.';
-    } finally {
-      els.adminUnlock.disabled = false;
-    }
+    adminUnlocked = true;
+    els.adminPassword.value = '';
+    els.adminGateError.textContent = '';
+    els.adminAuth.classList.add('hidden');
+    els.adminPanel.classList.remove('hidden');
+    populateAdminDelays();
+    populateAdminWeights();
+    renderEventControls();
+    els.adminFirstMin.focus();
   }
 
   function populateAdminDelays(values = audioDelays) {
@@ -5157,14 +5143,21 @@ syncMusicForActiveTab();
       'Réglages locaux à cet appareil. Les délais déjà lancés ne seront pas modifiés.';
   }
 
+  function populateAdminWeights(values = audioWeights) {
+    els.adminWeightMask.value = String(values.masque);
+    els.adminWeightRadio.value = String(values.radio);
+    els.adminWeightWeather.value = String(values.meteo);
+  }
+
   function restoreAdminDefaults() {
     if (!adminUnlocked) return;
     populateAdminDelays(EVENT_DEFAULT_DELAYS);
+    populateAdminWeights(EVENT_DEFAULT_WEIGHTS);
     els.adminStatus.textContent =
-      'Valeurs proposées rétablies. Cliquez sur ENREGISTRER pour les appliquer.';
+      'Délais et pondérations d’origine affichés. Cliquez sur ENREGISTRER pour les appliquer.';
   }
 
-  function saveAdminDelays() {
+  function saveAdminConfig() {
     if (!adminUnlocked || !els.adminModal.classList.contains('show')) return;
     const fields = {
       firstMin: els.adminFirstMin, firstMax: els.adminFirstMax,
@@ -5186,12 +5179,30 @@ syncMusicForActiveTab();
         'Le minimum ne peut pas être supérieur au maximum.';
       return;
     }
-    try {
-      localStorage.setItem(ADMIN_CONFIG_KEY, JSON.stringify(values));
-      audioDelays = values;
+    const weightFields = {
+      masque: els.adminWeightMask,
+      radio: els.adminWeightRadio,
+      meteo: els.adminWeightWeather
+    };
+    const weights = Object.fromEntries(
+      Object.entries(weightFields).map(([type, element]) => [type, Number(element.value)])
+    );
+    if (!Object.keys(weightFields).every(type =>
+      weightFields[type].value.trim() !== ''
+      && Number.isInteger(weights[type])
+      && weights[type] >= 0 && weights[type] <= 100)
+      || Object.values(weights).every(weight => weight === 0)) {
       els.adminStatus.textContent =
-        '✓ Cadence enregistrée. Le tirage en cours ne change pas ; '
-        + 'les nouveaux intervalles s’appliquent aux prochains tirages.';
+        'Pondérations : nombres entiers de 0 à 100, avec au moins une catégorie positive.';
+      return;
+    }
+    try {
+      localStorage.setItem(ADMIN_CONFIG_KEY, JSON.stringify({...values, weights}));
+      audioDelays = values;
+      audioWeights = weights;
+      els.adminStatus.textContent =
+        '✓ Cadence et pondérations enregistrées pour cette partie. '
+        + 'Les délais déjà lancés restent inchangés ; nouveaux paramètres aux prochains tirages.';
     } catch (_) {
       els.adminStatus.textContent =
         'Impossible de conserver les réglages sur cet appareil.';
@@ -5204,6 +5215,10 @@ syncMusicForActiveTab();
     const selected = AUDIO_EVENTS.find(item =>
       item.id === els.testMaskEventSelect.value);
     if (!selected) return;
+    if (eventSession.played.includes(selected.id)) {
+      els.adminForceStatus.textContent = 'Événement déjà joué pendant cette partie.';
+      return;
+    }
     // Aucun événement en cours, aucune pénalité appliquée deux fois :
     // les mêmes garde-fous que les tests manuels existants restent actifs.
     closeAdminModal();
@@ -5212,8 +5227,17 @@ syncMusicForActiveTab();
       : selected.type === 'meteo'
         ? beginWeatherEvent(selected, true)
         : beginMaskEvent(selected, true);
-    if (!started) showInfo('Événement indisponible',
-      'Impossible de démarrer la démonstration dans l’état actuel de la partie.');
+    if (!started) {
+      showInfo('Événement indisponible',
+        'Impossible de démarrer la démonstration dans l’état actuel de la partie.');
+    } else {
+      // Une démonstration lancée en pleine partie compte comme intervention
+      // pour empêcher toute répétition, même via le panneau administrateur.
+      eventSession.played.push(selected.id);
+      eventSession.lastEventType = selected.type;
+      saveAudioEventSession();
+      renderEventControls();
+    }
   }
 
   function livingPlayerNumbers() {
@@ -5301,14 +5325,17 @@ syncMusicForActiveTab();
     const insufficientDuelPlayers =
       ['masque-004','masque-005','masque-007'].includes(testEvent.id) && alive < 2;
     const locked = state.value < (testEvent.minInstability || 0);
-    els.btnTestMaskEvent.textContent = insufficientDuelPlayers
+    els.btnTestMaskEvent.textContent = eventSession.played.includes(testEvent.id)
+      ? 'DÉJÀ JOUÉ CETTE PARTIE'
+      : insufficientDuelPlayers
       ? 'TEST : 2 VIVANTS MINIMUM'
       : locked
       ? 'TEST : MINIMUM ' + testEvent.minInstability + '%'
       : testEvent.type === 'radio' ? 'TESTER LA RADIO'
         : testEvent.type === 'meteo' ? 'TESTER LA MÉTÉO'
         : 'TESTER LE MASQUE';
-    els.btnTestMaskEvent.disabled = !eventSession.active || currentMaskEvent !== null
+    els.btnTestMaskEvent.disabled = eventSession.played.includes(testEvent.id)
+      || !eventSession.active || currentMaskEvent !== null
       || currentRadioEvent !== null || currentRadio02 !== null
       || currentRadio03 !== null
       || currentRadio04 !== null
@@ -5527,7 +5554,7 @@ syncMusicForActiveTab();
       return;
     }
 
-    let candidates = eligibleAudioEvents();
+    let candidates = eligibleAudioEvents().filter(item => audioWeights[item.type] > 0);
     if (candidates.length === 0) return;
     // Alterner les catégories si possible ; choisir d'abord une catégorie,
     // puis une carte. Évite qu'une famille plus fournie monopolise la pioche.
@@ -5537,11 +5564,11 @@ syncMusicForActiveTab();
     if (otherType.length) candidates = otherType;
     const categories = [...new Set(candidates.map(item => item.type))];
     const totalWeight = categories.reduce(
-      (sum, type) => sum + EVENT_TYPE_WEIGHTS[type], 0
+      (sum, type) => sum + audioWeights[type], 0
     );
     let draw = randomBetween(1, totalWeight);
     const chosenType = categories.find(type => {
-      draw -= EVENT_TYPE_WEIGHTS[type];
+      draw -= audioWeights[type];
       return draw <= 0;
     }) || categories[0];
     const sameType = candidates.filter(item => item.type === chosenType);
@@ -10402,11 +10429,8 @@ syncMusicForActiveTab();
     els.adminPassword.addEventListener('keydown', e => {
       if (e.key === 'Enter') unlockAdmin();
     });
-    els.adminPasswordConfirm.addEventListener('keydown', e => {
-      if (e.key === 'Enter') unlockAdmin();
-    });
     els.adminUnlock.addEventListener('click', unlockAdmin);
-    els.adminSave.addEventListener('click', saveAdminDelays);
+    els.adminSave.addEventListener('click', saveAdminConfig);
     els.adminDefaults.addEventListener('click', restoreAdminDefaults);
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && els.adminModal.classList.contains('show')) {
