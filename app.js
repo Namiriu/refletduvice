@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.22 — Cadence validée et panneau administrateur';
+  const VERSION = 'v1.5.23 — Espacement sécurisé après événement forcé';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -5220,12 +5220,23 @@ syncMusicForActiveTab();
     // Aucun événement en cours, aucune pénalité appliquée deux fois :
     // les mêmes garde-fous que les tests manuels existants restent actifs.
     closeAdminModal();
+    // Les démonstrations mémorisent le délai en cours pour le restaurer à la
+    // fin de l'événement. Remplaçons-le par un NOUVEAU délai (15–20 min par
+    // défaut), qui commencera seulement une fois l'intervention terminée.
+    // Le chronomètre reste arrêté pendant toute l'intervention forcée.
+    pauseAudioEventClock();
+    const previousDelay = eventSession.remainingMs;
+    eventSession.remainingMs = randomAudioDelay();
     const started = selected.type === 'radio'
       ? beginRadioEvent(selected, true)
       : selected.type === 'meteo'
         ? beginWeatherEvent(selected, true)
         : beginMaskEvent(selected, true);
     if (!started) {
+      // En cas d'échec de lancement, rendre le délai initial intact.
+      eventSession.remainingMs = previousDelay;
+      saveAudioEventSession();
+      updateAudioEventClock();
       showInfo('Événement indisponible',
         'Impossible de démarrer la démonstration dans l’état actuel de la partie.');
     } else {
