@@ -1399,10 +1399,21 @@
     .event-game-btn:disabled{opacity:.58;cursor:default}
     .event-players{display:grid;gap:9px}
     .event-player-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:47px;padding:10px 13px;border:1px solid #414148;border-radius:9px;background:#1e1e22;color:#eee;font:14px var(--font-ui);cursor:pointer}
-    .event-player-row[aria-pressed="true"]{border-color:#7c4148;background:#332027}
-    .event-player-state{font-size:12px;color:#b9d3ba}
-    .event-player-row[aria-pressed="true"] .event-player-state{color:#e5a4a8}
-    .event-player-help{color:#b4adb1;font-size:15px;line-height:1.4;margin:0 0 15px}
+    .event-player-row{cursor:default;text-align:left}
+    .event-player-row.is-dead{border-color:#7c4148;background:#332027}
+    .event-player-identity{display:flex;align-items:flex-start;flex-direction:column;gap:5px;flex:1;min-width:0}
+    .event-player-number{color:#d6bdc1;font:700 11px var(--font-ui);letter-spacing:1px}
+    .event-player-name{width:100%;min-width:0;min-height:36px;border:1px solid #56505a;border-radius:7px;
+      background:#121217;color:#f5eded;font:15px var(--font-ui);padding:8px 10px}
+    .event-player-name:focus{outline:2px solid #cf9b72;outline-offset:1px}
+    .event-player-name::placeholder{color:#918b94}
+    .event-player-life{flex:none;min-width:99px;min-height:42px;padding:6px 9px;
+      border:1px solid #4f866a;border-radius:7px;background:#19392a;color:#c9f7d5;
+      font:700 12px var(--font-ui);cursor:pointer}
+    .event-player-life[aria-pressed="true"]{border-color:#9c515c;background:#47242d;color:#f3c0c8}
+    .event-player-life:focus-visible{outline:2px solid #f3c77e;outline-offset:3px}
+    .event-player-help{color:#b4adb1;font-size:15px;line-height:1.4;margin:0 0 12px}
+    @media(max-width:380px){.event-player-row{gap:7px;padding:9px}.event-player-life{min-width:86px;font-size:11px}}
 
     /* Mission radio : un simple onglet latéral pendant le déplacement immédiat */
     .radio-mission-tab{position:fixed;right:0;top:54%;transform:translateY(-50%);z-index:8800;display:flex;align-items:flex-start;flex-direction:row-reverse;gap:0;max-width:min(93vw,356px);font-family:var(--font-ui)}
@@ -1834,8 +1845,9 @@
 
       <section id="eventGameCard" class="card event-game-card" aria-labelledby="eventGameHeading">
         <h2 id="eventGameHeading" class="event-game-heading">DÉBUT DE PARTIE</h2>
-        <p id="eventGameStatus" class="event-game-status">Lancez la partie lorsque tout le monde est prêt.</p>
+        <p id="eventGameStatus" class="event-game-status">Renseignez les prénoms des survivants, puis lancez la partie.</p>
         <div class="event-game-actions">
+          <button id="btnConfigurePlayers" class="event-game-btn secondary" type="button">✎ PRÉNOMS DES JOUEURS</button>
           <button id="btnStartEvents" class="event-game-btn" type="button">COMMENCER LA PARTIE</button>
         </div>
       </section>
@@ -2076,7 +2088,7 @@
       </div>
     </section>
 
-    <div id="version">v1.5.4 MASQUE-007 — Souffle spectral du jeton (test)</div>
+    <div id="version">v1.5.14 — Le Masque connaît les survivants</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2206,8 +2218,9 @@
   <!-- ==================== JOUEURS / VIVANT-MORT ==================== -->
   <div id="playersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="playersTitle">
     <div class="modal-inner">
-      <h2 id="playersTitle" class="modal-title">État des joueurs</h2>
-      <p class="event-player-help">Touchez un joueur lors de sa mort ou de sa résurrection. Le Masque ne cible que les personnages vivants.</p>
+      <h2 id="playersTitle" class="modal-title">Les survivants</h2>
+      <p class="event-player-help">Renseignez les prénoms (facultatifs). Le Masque peut les prononcer si un enregistrement existe. Sinon, il dira « Joueur 1 », « Joueur 2 », etc. Les prénoms peuvent être modifiés pendant la partie, sans changer les statuts.</p>
+      <p class="event-player-help">Utilisez le bouton VIVANT / MORT pour signaler un décès ou une résurrection.</p>
       <div id="eventPlayersList" class="event-players"></div>
       <div class="modal-actions">
         <button id="playersClose" class="modal-btn" type="button">Fermer</button>
@@ -2703,6 +2716,7 @@
   <script src="bestiaire-data.js"></script>
   <script src="radio004.js"></script>
   <script src="radio005.js"></script>
+  <script src="prenoms.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

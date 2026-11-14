@@ -1,4 +1,4 @@
-const CACHE = 'instability-v108';
+const CACHE = 'instability-v109';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -11,6 +11,7 @@ const ASSETS = [
   './radio004.css',
   './radio005.js',
   './radio005.css',
+  './prenoms.js',
   './bestiaire-data.js',
   './manifest.webmanifest',
 
@@ -273,6 +274,9 @@ const SHELL_ASSETS = [
   './app.js',
   './radio004.js',
   './radio004.css',
+  './radio005.js',
+  './radio005.css',
+  './prenoms.js',
   './bestiaire-data.js',
   './manifest.webmanifest',
   './icons/icon-192.png'
@@ -557,6 +561,26 @@ self.addEventListener('install', event => {
 
 let mediaCacheJob = null;
 self.addEventListener('message', event => {
+  if (event.data?.type === 'rdv-cache-prenoms') {
+    const requested = Array.isArray(event.data.paths) ? event.data.paths : [];
+    // Un joueur ne peut jamais demander de mettre en cache une URL arbitraire.
+    const paths = requested.slice(0, 4).filter(path =>
+      typeof path === 'string'
+      && /^audio\/events\/masque\/prenoms\/[a-z]+\.mp3\?v=[a-f0-9]{12}$/.test(path));
+    event.waitUntil((async () => {
+      const cache = await caches.open(MEDIA_CACHE);
+      await Promise.all(paths.map(async path => {
+        try {
+          if (await cache.match(path)) return;
+          const audio = await fetch(path, {cache:'no-cache'});
+          if (audio.ok && audio.status === 200) await cache.put(path, audio);
+        } catch (_) {
+          // Une indisponibilité ponctuelle ne bloque jamais la PWA.
+        }
+      }));
+    })());
+    return;
+  }
   if (event.data?.type !== 'rdv-cache-offline-media') return;
   if (!mediaCacheJob) {
     mediaCacheJob = cachePersistentMedia()
@@ -623,6 +647,22 @@ self.addEventListener('fetch', event => {
           || (await caches.match('./index.html'))
           || Response.error();
       }
+    })());
+    return;
+  }
+
+  // Les 100 prénoms ne sont PAS préchargés au premier lancement.
+  // Chaque prénom sélectionné pourra néanmoins servir hors connexion.
+  if (path.origin === self.location.origin
+    && /\/audio\/events\/masque\/prenoms\/[a-z]+\.mp3$/.test(path.pathname)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(MEDIA_CACHE);
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      const response = await fetch(event.request);
+      if (response.ok && response.status === 200)
+        await cache.put(event.request, response.clone());
+      return response;
     })());
     return;
   }

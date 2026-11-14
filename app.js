@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.13 RADIO-005 — Écran actif et micro synchronisé';
+  const VERSION = 'v1.5.14 — Le Masque connaît les survivants';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -112,6 +112,7 @@ campAudio: $('campAudio'),
     btnNew: $('btnNew'),
     eventGameCard: $('eventGameCard'),
     btnStartEvents: $('btnStartEvents'),
+    btnConfigurePlayers: $('btnConfigurePlayers'),
     btnPlayers: $('btnPlayers'),
     btnTestMaskEvent: $('btnTestMaskEvent'),
     testMaskEventSelect: $('testMaskEventSelect'),
@@ -4723,6 +4724,7 @@ syncMusicForActiveTab();
         const ready = await navigator.serviceWorker.ready;
         if (navigator.onLine !== false) {
           ready.active?.postMessage({ type: 'rdv-cache-offline-media' });
+          prefetchCurrentNames();
         }
       })
       .catch(() => {});
@@ -4750,6 +4752,7 @@ syncMusicForActiveTab();
       nextWeatherEligibleAt: 0,
       pendingWeather: null,
       alive: [true, true, true, true],
+      playerNames: ['', '', '', ''],
       played: [],
       remainingMs: null
     };
@@ -4945,6 +4948,10 @@ syncMusicForActiveTab();
                 ? clamp(saved.pendingWeather.remainingMs,0,15000) : null,
               rewardApplied: saved.pendingWeather.rewardApplied === true
             } : null,
+        playerNames: Array.isArray(saved.playerNames) && saved.playerNames.length === 4
+          ? saved.playerNames.map(value =>
+              typeof value === 'string' ? value.trim().slice(0,32) : '')
+          : defaults.playerNames,
         alive: Array.isArray(saved.alive) && saved.alive.length === 4
           ? saved.alive.map(value => value === true)
           : defaults.alive,
@@ -5004,6 +5011,38 @@ syncMusicForActiveTab();
     }, []);
   }
 
+  // Les prénoms sont liés aux 4 places, jamais à l'état vivant/mort.
+  function playerLabel(number) {
+    const name = eventSession.playerNames?.[number - 1];
+    return typeof name === 'string' && name.trim()
+      ? name.trim() : 'Joueur ' + number;
+  }
+
+  function playerDesignation(number) {
+    const name = eventSession.playerNames?.[number - 1] || '';
+    return window.RdVPlayerNames?.audioPath(name, number)
+      || 'audio/events/masque/designations/joueur-' + number + '.mp3';
+  }
+
+  // Préparer uniquement les prénoms effectivement inscrits, sur demande.
+  let nameCacheTimer = null;
+  function prefetchCurrentNames() {
+    if (!('serviceWorker' in navigator) || !window.RdVPlayerNames
+      || navigator.onLine === false) return;
+    const paths = window.RdVPlayerNames.selectedPaths(eventSession.playerNames);
+    if (!paths.length) return;
+    navigator.serviceWorker.ready.then(reg => {
+      reg.active?.postMessage({type:'rdv-cache-prenoms', paths});
+    }).catch(() => {});
+  }
+  function scheduleNamePrefetch() {
+    clearTimeout(nameCacheTimer);
+    nameCacheTimer = setTimeout(() => {
+      nameCacheTimer = null;
+      prefetchCurrentNames();
+    }, 500);
+  }
+
   function renderEventControls() {
     const alive = livingPlayerNumbers().length;
     els.btnPlayers.textContent = 'JOUEURS · ' + alive + '/4';
@@ -5011,7 +5050,8 @@ syncMusicForActiveTab();
     els.eventGameCard.classList.toggle('hidden', eventSession.active);
     els.btnStartEvents.disabled = eventSession.active || state.value >= 100;
     els.btnStartEvents.textContent = 'COMMENCER LA PARTIE';
-    els.eventGameStatus.textContent = 'Lancez la partie lorsque tout le monde est prêt.';
+    els.eventGameStatus.textContent =
+      'Personnalisez les prénoms (facultatif), puis lancez la partie.';
 
     // Les interventions déjà jouées ne sont jamais révélées aux joueurs.
     const showDebug = EVENT_TEST_MODE && eventSession.active;
@@ -5058,29 +5098,57 @@ syncMusicForActiveTab();
     els.eventPlayersList.replaceChildren();
 
     eventSession.alive.forEach((alive, index) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'event-player-row';
-      button.setAttribute('aria-pressed', String(!alive));
-      button.setAttribute('aria-label', 'Joueur ' + (index + 1) + ' : ' + (alive ? 'vivant' : 'mort'));
-      const name = document.createElement('span');
-      name.textContent = 'JOUEUR ' + (index + 1);
-      const label = document.createElement('span');
-      label.className = 'event-player-state';
-      label.textContent = alive ? '● VIVANT' : '✕ MORT';
-      button.append(name, label);
-      button.addEventListener('click', () => {
+      const slot = index + 1;
+      const row = document.createElement('div');
+      row.className = 'event-player-row';
+      row.classList.toggle('is-dead', !alive);
+
+      const identity = document.createElement('label');
+      identity.className = 'event-player-identity';
+      const number = document.createElement('span');
+      number.className = 'event-player-number';
+      number.textContent = 'JOUEUR ' + slot;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'event-player-name';
+      input.id = 'eventPlayerName' + slot;
+      input.maxLength = 32;
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.placeholder = 'Prénom (facultatif)';
+      input.setAttribute('aria-label', 'Prénom du joueur ' + slot);
+      input.value = eventSession.playerNames[index] || '';
+      input.addEventListener('input', () => {
+        eventSession.playerNames[index] = input.value.slice(0,32);
+        saveAudioEventSession();
+        scheduleNamePrefetch();
+      });
+      input.addEventListener('change', () => {
+        eventSession.playerNames[index] = input.value.trim().slice(0,32);
+        input.value = eventSession.playerNames[index];
+        saveAudioEventSession();
+        scheduleNamePrefetch();
+      });
+      identity.append(number, input);
+
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'event-player-life';
+      toggle.setAttribute('aria-pressed', String(!alive));
+      toggle.setAttribute('aria-label', 'Statut de ' + playerLabel(slot)
+        + ' : ' + (alive ? 'vivant' : 'mort') + '. Appuyer pour changer.');
+      toggle.textContent = alive ? '● VIVANT' : '✕ MORT';
+      toggle.addEventListener('click', () => {
         const wasAlive = eventSession.alive[index];
         eventSession.alive[index] = !wasAlive;
-        // L'annulation ne concerne QUE les deux participants, pendant
-        // le compte à rebours, et seulement au passage VIVANT → MORT.
-        if (wasAlive) cancelMask05IfParticipantDied(index + 1);
+        if (wasAlive) cancelMask05IfParticipantDied(slot);
         saveAudioEventSession();
         renderPlayerStatuses();
         renderEventControls();
         updateAudioEventClock();
       });
-      els.eventPlayersList.appendChild(button);
+      row.append(identity, toggle);
+      els.eventPlayersList.appendChild(row);
     });
   }
 
@@ -5238,6 +5306,7 @@ syncMusicForActiveTab();
     eventSession.played = [];
     eventSession.remainingMs = randomBetween(...EVENT_FIRST_DELAY);
     saveAudioEventSession();
+    prefetchCurrentNames();
     renderEventControls();
 
     // Lecture immédiatement sur le geste de l'utilisateur (Android).
@@ -5382,6 +5451,9 @@ syncMusicForActiveTab();
     eventSession.pendingMask006 = null;
     eventSession.pendingMask007 = null;
     eventSession.alive = [true, true, true, true];
+    eventSession.playerNames = ['', '', '', ''];
+    clearTimeout(nameCacheTimer);
+    nameCacheTimer = null;
     eventSession.played = [];
     eventSession.remainingMs = null;
     saveAudioEventSession();
@@ -5452,10 +5524,10 @@ syncMusicForActiveTab();
     const token = ++maskEventToken;
 
     const audios = [
-      new Audio('audio/events/masque/designations/joueur-' + player + '.mp3')
+      new Audio(playerDesignation(player))
     ];
     if (opponent !== null) {
-      audios.push(new Audio('audio/events/masque/designations/joueur-' + opponent + '.mp3'));
+      audios.push(new Audio(playerDesignation(opponent)));
     }
     audios.push(new Audio(item.audio));
     if (item.id === 'masque-004') audios.push(new Audio(item.duelAudio));
@@ -5560,14 +5632,14 @@ syncMusicForActiveTab();
         + before + '% → ' + after + ' %. Aucun bouton à utiliser.';
     } else if (running.item.id === 'masque-003') {
       els.maskEventEffect.textContent =
-        'Joueur ' + player + ', à toi de décider.\n\n'
+        playerLabel(player) + ', à toi de décider.\n\n'
         + '1. Subis 1 blessure ET passe ton prochain tour.\n'
         + '2. Évite ces pénalités, mais inflige +15 points d’Instabilité au groupe.';
       els.maskEventChoices.classList.remove('hidden');
       els.maskEventDone.classList.add('hidden');
     } else {
       els.maskEventEffect.textContent =
-        'Joueur ' + player
+        playerLabel(player)
         + ' : mélange face cachée toutes les cartes rangées dans tes emplacements '
         + 'de sac à dos et défausse-en une au hasard.\n\n'
         + 'Ton arme et ton armure équipées ne sont pas concernées. '
@@ -5594,7 +5666,7 @@ syncMusicForActiveTab();
 
     if (option === 'self') {
       els.maskEventEffect.textContent =
-        'Joueur ' + running.player + ' : tu te sacrifies.\n\n'
+        playerLabel(running.player) + ' : tu te sacrifies.\n\n'
         + 'Subis 1 blessure et passe ton prochain tour. '
         + 'Appliquez ces deux conséquences sur le plateau.\n\n'
         + 'L’Instabilité mentale ne change pas.';
@@ -5608,7 +5680,7 @@ syncMusicForActiveTab();
       running.deferredThreshold = [before, state.value];
       running.deferredGameOver = effect.gameOver;
       els.maskEventEffect.textContent =
-        'Joueur ' + running.player + ' : le groupe paie.\n\n'
+        playerLabel(running.player) + ' : le groupe paie.\n\n'
         + 'Instabilité mentale : ' + before + '% → ' + state.value
         + '% (+' + effect.actual + ' points).\n\n'
         + (effect.gameOver
@@ -5809,9 +5881,9 @@ syncMusicForActiveTab();
     clearTimeout(r.gapTimer);
     const clips = [
       r.item.introAudio,
-      'audio/events/masque/designations/joueur-' + r.target + '.mp3',
+      playerDesignation(r.target),
       r.item.cibleAudio,
-      'audio/events/masque/designations/joueur-' + r.accomplice + '.mp3',
+      playerDesignation(r.accomplice),
       r.item.transfertAudio
     ];
     if (index >= clips.length) {
@@ -5845,7 +5917,7 @@ syncMusicForActiveTab();
     showMask05Overlay();
     els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
     els.mask05Status.textContent =
-      'JOUEUR ' + r.accomplice + ' : prends le téléphone.\n'
+      playerLabel(r.accomplice).toLocaleUpperCase('fr-FR') + ' : prends le téléphone.\n'
       + 'Éloigne-toi légèrement des autres survivants.';
     els.mask05Hint.textContent =
       'Approche l’appareil de ton oreille et règle son volume au minimum audible. '
@@ -5878,12 +5950,12 @@ syncMusicForActiveTab();
     showMask05Overlay();
     els.mask05Heading.textContent = 'TRANSMISSION CONFIDENTIELLE';
     els.mask05Status.textContent =
-      'JOUEUR ' + r.accomplice + ' : retourne à la table.\n'
+      playerLabel(r.accomplice).toLocaleUpperCase('fr-FR') + ' : retourne à la table.\n'
       + 'La mission commencera lorsque tu confirmeras être prêt.';
     if (audioUnavailable) {
       els.mask05Hint.textContent =
         'MISSION SECRÈTE (à lire seul) : Fais lever entièrement le joueur '
-        + r.target + ' de sa chaise dans les cinq prochaines minutes, '
+        + playerLabel(r.target) + ' de sa chaise dans les cinq prochaines minutes, '
         + 'sans dévoiler cet objectif ni employer la force. '
         + 'Un lever spontané compte également comme une réussite.';
       els.mask05Hint.classList.remove('hidden');
@@ -6011,8 +6083,8 @@ syncMusicForActiveTab();
     showMask05Overlay();
     els.mask05Heading.textContent = 'LE VERDICT DU MASQUE';
     els.mask05Status.textContent =
-      'JOUEUR ' + r.accomplice + ' : as-tu réussi à faire lever le joueur '
-      + r.target + ' dans le temps imparti ?';
+      playerLabel(r.accomplice).toLocaleUpperCase('fr-FR') + ' : as-tu réussi à faire lever '
+      + playerLabel(r.target) + ' dans le temps imparti ?';
     els.mask05Success.classList.remove('hidden');
     els.mask05Failure.classList.remove('hidden');
     els.mask05Success.focus();
@@ -6054,14 +6126,14 @@ syncMusicForActiveTab();
     if (r.outcome === 'success') {
       els.mask05Outcome.textContent =
         'MISSION ACCOMPLIE.\n\n'
-        + 'JOUEUR ' + r.accomplice + ' : récupère 1 PV.\n\n'
+        + playerLabel(r.accomplice).toLocaleUpperCase('fr-FR') + ' : récupère 1 PV.\n\n'
         + 'Si tu es déjà en pleine santé, tu peux offrir ce soin à '
         + 'un autre survivant vivant de ton choix. '
         + 'Si tout le monde est en pleine santé, aucun effet.\n\n'
         + 'Reportez le soin sur la feuille de personnage.';
     } else {
       els.mask05Outcome.textContent =
-        'JOUEUR ' + r.accomplice + ' : passe ton prochain TOUR DE JEU.\n\n'
+        playerLabel(r.accomplice).toLocaleUpperCase('fr-FR') + ' : passe ton prochain TOUR DE JEU.\n\n'
         + 'Tu ne réalises pas tes actions individuelles de ce tour, '
         + 'mais tu peux toujours participer aux COMBATS '
         + 'déclenchés par tes coéquipiers.\n\n'
@@ -6091,7 +6163,7 @@ syncMusicForActiveTab();
     // un clic supplémentaire. Il s'efface au bout de huit secondes.
     hideMask05CancelNotice();
     els.mask05CancelText.textContent =
-      'JOUEUR ' + player + ' est mort. '
+      playerLabel(player).toLocaleUpperCase('fr-FR') + ' est mort. '
       + 'La mission est interrompue : ni récompense ni pénalité.';
     els.mask05CancelNotice.classList.remove('hidden');
     mask05CancelNoticeTimer = setTimeout(() => {
@@ -6540,10 +6612,10 @@ syncMusicForActiveTab();
       'death-audio': 'sacrifice-refuse'
     };
     if (r.stage === 'aggressor-number') {
-      return 'audio/events/masque/designations/joueur-' + r.aggressor + '.mp3';
+      return playerDesignation(r.aggressor);
     }
     if (r.stage === 'victim-number') {
-      return 'audio/events/masque/designations/joueur-' + r.victim + '.mp3';
+      return playerDesignation(r.victim);
     }
     return names[r.stage] ? base + names[r.stage] + '.mp3' : null;
   }
@@ -6603,7 +6675,7 @@ syncMusicForActiveTab();
     els.mask07Overlay.setAttribute('aria-hidden', 'false');
     els.mask07Portrait.src = getMaskState(state.value).src;
     els.mask07Pair.textContent =
-      'JOUEUR ' + r.aggressor + ' — OFFRE  •  JOUEUR ' + r.victim + ' — REÇOIT';
+      playerLabel(r.aggressor).toLocaleUpperCase('fr-FR') + ' — OFFRE  •  ' + playerLabel(r.victim).toLocaleUpperCase('fr-FR') + ' — REÇOIT';
     els.mask07Pair.classList.toggle('hidden', [
       'intro','aggressor-before','aggressor-number','aggressor-after',
       'victim-before','victim-number'
@@ -6646,12 +6718,12 @@ syncMusicForActiveTab();
       showDetail('Le résultat du jeton est conservé, même après actualisation.');
     } else if (stage === 'hp-choice') {
       els.mask07Status.textContent = 'ESQUIVE RATÉE !';
-      showDetail('JOUEUR ' + r.victim + ', combien de PV te reste-t-il AVANT le coup ?\nLe Companion ne connaît pas tes PV.');
+      showDetail(playerLabel(r.victim).toLocaleUpperCase('fr-FR') + ', combien de PV te reste-t-il AVANT le coup ?\nLe Companion ne connaît pas tes PV.');
       button('mask07Primary','2 PV OU PLUS — PERDRE 1 PV');
       button('mask07Secondary','1 PV — COUP POTENTIELLEMENT MORTEL');
     } else if (stage === 'sacrifice-choice') {
       els.mask07Status.textContent = 'LA VIE CONTRE UN OBJET';
-      showDetail('JOUEUR ' + r.victim +
+      showDetail(playerLabel(r.victim).toLocaleUpperCase('fr-FR') +
         ', pour conserver ton dernier PV, défausse un objet de ton sac à dos. ' +
         'Si ton sac est vide, sacrifie une arme ou une armure équipée.\n' +
         'Sans sacrifice, le coup est mortel.');
@@ -6659,10 +6731,10 @@ syncMusicForActiveTab();
       button('mask07Secondary','AUCUN OBJET / JE REFUSE — RISQUE DE MORT');
     } else if (stage === 'death-confirm') {
       els.mask07Status.textContent = 'CONFIRMER LA MORT DU SURVIVANT';
-      showDetail('Attention : JOUEUR ' + r.victim + ' va mourir. ' +
+      showDetail('Attention : ' + playerLabel(r.victim).toLocaleUpperCase('fr-FR') + ' va mourir. ' +
         'Le Companion le marquera comme MORT dans la liste des joueurs.\n' +
         'Confirmez uniquement si aucun objet n’est sacrifié.');
-      button('mask07Confirm','CONFIRMER : JOUEUR ' + r.victim + ' MEURT');
+      button('mask07Confirm','CONFIRMER : ' + playerLabel(r.victim).toLocaleUpperCase('fr-FR') + ' MEURT');
       button('mask07Secondary','REVENIR AU SACRIFICE');
     } else if (stage === 'outcome') {
       els.mask07Status.textContent = 'ÉPREUVE TERMINÉE';
@@ -6670,15 +6742,15 @@ syncMusicForActiveTab();
       if (r.coinOutcome === 'success') {
         result = 'PILE — ESQUIVE RÉUSSIE.';
       } else if (r.penalty === 'injury') {
-        result = 'FACE — ESQUIVE RATÉE.\n\nJOUEUR ' + r.victim
+        result = 'FACE — ESQUIVE RATÉE.\n\n' + playerLabel(r.victim).toLocaleUpperCase('fr-FR')
           + ' perd 1 PV.\nReportez cette blessure sur sa feuille de personnage.';
       } else if (r.penalty === 'sacrifice') {
-        result = 'FACE — ESQUIVE RATÉE.\n\nJOUEUR ' + r.victim
+        result = 'FACE — ESQUIVE RATÉE.\n\n' + playerLabel(r.victim).toLocaleUpperCase('fr-FR')
           + ' conserve son dernier PV en sacrifiant un objet.\n'
           + 'L’objet doit avoir été défaussé sur le plateau.';
       } else if (r.penalty === 'death') {
-        result = 'FACE — ESQUIVE RATÉE.\n\nAucun objet sacrifié : JOUEUR '
-          + r.victim + ' meurt.\nMettez sa feuille de personnage à jour.';
+        result = 'FACE — ESQUIVE RATÉE.\n\nAucun objet sacrifié : '
+          + playerLabel(r.victim).toLocaleUpperCase('fr-FR') + ' meurt.\nMettez sa feuille de personnage à jour.';
       }
       showDetail(result);
       button('mask07Primary','CONTINUER LA PARTIE');
@@ -7273,13 +7345,13 @@ syncMusicForActiveTab();
     els.maskEventStatus.textContent = 'Deux regards. Un arbitre. Trente secondes.';
     els.maskEventPlay.classList.add('hidden');
     els.maskEventOverlay.classList.add('has-duel');
-    els.maskDuelPlayer1.textContent = 'JOUEUR ' + running.player;
-    els.maskDuelPlayer2.textContent = 'JOUEUR ' + running.opponent;
+    els.maskDuelPlayer1.textContent = playerLabel(running.player).toLocaleUpperCase('fr-FR');
+    els.maskDuelPlayer2.textContent = playerLabel(running.opponent).toLocaleUpperCase('fr-FR');
     els.maskDuelHelp.textContent = livingPlayerNumbers().length > 2
       ? 'Confiez le téléphone à un témoin. Le premier à détourner les yeux perd.'
       : 'Confiez le téléphone à un témoin disponible. Sinon, confirmez honnêtement le résultat après le duel.';
-    els.maskDuelLoss1.textContent = 'JOUEUR ' + running.player + ' A DÉTOURNÉ LE REGARD';
-    els.maskDuelLoss2.textContent = 'JOUEUR ' + running.opponent + ' A DÉTOURNÉ LE REGARD';
+    els.maskDuelLoss1.textContent = playerLabel(running.player).toLocaleUpperCase('fr-FR') + ' A DÉTOURNÉ LE REGARD';
+    els.maskDuelLoss2.textContent = playerLabel(running.opponent).toLocaleUpperCase('fr-FR') + ' A DÉTOURNÉ LE REGARD';
     els.maskDuelLoss1.disabled = true;
     els.maskDuelLoss2.disabled = true;
     els.maskDuelSuccess.disabled = true;
@@ -7399,13 +7471,13 @@ syncMusicForActiveTab();
     els.maskEventDone.classList.remove('hidden');
     if (running.duelOutcome === 'both') {
       els.maskEventEffect.textContent =
-        'Les joueurs ' + running.player + ' et ' + running.opponent
+        'Les joueurs ' + playerLabel(running.player) + ' et ' + playerLabel(running.opponent)
         + ' ont tenu 30 secondes.\n\n'
         + 'Chacun pioche 1 carte Objet (2 cartes au total).';
     } else {
       const loser = running.duelOutcome === 'first' ? running.player : running.opponent;
       els.maskEventEffect.textContent =
-        'Joueur ' + loser + ' a détourné le regard.\n\n'
+        playerLabel(loser) + ' a détourné le regard.\n\n'
         + 'Le Masque le prend en pitié : ce joueur pioche 1 carte Objet. '
         + 'L’autre ne reçoit rien.';
     }
@@ -7877,12 +7949,12 @@ syncMusicForActiveTab();
     els.radioEventOverlay.classList.remove('is-speaking');
     els.radioEventStatus.textContent = recipients.length >= 2
       ? 'Le local est vide… mais les affaires promises sont bien là.\n\n'
-        + 'JOUEUR ' + recipients[0] + ' et JOUEUR ' + recipients[1]
+        + playerLabel(recipients[0]).toLocaleUpperCase('fr-FR') + ' et ' + playerLabel(recipients[1]).toLocaleUpperCase('fr-FR')
         + ' : piochez chacun UNE carte Objet.\n\n'
         + 'Les deux bénéficiaires ont été tirés au hasard.'
       : recipients.length === 1
         ? 'Le local est vide… mais le matériel est toujours là.\n\n'
-          + 'JOUEUR ' + recipients[0] + ' : pioche UNE carte Objet.'
+          + playerLabel(recipients[0]).toLocaleUpperCase('fr-FR') + ' : pioche UNE carte Objet.'
         : 'Le local est vide. Aucun survivant ne peut recevoir la récompense.';
     els.radioEventPlay.classList.add('hidden');
     els.radioEventSkip.classList.add('hidden');
@@ -8407,7 +8479,7 @@ syncMusicForActiveTab();
     const path=stage==='gong'?'audio/events/sfx/gong-fin-chronometre.mp3':
       stage==='glitch'?r.item.glitch:
       stage==='maskintro'?r.item.maskIntro:
-      stage==='designation'?'audio/events/masque/designations/joueur-'+r.target+'.mp3':
+      stage==='designation'?playerDesignation(r.target):
       stage==='maskepreuve'?r.item.maskChallenge:
       stage==='reaction'?(r.outcome==='success'?r.item.success:r.item.failure):null;
     if(!path)return;
@@ -8510,7 +8582,7 @@ syncMusicForActiveTab();
   }
   function radio03ShowChoices(){
     const r=currentRadio03;if(!r||r.stage!=='choices')return;
-    els.radio03Status.textContent='JOUEUR '+r.target+
+    els.radio03Status.textContent=playerLabel(r.target).toLocaleUpperCase('fr-FR')+
       ' : restitue les cinq couleurs dans l’ordre. Tes compagnons peuvent t’aider.';
     els.radio03Challenge.classList.remove('hidden');
     els.radio03Overlay.classList.remove('is-speaking');
@@ -8572,7 +8644,7 @@ syncMusicForActiveTab();
     els.radio03Status.textContent='TRANSMISSION TERMINÉE';
     const correct=r.sequence.map(c=>c.toUpperCase()).join(' → ');
     const message=r.outcome==='success'
-      ?'JOUEUR '+r.target+' : réponse correcte ! Pioche 2 cartes Objet, uniquement pour toi.'
+      ?playerLabel(r.target).toLocaleUpperCase('fr-FR')+' : réponse correcte ! Pioche 2 cartes Objet, uniquement pour toi.'
       :r.outcome==='timeout'
         ?'Temps écoulé. L’Instabilité globale du groupe augmente de 5 points.'
         :'Mauvaise réponse. L’Instabilité globale du groupe augmente de 5 points.';
@@ -8795,10 +8867,14 @@ syncMusicForActiveTab();
         living: livingPlayerNumbers,
         // Les noms seront associés aux emplacements de joueurs ultérieurement.
         // Aucun fichier « Joueur X » n'est prononcé par cet animateur.
+        // Deux homonymes restent identifiables par leur place pendant le tirage.
         playerName: n => {
-          const value = eventSession.playerNames?.[n - 1];
-          return typeof value === 'string' && value.trim()
-            ? value.trim() : 'Joueur ' + n;
+          const label = playerLabel(n);
+          const names = eventSession.playerNames || [];
+          const similar = names.filter(v => v.trim()
+            && window.RdVPlayerNames?.normalized(v) ===
+              window.RdVPlayerNames?.normalized(label)).length;
+          return similar > 1 ? label + ' · J' + n : label;
         },
         applyDelta: (delta, source) => applyInstabilityDelta(delta, {
           source, deferThreshold: true, deferGameOver: true
@@ -9951,6 +10027,7 @@ syncMusicForActiveTab();
       );
 
     els.btnStartEvents.addEventListener('click', startAudioEvents);
+    els.btnConfigurePlayers.addEventListener('click', openPlayersModal);
     els.btnPlayers.addEventListener('click', openPlayersModal);
     els.playersClose.addEventListener('click', closePlayersModal);
     els.testMaskEventSelect.addEventListener('change', renderEventControls);
