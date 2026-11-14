@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.23 — Espacement sécurisé après événement forcé';
+  const VERSION = 'v1.5.24 — Préparation sonore au lancement';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -21,6 +21,7 @@
   const PASSPHRASE_HASH =
     'sha256:779d99b88c773f38617d286974f7882cbbc7f91781ef98287c55a5e89ea09e9f';
   const GATE_KEY = 'playtest_gate_hash';
+  const AUDIO_SETUP_SESSION_KEY = LSK('audio_setup_acknowledged_v1');
 
   const BESTIAIRE_PATHS = {
     image: 'bestiaire/images/',
@@ -115,6 +116,8 @@ campAudio: $('campAudio'),
     playersConfirm: $('playersConfirm'),
     btnPlayers: $('btnPlayers'),
     btnAdmin: $('btnAdmin'),
+    audioSetupModal: $('audioSetupModal'),
+    audioSetupContinue: $('audioSetupContinue'),
     adminModal: $('adminModal'),
     adminClose: $('adminClose'),
     adminAuth: $('adminAuth'),
@@ -2027,7 +2030,8 @@ function syncAmbientVolume() {
 
   function anyBlockingModalOpen() {
     return (
-      els.adminModal.classList.contains('show')
+      els.audioSetupModal.classList.contains('show')
+      || els.adminModal.classList.contains('show')
       || els.gate
         .classList
         .contains('show')
@@ -4660,7 +4664,7 @@ syncMusicForActiveTab();
         .classList
         .remove('show');
 
-      startApp();
+      startAfterAudioSetup();
     }
 
     catch (_) {
@@ -10260,6 +10264,63 @@ syncMusicForActiveTab();
   // DÉMARRAGE / ÉVÉNEMENTS
   // =========================================================
 
+  // Invitation sonore une fois par session d'utilisation. sessionStorage
+  // survit à F5 dans le même onglet/PWA sans persister comme localStorage.
+  // Les navigateurs mobiles peuvent néanmoins restaurer la même session.
+  function audioSetupAcknowledged() {
+    try { return sessionStorage.getItem(AUDIO_SETUP_SESSION_KEY) === '1'; }
+    catch (_) { return false; }
+  }
+
+  function rememberAudioSetup() {
+    try { sessionStorage.setItem(AUDIO_SETUP_SESSION_KEY, '1'); }
+    catch (_) {}
+  }
+
+  function audioEventNeedsRecovery() {
+    if (!eventSession.active) return false;
+    // Une narration/épreuve déjà interrompue doit garder la priorité
+    // absolue sur la fenêtre de conseils techniques.
+    return Boolean(
+      eventSession.introPhase
+      || eventSession.pendingMask005
+      || eventSession.pendingMask006
+      || eventSession.pendingMask007
+      || eventSession.pendingRadio002
+      || eventSession.pendingRadio003
+      || eventSession.pendingRadio004
+      || eventSession.pendingRadio005
+      || eventSession.pendingWeather
+      || ['resolving', 'reward'].includes(eventSession.radioMission?.stage)
+    );
+  }
+
+  function startAfterAudioSetup() {
+    if (appStarted) return;
+    if (audioSetupAcknowledged() || audioEventNeedsRecovery()) {
+      // Ne pas afficher la fenêtre lors d'une reprise audio ; elle ne doit
+      // pas surgir plus tard après actualisation pendant la même session.
+      rememberAudioSetup();
+      startApp();
+      return;
+    }
+    els.audioSetupModal.classList.add('show');
+    els.audioSetupModal.setAttribute('aria-hidden', 'false');
+    els.appMain.inert = true;
+    els.audioSetupContinue.focus();
+  }
+
+  function confirmAudioSetup() {
+    if (!els.audioSetupModal.classList.contains('show')) return;
+    rememberAudioSetup();
+    els.audioSetupModal.classList.remove('show');
+    els.audioSetupModal.setAttribute('aria-hidden', 'true');
+    els.appMain.inert = false;
+    // Démarrer l'application seulement après confirmation : aucune musique,
+    // aucun son d'ambiance ou événement ne peut accompagner cette fenêtre.
+    startApp();
+  }
+
   function startApp() {
     if (appStarted) {
       return;
@@ -10303,6 +10364,7 @@ syncMusicForActiveTab();
   }
 
   function bindEvents() {
+    els.audioSetupContinue.addEventListener('click', confirmAudioSetup);
     els.btnJournal
       .addEventListener(
         'click',
@@ -10684,7 +10746,7 @@ syncMusicForActiveTab();
         .classList
         .remove('show');
 
-      startApp();
+      startAfterAudioSetup();
     }
 
     else {
