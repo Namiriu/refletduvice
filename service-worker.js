@@ -1,4 +1,4 @@
-const CACHE = 'instability-v78';
+const CACHE = 'instability-v120';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -7,6 +7,11 @@ const ASSETS = [
   './',
   './index.html',
   './app.js',
+  './radio004.js',
+  './radio004.css',
+  './radio005.js',
+  './radio005.css',
+  './prenoms.js',
   './bestiaire-data.js',
   './manifest.webmanifest',
 
@@ -16,6 +21,7 @@ const ASSETS = [
 
   // Masques d'Instabilité
   './img/masque0.png',
+  './img/masque-presentations.webp',
   './img/masque15.png',
   './img/masque25.png',
   './img/masque40.png',
@@ -23,6 +29,9 @@ const ASSETS = [
   './img/masque65.png',
   './img/masque75.png',
   './img/masque90.png',
+  // Les deux faces illustrées du jeton du Masque.
+  './img/jeton-masque-pile.png',
+  './img/jeton-masque-face.png',
   './img/icon-sac-a-dos.svg',
 
   // Boutons Instabilité
@@ -111,6 +120,9 @@ const ASSETS = [
 
   // Introduction : le Masque accueille les joueurs au lancement
   './audio/events/masque/introduction/masque-000-presentation.mp3',
+  './audio/events/masque/introduction/masque-000-demande-prenoms.mp3',
+  './audio/events/masque/introduction/masque-000-reaction-prenoms.mp3',
+  './audio/events/masque/introduction/masque-000-aucun-prenom.mp3',
 
   // Événements audio — Le Masque (prototype hors connexion)
   './audio/events/masque/designations/joueur-1.mp3',
@@ -124,13 +136,111 @@ const ASSETS = [
 './audio/events/masque/interventions/masque-004-regard-du-vice-epreuve.mp3',
 './audio/events/masque/interventions/masque-004-regard-du-vice-perdant.mp3',
 './audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3',
+  // Masque 005 — dialogues et gong réutilisable
+  './audio/events/masque/interventions/masque-005-confidence-intro.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-cible.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-transfert.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-secrete.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-verdict.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-reussite.mp3',
+  './audio/events/masque/interventions/masque-005-confidence-echec.mp3',
+  // Masque 006 — La Comptine des oubliés
+  './audio/events/masque/interventions/masque-006-comptine.MP3',
+  './audio/events/masque/interventions/masque-006-intro.mp3',
+  './audio/events/masque/interventions/masque-006-non.mp3',
+  './audio/events/masque/interventions/masque-006-oui.mp3',
+  './audio/events/masque/interventions/masque-006-question.mp3',
+  // MASQUE-007 — 12 répliques, jeton entièrement construit en CSS
+  './audio/events/masque/interventions/masque-007-agresseur-apres.mp3',
+  './audio/events/masque/interventions/masque-007-agresseur-avant.mp3',
+  './audio/events/masque/interventions/masque-007-danger-mortel.mp3',
+  './audio/events/masque/interventions/masque-007-esquive-ratee-blessure.mp3',
+  './audio/events/masque/interventions/masque-007-esquive-reussie.mp3',
+  './audio/events/masque/interventions/masque-007-intro.mp3',
+  './audio/events/masque/interventions/masque-007-jeton.mp3',
+  './audio/events/masque/interventions/masque-007-revelation.mp3',
+  './audio/events/masque/interventions/masque-007-sacrifice-accepte.mp3',
+  './audio/events/masque/interventions/masque-007-sacrifice-refuse.mp3',
+  './audio/events/masque/interventions/masque-007-victime-apres.mp3',
+  './audio/events/masque/interventions/masque-007-victime-avant.mp3',
+  // RADIO-005 — jingles, voix et bruitages (montage du public en direct)
+  './audio/events/radio/radio-005-accepter.mp3',
+  './audio/events/radio/radio-005-choix.mp3',
+  './audio/events/radio/radio-005-colere.mp3',
+  './audio/events/radio/radio-005-conclusion.mp3',
+  './audio/events/radio/radio-005-fanfare-cadeau.mp3',
+  './audio/events/radio/radio-005-fanfare-jeu.mp3',
+  './audio/events/radio/radio-005-gagnant.mp3',
+  './audio/events/radio/radio-005-intro.mp3',
+  './audio/events/radio/radio-005-jeu.mp3',
+  './audio/events/radio/radio-005-jingle-fin.mp3',
+  './audio/events/radio/radio-005-jingle-ouverture.mp3',
+  './audio/events/radio/radio-005-jingle-pub.mp3',
+  './audio/events/radio/radio-005-jingle-retour.mp3',
+  './audio/events/radio/radio-005-objet-micro.mp3',
+  './audio/events/radio/radio-005-public-applaudissements.mp3',
+  './audio/events/radio/radio-005-public-coups.mp3',
+  './audio/events/radio/radio-005-public-presentation.mp3',
+  './audio/events/radio/radio-005-public-reaction.mp3',
+  './audio/events/radio/radio-005-publicite.mp3',
+  './audio/events/radio/radio-005-refuser.mp3',
+  './audio/events/radio/radio-005-sequestre-1.mp3',
+  './audio/events/radio/radio-005-sequestre-2.mp3',
+  './audio/events/radio/radio-005-tirage.mp3',
+  './audio/events/radio/radio-004-1073-murmure.mp3',
+  './audio/events/radio/radio-004-1073-reussite.mp3',
+  './audio/events/radio/radio-004-884-annonce.mp3',
+  './audio/events/radio/radio-004-884-reussite.mp3',
+  './audio/events/radio/radio-004-947-consigne.mp3',
+  './audio/events/radio/radio-004-947-interruption.mp3',
+  './audio/events/radio/radio-004-947-reussite.mp3',
+  './audio/events/radio/radio-004-alerte.mp3',
+  './audio/events/radio/radio-004-ambiance-ferroviaire.mp3',
+  './audio/events/radio/radio-004-changement-frequence.mp3',
+  './audio/events/radio/radio-004-echec.mp3',
+  './audio/events/radio/radio-004-glitch-ecran.mp3',
+  './audio/events/radio/radio-004-interferences.mp3',
+  './audio/events/radio/radio-004-intro.mp3',
+  './audio/events/radio/radio-004-parasites.mp3',
+  './audio/events/radio/radio-004-respiration.mp3',
+  './audio/events/radio/radio-004-signal-perdu.mp3',
+  './audio/events/radio/radio-004-signal-reussi.mp3',
+  './audio/events/sfx/gong-fin-chronometre.mp3',
+  './audio/events/sfx/jeton-verdict.mp3',
   // Première transmission radio : appel monté + résolution narrée
   './audio/events/radio/radio-001-derriere-la-porte.MP3',
   './audio/events/radio/radio-001-resolution-local-vide.mp3',
+  './audio/events/radio/radio-002-rapport-impossible.mp3',
+  './audio/events/radio/radio-002-repondre.mp3',
+  './audio/events/radio/radio-002-couper.mp3',
+  './audio/events/radio/radio-002-silence.mp3',
+  // RADIO-003 : sanctuaire, prise de contrôle du Masque et voix TV variables
+  './audio/events/radio/radio-003-transmission.mp3',
+  './audio/events/radio/radio-003-ambiance-sanctuaire.mp3',
+  './audio/events/radio/radio-003-brouillage.mp3',
+  './audio/events/radio/radio-003-masque-intro.mp3',
+  './audio/events/radio/radio-003-masque-epreuve.mp3',
+  './audio/events/radio/radio-003-masque-reussite.mp3',
+  './audio/events/radio/radio-003-masque-echec.mp3',
+  './audio/events/sfx/rouge-normal.mp3',
+  './audio/events/sfx/rouge-telephone.mp3',
+  './audio/events/sfx/bleu-normal.mp3',
+  './audio/events/sfx/bleu-telephone.mp3',
+  './audio/events/sfx/vert-normal.mp3',
+  './audio/events/sfx/vert-telephone.mp3',
+  './audio/events/sfx/jaune-normal.mp3',
+  './audio/events/sfx/jaune-telephone.mp3',
 
   // Météo — récits finalisés du narrateur avec sound design intégré
   './audio/events/meteo/meteo-001-pression-fantome.mp3',
   './audio/events/meteo/meteo-002-pluie-a-rebours.mp3',
+  './audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3',
+  './audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-intro.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-choix.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-resister.mp3',
+  './audio/events/meteo/meteo-004-dernier-battement-ceder.mp3',
+  './bestiaire/videos/gardienne-du-vice.webm',
 
   // Ambiance
   './audio/ambient_loop.mp3',
@@ -166,12 +276,43 @@ const SHELL_ASSETS = [
   './',
   './index.html',
   './app.js',
+  './radio004.js',
+  './radio004.css',
+  './radio005.js',
+  './radio005.css',
+  './prenoms.js',
   './bestiaire-data.js',
   './manifest.webmanifest',
   './icons/icon-192.png'
 ];
 const MEDIA_ASSETS = ASSETS.filter(asset => !SHELL_ASSETS.includes(asset));
 const MEDIA_REVISIONS = {
+  "./audio/events/masque/introduction/masque-000-aucun-prenom.mp3": "c54bdd4c481d5660d78d542bf3532773dfc6e78a",
+  "./audio/events/masque/introduction/masque-000-demande-prenoms.mp3": "19f3229ff850c9daa646058dec245b664eeefa4e",
+  "./audio/events/masque/introduction/masque-000-reaction-prenoms.mp3": "2131974e14b9022e0dd5b8a01f635b2792a5e018",
+  "./audio/events/radio/radio-005-accepter.mp3": "2f50b033ae414006e01ae4f54cc92569dd2c5bc5",
+  "./audio/events/radio/radio-005-choix.mp3": "bb7bf70d9a8531adb3ea79edffb187a1b7d51094",
+  "./audio/events/radio/radio-005-colere.mp3": "f96b488dfe7c0d16aa0607fd7bb5afcbc6fe9201",
+  "./audio/events/radio/radio-005-conclusion.mp3": "e612a80f067864660c0d60f579840976d56d47a6",
+  "./audio/events/radio/radio-005-fanfare-cadeau.mp3": "fb3f459300e43cf19bedde9ed2bcf355d23246dc",
+  "./audio/events/radio/radio-005-fanfare-jeu.mp3": "c801350c69f6ae0351535c521feae1893f4f10ea",
+  "./audio/events/radio/radio-005-gagnant.mp3": "43018d337a95467623e0e060027485027a45a7f4",
+  "./audio/events/radio/radio-005-intro.mp3": "93282ae52123d0909eda582cddd02bcda103a1fc",
+  "./audio/events/radio/radio-005-jeu.mp3": "e99f0347495c3ff73078934efcc7df8f3330b9eb",
+  "./audio/events/radio/radio-005-jingle-fin.mp3": "8fdcfdb120c195b7fdd6da2f170a643445e37411",
+  "./audio/events/radio/radio-005-jingle-ouverture.mp3": "d0e77a3b034f164f7b42bbb2cc1b0db01c850c05",
+  "./audio/events/radio/radio-005-jingle-pub.mp3": "3b7e258d0fa278aa1b41f8faf715d8604e65cbcb",
+  "./audio/events/radio/radio-005-jingle-retour.mp3": "dbebe2269749d36192f59cf0df17d8bda1380aa2",
+  "./audio/events/radio/radio-005-objet-micro.mp3": "09ba355c62b8b6c13aa399627b04db0bff1d51dc",
+  "./audio/events/radio/radio-005-public-applaudissements.mp3": "81ed4ac56042b448320c2c5c9bd5c63701c570d2",
+  "./audio/events/radio/radio-005-public-coups.mp3": "3beed92c306798170f6d4e75ed8bc198ef510ac7",
+  "./audio/events/radio/radio-005-public-presentation.mp3": "5ebdb08e50ec5b55f0017e599dbc1a7626525b13",
+  "./audio/events/radio/radio-005-public-reaction.mp3": "f5d3c68ee6261c56be6916ed4c9167fadc223450",
+  "./audio/events/radio/radio-005-publicite.mp3": "65e35ba5ec1fa48b2dc551038e8b9052c9065f77",
+  "./audio/events/radio/radio-005-refuser.mp3": "999d89f92cd4e453d5511105ba000f0092ed30a3",
+  "./audio/events/radio/radio-005-sequestre-1.mp3": "36e6f8f28b0c3adc4c51aa01059c7b1c3ee7df98",
+  "./audio/events/radio/radio-005-sequestre-2.mp3": "395c725ee4ffec0fd34d359ea965f9cad5479755",
+  "./audio/events/radio/radio-005-tirage.mp3": "ea9fd3a44f9359ee6575e7c104f71617f5b6a5d4",
   "./img/bg.webp": "7147cd9081980c4577f2e3e0b6c1b082d269b9a3",
   "./img/masque0.png": "3866a6674214aeadaaad73a79d9929a90fc0d94c",
   "./img/masque15.png": "d8421c273f3efc14be9e493787a1b5a073c679ce",
@@ -181,6 +322,8 @@ const MEDIA_REVISIONS = {
   "./img/masque65.png": "394d58c4abe5b075e481f20a5861efa4181cdccc",
   "./img/masque75.png": "047e5d0b4bec6aeae47d222b359a382c5486ace3",
   "./img/masque90.png": "70c5160a5cceafc5ea380245d6090da0a7fcc3d0",
+  "./img/jeton-masque-pile.png": "3116393e7ad5cc11145ef427ee24d1f70c9858d4",
+  "./img/jeton-masque-face.png": "fa9d67185e2038a906c43ca1ac238efdf9d4363d",
   "./img/icon-sac-a-dos.svg": "7bd86cdf6908dcb07aab9b7fe96ab5c242914adc",
   "./img/btn_moins5.png": "bc266bb683cc1c67d8e1612f8fd665f8172631f2",
   "./img/btn_plus5.png": "e0ca1b4352c22d14d1eebc316ec808a30664e82e",
@@ -272,10 +415,80 @@ const MEDIA_REVISIONS = {
   "./audio/events/masque/interventions/masque-004-regard-du-vice-epreuve.mp3": "21394f03272827e2846ea6b1927b55558646ba42",
   "./audio/events/masque/interventions/masque-004-regard-du-vice-perdant.mp3": "88e44b914376506ddd478231f7854290693a5a5e",
   "./audio/events/masque/interventions/masque-004-regard-du-vice-reussite.mp3": "9bc3b59d8ce0adc120b654ea700eeb7df141602e",
+  "./audio/events/masque/interventions/masque-005-confidence-intro.mp3": "d6d39e4d0f7816c295170d22416200987dc89ae2",
+  "./audio/events/masque/interventions/masque-005-confidence-cible.mp3": "a157f63bc4810b24b5d00803945a62c1c71e4b33",
+  "./audio/events/masque/interventions/masque-005-confidence-transfert.mp3": "ccde91162c2cba0f70ace6b8f27c25d01bafb96b",
+  "./audio/events/masque/interventions/masque-005-confidence-secrete.mp3": "5ff59be9860f8f8c87fe90cbd5a83aa5f3237709",
+  "./audio/events/masque/interventions/masque-005-confidence-verdict.mp3": "339ce5ebd03bf0cd05733f5b701be0de3b4fb070",
+  "./audio/events/masque/interventions/masque-005-confidence-reussite.mp3": "48ec07bbc18e41f66de7eb3ea9b17a314617dee0",
+  "./audio/events/masque/interventions/masque-005-confidence-echec.mp3": "31bc495f2853a1aa00bf926c86953f4c6cd16f2e",
+  "./audio/events/masque/interventions/masque-006-comptine.MP3": "190d9da7b15da1823eb927f48e58e1634704334b",
+  "./audio/events/masque/interventions/masque-006-intro.mp3": "cdd67f739dd8609aca8fa35e454fca0d084e530e",
+  "./audio/events/masque/interventions/masque-006-non.mp3": "d9980065c8d99bc2925af557acfe9b7b43838d12",
+  "./audio/events/masque/interventions/masque-006-oui.mp3": "d761872d14deb99a5b8ab3d054aa5ec7fe2c2e1d",
+  "./audio/events/masque/interventions/masque-006-question.mp3": "e878a07088f43fc9de411c0d4a4f27f5d095076b",
+  "./audio/events/masque/interventions/masque-007-agresseur-apres.mp3": "876eb2220e3fcd9494772fc807a951fd31c6bab4",
+  "./audio/events/masque/interventions/masque-007-agresseur-avant.mp3": "0d5da1e3df336b6b774ff09e2a678482fd2695d5",
+  "./audio/events/masque/interventions/masque-007-danger-mortel.mp3": "0776a2f6763bce13bd7163eb713ea59b27fc1d49",
+  "./audio/events/masque/interventions/masque-007-esquive-ratee-blessure.mp3": "b55b673b1ba1da5dcaef02462c945480fafa5b76",
+  "./audio/events/masque/interventions/masque-007-esquive-reussie.mp3": "c780802a018129b851d0e03975357653b39fbd36",
+  "./audio/events/masque/interventions/masque-007-intro.mp3": "225a14663de46fe417e23131c7d7037f2547009d",
+  "./audio/events/masque/interventions/masque-007-jeton.mp3": "b52d4eab0ef3df7a8e8e42424da32914caf1ed64",
+  "./audio/events/masque/interventions/masque-007-revelation.mp3": "9be37f5abbc4d9494d772a5ea0614c46801b80d1",
+  "./audio/events/masque/interventions/masque-007-sacrifice-accepte.mp3": "025e7246ccb5c6a18c1ba8abe5ef3ad05e85fb6e",
+  "./audio/events/masque/interventions/masque-007-sacrifice-refuse.mp3": "bc5467abf55a60e1d6961ae53f8c83abbc02b28a",
+  "./audio/events/masque/interventions/masque-007-victime-apres.mp3": "7f68b70d2ae16bc934f3c3167654b693ece69ddf",
+  "./audio/events/masque/interventions/masque-007-victime-avant.mp3": "8f037a81244befbed01e3342c47399985acb556e",
+  "./audio/events/radio/radio-004-1073-murmure.mp3": "6610e2300aabc7fee60b00c7ebebfb796f395773",
+  "./audio/events/radio/radio-004-1073-reussite.mp3": "24380d5487e8968bcfd89a1dc2113f63485afd32",
+  "./audio/events/radio/radio-004-884-annonce.mp3": "e2d23c7c687032390ef5574962e60ae745bb9729",
+  "./audio/events/radio/radio-004-884-reussite.mp3": "e1771de707ff6b898dcc16d89e09957a5fe25855",
+  "./audio/events/radio/radio-004-947-consigne.mp3": "40f96cdd69d91a13f1dbad5dea5b758b3fd67f0d",
+  "./audio/events/radio/radio-004-947-interruption.mp3": "4f3aed3b1ebe76aac61466f24255caae04f1795a",
+  "./audio/events/radio/radio-004-947-reussite.mp3": "c57e0ef10f2baa78232e30d75ee689a44b55a1a8",
+  "./audio/events/radio/radio-004-alerte.mp3": "48ea73b0bde8462214dc7d5b89fb0ff4f2649714",
+  "./audio/events/radio/radio-004-ambiance-ferroviaire.mp3": "fe5d4b51cd0aeeade3ec43a82896cf8d877d723e",
+  "./audio/events/radio/radio-004-changement-frequence.mp3": "597b6a1250ba74786a7acf6030a8c5f2611e144c",
+  "./audio/events/radio/radio-004-echec.mp3": "334aba8e3ae85d727ecd4ae45599725c043507ef",
+  "./audio/events/radio/radio-004-glitch-ecran.mp3": "9acf3f36e98bd4a2dd4ba5cc85a52cccfd57d6b4",
+  "./audio/events/radio/radio-004-interferences.mp3": "2e194888a9a8a0317a48dd5bbdd8d6b25c906617",
+  "./audio/events/radio/radio-004-intro.mp3": "56fcf0fe0e738bbd02b7c9b3f4920454a674538c",
+  "./audio/events/radio/radio-004-parasites.mp3": "23988e736be33078c2f8f62e611ffb6985abe880",
+  "./audio/events/radio/radio-004-respiration.mp3": "1bfd1edfa2ef4dcaea55dcb9759d2662372c2c7b",
+  "./audio/events/radio/radio-004-signal-perdu.mp3": "ab9c3a177a90c2b16736e8e701fbed61bd14e1c2",
+  "./audio/events/radio/radio-004-signal-reussi.mp3": "0c9f0b18c0e95a0a8475a1dd5c821904513dabe0",
+  "./audio/events/sfx/gong-fin-chronometre.mp3": "04009fb2cc462e133b0646d3c92fe47fb85c36df",
+  "./audio/events/sfx/jeton-verdict.mp3": "d787f17e4e95eacae71ed271d7e78d4be2f9457a",
   "./audio/events/radio/radio-001-derriere-la-porte.MP3": "f058d8962a4e843d4af550cabc36989d58a29d6b",
   "./audio/events/radio/radio-001-resolution-local-vide.mp3": "9af4f7ee68a2358f9287c91816b201604a34c41e",
+  "./audio/events/radio/radio-002-rapport-impossible.mp3": "550bd2d4e932887bf8a89bf58ac7910951750217",
+  "./audio/events/radio/radio-002-repondre.mp3": "5306f609ea7b4454a269c9c753020c23d6635000",
+  "./audio/events/radio/radio-002-couper.mp3": "1849dd2d6720c8fee15d52052c918fe328087d0e",
+  "./audio/events/radio/radio-002-silence.mp3": "f623407c0e6bb0e89b79ff7ec257d9ca548ca87c",
+  "./audio/events/radio/radio-003-transmission.mp3": "72ed5ab4cd63725493d6266cc73d845e83b3def7",
+  "./audio/events/radio/radio-003-ambiance-sanctuaire.mp3": "51981e2934382091b0e4eefc68b5dba0c611efb5",
+  "./audio/events/radio/radio-003-brouillage.mp3": "e73f52b867364fe2974510697e9830a091b4e910",
+  "./audio/events/radio/radio-003-masque-intro.mp3": "83b14ef411306f1de451983943f8e2abe68a108c",
+  "./audio/events/radio/radio-003-masque-epreuve.mp3": "d2a1bb53c280f545ccf9404373d6c53272ec2ae6",
+  "./audio/events/radio/radio-003-masque-reussite.mp3": "11a9f667db71e4f7f24196b0c27bd28252a03057",
+  "./audio/events/radio/radio-003-masque-echec.mp3": "d63b284c26a3c89a59503a031f8690682495f678",
+  "./audio/events/sfx/rouge-normal.mp3": "fa37000e6dbcf6e36899a6509de8abc0936e3fda",
+  "./audio/events/sfx/rouge-telephone.mp3": "7f1ac4dde6ef914b122134a3d76be8dfe8b9e395",
+  "./audio/events/sfx/bleu-normal.mp3": "fbbec89e175a4474473f0422bb9a5febdce50dab",
+  "./audio/events/sfx/bleu-telephone.mp3": "3833153d67a6fb2258cf1bf16fce5796f5182542",
+  "./audio/events/sfx/vert-normal.mp3": "a77f86a4290b4cd6eaf668f31ba76eeadec2c6eb",
+  "./audio/events/sfx/vert-telephone.mp3": "4db04ebe42d0848cc2d8e49ef4d19482e379eb19",
+  "./audio/events/sfx/jaune-normal.mp3": "e2a2b2a63c6bb2226c4a58a0205a83d7c78e8d83",
+  "./audio/events/sfx/jaune-telephone.mp3": "cfbae60d6a165763a617f38c0509c97f5203b215",
   "./audio/events/meteo/meteo-001-pression-fantome.mp3": "fe45d827bd3792ce1a14ca66638a18ffafac2f45",
   "./audio/events/meteo/meteo-002-pluie-a-rebours.mp3": "2aa95887633d79f79a6857169d52b194d0101155",
+  "./audio/events/meteo/meteo-003-fracture-du-reel-normal-vers-reflet.mp3": "1967f5cd39d69cac7b61e5a6f93b2ee63b854500",
+  "./audio/events/meteo/meteo-003-fracture-du-reel-reflet-vers-normal.mp3": "b8a02d3918d829ddf00bc39a1a3b2c34051919d2",
+  "./audio/events/meteo/meteo-004-dernier-battement-intro.mp3": "44f443f9a2e9c647eeb5d1b21bfb1f5066b56aaf",
+  "./audio/events/meteo/meteo-004-dernier-battement-choix.mp3": "3ee606109f086ac563d4a98f011ac662ba132b98",
+  "./audio/events/meteo/meteo-004-dernier-battement-resister.mp3": "fde6dc4e22f84ebaf86b4053f26ddf52e9a87525",
+  "./audio/events/meteo/meteo-004-dernier-battement-ceder.mp3": "bbb22ccdd5a8f8a4615ebfbae755b462fb225a43",
+  "./bestiaire/videos/gardienne-du-vice.webm": "401df951c8f4e6f7c47aa1f46a116149a49c606b",
   "./audio/ambient_loop.mp3": "fdb97f1acd6ecd62731f3de9e8c78437cc0dc07b",
   "./audio/groan.wav": "20913ca3052fa4a40fe7fad2a35a8ec6a56ade79",
   "./audio/ritual_resurrection.wav": "afe2c7123a36e91e478f73825ec2529f5f1f1983",
@@ -355,6 +568,26 @@ self.addEventListener('install', event => {
 
 let mediaCacheJob = null;
 self.addEventListener('message', event => {
+  if (event.data?.type === 'rdv-cache-prenoms') {
+    const requested = Array.isArray(event.data.paths) ? event.data.paths : [];
+    // Un joueur ne peut jamais demander de mettre en cache une URL arbitraire.
+    const paths = requested.slice(0, 4).filter(path =>
+      typeof path === 'string'
+      && /^audio\/events\/masque\/prenoms\/[a-z]+\.mp3\?v=[a-f0-9]{12}$/.test(path));
+    event.waitUntil((async () => {
+      const cache = await caches.open(MEDIA_CACHE);
+      await Promise.all(paths.map(async path => {
+        try {
+          if (await cache.match(path)) return;
+          const audio = await fetch(path, {cache:'no-cache'});
+          if (audio.ok && audio.status === 200) await cache.put(path, audio);
+        } catch (_) {
+          // Une indisponibilité ponctuelle ne bloque jamais la PWA.
+        }
+      }));
+    })());
+    return;
+  }
   if (event.data?.type !== 'rdv-cache-offline-media') return;
   if (!mediaCacheJob) {
     mediaCacheJob = cachePersistentMedia()
@@ -421,6 +654,22 @@ self.addEventListener('fetch', event => {
           || (await caches.match('./index.html'))
           || Response.error();
       }
+    })());
+    return;
+  }
+
+  // Les 100 prénoms ne sont PAS préchargés au premier lancement.
+  // Chaque prénom sélectionné pourra néanmoins servir hors connexion.
+  if (path.origin === self.location.origin
+    && /\/audio\/events\/masque\/prenoms\/[a-z]+\.mp3$/.test(path.pathname)) {
+    event.respondWith((async () => {
+      const cache = await caches.open(MEDIA_CACHE);
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      const response = await fetch(event.request);
+      if (response.ok && response.status === 200)
+        await cache.put(event.request, response.clone());
+      return response;
     })());
     return;
   }
