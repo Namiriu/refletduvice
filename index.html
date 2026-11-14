@@ -1014,12 +1014,13 @@
       line-height:1.4;
     }
 
-    #version{
-      margin-top:12px;
-      text-align:center;
-      color:#74747a;
-      font-size:12px;
-    }
+    .app-bottom-controls{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:12px}
+    #version{text-align:center;color:#74747a;font-size:12px}
+    .admin-lock{border:0;background:transparent;color:#777079;opacity:.62;
+      padding:5px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;
+      cursor:pointer;min-width:28px;min-height:28px}
+    .admin-lock:hover,.admin-lock:focus-visible{opacity:1;color:#c1a5af}
+    .admin-lock:focus-visible{outline:2px solid #c1a5af;outline-offset:2px}
 
     /* =========================================================
        EFFETS GLOBAUX
@@ -1963,6 +1964,9 @@
     .admin-primary:disabled,.admin-secondary:disabled{opacity:.5;cursor:not-allowed}
     #adminUnlock{width:100%}
     .admin-delay-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .admin-weight-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:10px 0}
+    .admin-weight-grid label{font:700 11px/1.4 var(--font-ui);color:#de9db0}
+    .admin-weight-grid .admin-input{box-sizing:border-box;width:100%;margin-top:6px;min-height:38px}
     .admin-fieldset{min-width:0;margin:0;border:1px solid #624657;border-radius:10px;padding:9px 10px 11px}
     .admin-fieldset legend{padding:0 4px;color:#de9db0;font:700 10px/1.3 var(--font-ui)}
     .admin-fieldset .admin-input{min-height:37px}
@@ -2103,7 +2107,6 @@
             Plein écran
           </button>
           <button id="btnPlayers" class="utility-btn" type="button">JOUEURS · 4/4</button>
-          <button id="btnAdmin" class="utility-btn" type="button" aria-haspopup="dialog" aria-controls="adminModal">⚙ ADMIN</button>
 
         </div>
       </section>
@@ -2260,7 +2263,17 @@
       </div>
     </section>
 
-    <div id="version">v1.5.21 — Panneau administrateur et cadence audio</div>
+    <div class="app-bottom-controls">
+      <div id="version">v1.5.22 — Cadence et pondérations audio</div>
+      <button id="btnAdmin" class="admin-lock" type="button" aria-label="Ouvrir le panneau administrateur"
+              title="Administration" aria-haspopup="dialog" aria-controls="adminModal">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none"
+             stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5.5" y="10.5" width="13" height="10" rx="2"/>
+          <path d="M8.5 10.5V7a3.5 3.5 0 0 1 7 0v3.5"/>
+        </svg>
+      </button>
+    </div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2400,16 +2413,10 @@
       </div>
       <div id="adminAuth">
         <h3 id="adminGateTitle">ACCÈS ADMINISTRATEUR</h3>
-        <p class="admin-caption">Code distinct de l’accès playtest, conservé sur cet appareil.
-          À la première utilisation, choisissez votre code (6 caractères minimum).</p>
+        <p class="admin-caption">Accès réservé à l’administrateur. Le code est identique sur chaque appareil et doit être saisi à chaque ouverture.</p>
         <label class="admin-label" for="adminPassword">Code administrateur</label>
-        <input id="adminPassword" type="password" autocomplete="off" minlength="6"
-               class="admin-input" placeholder="Votre code privé">
-        <div id="adminPasswordConfirmWrap" class="hidden">
-          <label class="admin-label" for="adminPasswordConfirm">Confirmez le nouveau code</label>
-          <input id="adminPasswordConfirm" type="password" autocomplete="off"
-                 class="admin-input" placeholder="Confirmer le code">
-        </div>
+        <input id="adminPassword" type="password" autocomplete="off"
+               class="admin-input" placeholder="Code administrateur">
         <p id="adminGateError" class="admin-message admin-error" role="alert"></p>
         <button id="adminUnlock" class="admin-primary" type="button">DÉVERROUILLER</button>
         <p class="admin-footnote">Ce verrouillage local empêche les manipulations involontaires.
@@ -2418,7 +2425,8 @@
       <div id="adminPanel" class="hidden">
         <h3>CADENCE DES INTERVENTIONS</h3>
         <p class="admin-caption">Délais aléatoires exprimés en minutes.
-          Première intervention après l’introduction, puis délai entre les suivantes.</p>
+          Première intervention après l’introduction, puis délai entre les suivantes. Les réglages
+          n’affectent pas un compte à rebours déjà engagé.</p>
         <div class="admin-delay-grid">
           <fieldset class="admin-fieldset">
             <legend>PREMIÈRE INTERVENTION</legend>
@@ -2439,13 +2447,30 @@
           <button id="adminSave" type="button" class="admin-primary">ENREGISTRER</button>
           <button id="adminDefaults" type="button" class="admin-secondary">VALEURS PROPOSÉES</button>
         </div>
+        <h3>PONDÉRATIONS DES CATÉGORIES</h3>
+        <p class="admin-caption">Poids relatifs (0 à 100), pas des chances fixes : le tirage ne porte que sur les catégories disponibles.
+          Mettre 0 pour retirer une catégorie des tirages automatiques.</p>
+        <div class="admin-weight-grid">
+          <label for="adminWeightMask">🎭 MASQUE
+            <input id="adminWeightMask" type="number" inputmode="numeric" min="0" max="100" step="1" class="admin-input">
+          </label>
+          <label for="adminWeightRadio">📻 RADIO
+            <input id="adminWeightRadio" type="number" inputmode="numeric" min="0" max="100" step="1" class="admin-input">
+          </label>
+          <label for="adminWeightWeather">🌧️ MÉTÉO
+            <input id="adminWeightWeather" type="number" inputmode="numeric" min="0" max="100" step="1" class="admin-input">
+          </label>
+        </div>
         <p id="adminStatus" class="admin-message" aria-live="polite"></p>
-        <p class="admin-footnote">Alternance Masque / Radio / Météo quand c’est possible,
-          pondérations relatives Masque 45, Radio 40, Météo 15, après exclusion de la catégorie précédente si possible.
-          Une météo : au maximum toutes les 45 min, quatre par partie.
-          Les événements déjà joués ne sont pas rejoués automatiquement.</p>
+        <p class="admin-footnote">Par défaut : première intervention 10–13 min, puis 15–20 min
+          (au moins 12 min entre interventions automatiques). Pendant les playtests, l’administrateur
+          peut volontairement réduire ces délais. Pondérations par défaut : Masque 45, Radio 40,
+          Météo 15. Alternance des catégories quand c’est possible. Au plus quatre Météo par partie,
+          espacées d’au moins 45 min. Un événement joué est indisponible pour le reste de la partie.
+          Paramètres enregistrés jusqu’à la prochaine nouvelle partie.</p>
         <h3>FORCER UN ÉVÉNEMENT · DÉMONSTRATION</h3>
-        <p class="admin-caption">Démarrez une partie pour tester un événement précis.
+        <p class="admin-caption">Démarrez une partie pour déclencher un événement précis.
+          Un événement forcé compte comme joué : impossible de le répéter pendant cette partie.
           Les contrôles sont désactivés pendant un événement actif ou une étape bloquante.</p>
         <div class="admin-force">
 <select id="testMaskEventSelect" class="utility-btn event-test-select hidden" aria-label="Choisir un événement audio pour le test">
