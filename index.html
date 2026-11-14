@@ -1457,10 +1457,9 @@
       width:100%;
       height:100%;
       object-fit:contain;
-      /* L'image n'est plus limitée à un médaillon rond. Le bord fondu
-         l'intègre au décor même lorsque le PNG source est rectangulaire. */
-      -webkit-mask-image:radial-gradient(ellipse 67% 70% at 50% 48%,#000 49%,transparent 95%);
-      mask-image:radial-gradient(ellipse 67% 70% at 50% 48%,#000 49%,transparent 95%);
+      /* L'illustration est déjà détourée : préserver intégralement les masques. */
+      -webkit-mask-image:none;
+      mask-image:none;
       filter:drop-shadow(0 7px 14px rgba(0,0,0,.85));
     }
     #playersModal.is-intro .players-intro-tease{
@@ -2222,7 +2221,7 @@
       </div>
     </section>
 
-    <div id="version">v1.5.18 — Masque à cheval sur le cadre</div>
+    <div id="version">v1.5.19 — Illustration des présentations</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2353,7 +2352,7 @@
   <div id="playersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="playersTitle">
     <div class="modal-inner">
       <div id="playersIntroHeader" class="players-intro-header hidden" aria-hidden="true">
-        <img class="players-masque-art" src="img/masque0.png" alt=""
+        <img class="players-masque-art" src="img/masque-presentations.webp" alt=""
              width="194" height="194">
       </div>
       <h2 id="playersTitle" class="modal-title">Les survivants</h2>

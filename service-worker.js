@@ -1,4 +1,4 @@
-const CACHE = 'instability-v113';
+const CACHE = 'instability-v114';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -21,6 +21,7 @@ const ASSETS = [
 
   // Masques d'Instabilité
   './img/masque0.png',
+  './img/masque-presentations.webp',
   './img/masque15.png',
   './img/masque25.png',
   './img/masque40.png',
