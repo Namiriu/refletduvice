@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.15 — Présentations du Masque';
+  const VERSION = 'v1.5.16 — Démarrage sans spoilers';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -208,7 +208,6 @@ campAudio: $('campAudio'),
     weatherEventChange: $('weatherEventChange'),
     weatherEventValues: $('weatherEventValues'),
     weatherEventDone: $('weatherEventDone'),
-    eventGameStatus: $('eventGameStatus'),
     playersModal: $('playersModal'),
     playersIntroHeader: $('playersIntroHeader'),
     playersClose: $('playersClose'),
@@ -5061,8 +5060,6 @@ syncMusicForActiveTab();
     els.eventGameCard.classList.toggle('hidden', eventSession.active);
     els.btnStartEvents.disabled = eventSession.active || state.value >= 100;
     els.btnStartEvents.textContent = 'COMMENCER LA PARTIE';
-    els.eventGameStatus.textContent =
-      'Le Masque vous attend… Commencez la partie pour faire les présentations.';
 
     // Les interventions déjà jouées ne sont jamais révélées aux joueurs.
     const showDebug = EVENT_TEST_MODE && eventSession.active;
