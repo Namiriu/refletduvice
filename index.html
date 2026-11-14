@@ -2412,15 +2412,11 @@
         <button id="adminClose" class="admin-close" type="button" aria-label="Fermer le panneau">✕</button>
       </div>
       <div id="adminAuth">
-        <h3 id="adminGateTitle">ACCÈS ADMINISTRATEUR</h3>
-        <p class="admin-caption">Accès réservé à l’administrateur. Le code est identique sur chaque appareil et doit être saisi à chaque ouverture.</p>
         <label class="admin-label" for="adminPassword">Code administrateur</label>
         <input id="adminPassword" type="password" autocomplete="off"
                class="admin-input" placeholder="Code administrateur">
         <p id="adminGateError" class="admin-message admin-error" role="alert"></p>
         <button id="adminUnlock" class="admin-primary" type="button">DÉVERROUILLER</button>
-        <p class="admin-footnote">Ce verrouillage local empêche les manipulations involontaires.
-          Il ne remplace pas une authentification serveur.</p>
       </div>
       <div id="adminPanel" class="hidden">
         <h3>CADENCE DES INTERVENTIONS</h3>
@@ -2445,7 +2441,7 @@
         </div>
         <div class="admin-actions">
           <button id="adminSave" type="button" class="admin-primary">ENREGISTRER</button>
-          <button id="adminDefaults" type="button" class="admin-secondary">VALEURS PROPOSÉES</button>
+          <button id="adminDefaults" type="button" class="admin-secondary">VALEURS PAR DÉFAUT</button>
         </div>
         <h3>PONDÉRATIONS DES CATÉGORIES</h3>
         <p class="admin-caption">Poids relatifs (0 à 100), pas des chances fixes : le tirage ne porte que sur les catégories disponibles.
