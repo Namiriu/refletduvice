@@ -1,4 +1,4 @@
-const CACHE = 'instability-v119';
+const CACHE = 'instability-v120';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
