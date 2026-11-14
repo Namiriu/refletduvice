@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.19 — Illustration des présentations';
+  const VERSION = 'v1.5.20 — Désignations sans ambiguïté';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -5021,17 +5021,45 @@ syncMusicForActiveTab();
     }, []);
   }
 
-  // Les prénoms sont liés aux 4 places, jamais à l'état vivant/mort.
+  // Les quatre places restent distinctes, même si plusieurs invités ont
+  // renseigné le même prénom. Pas d'alias ni de phonétique à ce stade.
+  function playerNameKey(name) {
+    if (typeof name !== 'string') return '';
+    return name.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase('fr-FR');
+  }
+
+  function playerHasDuplicateName(number) {
+    const names = eventSession.playerNames || [];
+    const key = playerNameKey(names[number - 1]);
+    return Boolean(key && names.some((name, index) =>
+      index !== number - 1 && playerNameKey(name) === key));
+  }
+
   function playerLabel(number) {
     const name = eventSession.playerNames?.[number - 1];
-    return typeof name === 'string' && name.trim()
-      ? name.trim() : 'Joueur ' + number;
+    if (typeof name !== 'string' || !name.trim()) return 'Joueur ' + number;
+    const label = name.trim();
+    return playerHasDuplicateName(number) ? label + ' · J' + number : label;
   }
 
   function playerDesignation(number) {
     const name = eventSession.playerNames?.[number - 1] || '';
     return window.RdVPlayerNames?.audioPath(name, number)
       || 'audio/events/masque/designations/joueur-' + number + '.mp3';
+  }
+
+  function playerDesignationClips(number) {
+    const nameAudio = playerDesignation(number);
+    const numberAudio = 'audio/events/masque/designations/joueur-'
+      + number + '.mp3';
+    // Si le prénom n'existe pas dans la bibliothèque, la désignation
+    // habituelle « Joueur X » suffit, même en présence d'un doublon.
+    if (nameAudio === numberAudio || !playerHasDuplicateName(number)) {
+      return [nameAudio];
+    }
+    // Un doublon réel : « Joueur X ! » PUIS le prénom.
+    return [numberAudio, nameAudio];
   }
 
   // Préparer uniquement les prénoms effectivement inscrits, sur demande.
@@ -5619,13 +5647,14 @@ syncMusicForActiveTab();
       : null;
     const token = ++maskEventToken;
 
-    const audios = [
-      new Audio(playerDesignation(player))
+    const designationPaths = [
+      ...playerDesignationClips(player),
+      ...(opponent === null ? [] : playerDesignationClips(opponent))
     ];
-    if (opponent !== null) {
-      audios.push(new Audio(playerDesignation(opponent)));
-    }
-    audios.push(new Audio(item.audio));
+    const audios = [
+      ...designationPaths.map(src => new Audio(src)),
+      new Audio(item.audio)
+    ];
     if (item.id === 'masque-004') audios.push(new Audio(item.duelAudio));
 
     currentMaskEvent = {
@@ -5638,7 +5667,8 @@ syncMusicForActiveTab();
       segment: 0,
       pendingSegment: null,
       activeAudio: null,
-      duelAudio: item.id === 'masque-004' ? audios[3] : null,
+      designationClipCount: designationPaths.length,
+      duelAudio: item.id === 'masque-004' ? audios[audios.length - 1] : null,
       duelStage: null,
       duelTimer: null,
       duelRemainingMs: 30000,
@@ -5975,11 +6005,13 @@ syncMusicForActiveTab();
     const r = currentMask05;
     if (!r || r.stage !== 'public') return;
     clearTimeout(r.gapTimer);
+    const targetClips = playerDesignationClips(r.target);
+    const accompliceClips = playerDesignationClips(r.accomplice);
     const clips = [
       r.item.introAudio,
-      playerDesignation(r.target),
+      ...targetClips,
       r.item.cibleAudio,
-      playerDesignation(r.accomplice),
+      ...accompliceClips,
       r.item.transfertAudio
     ];
     if (index >= clips.length) {
@@ -5989,9 +6021,12 @@ syncMusicForActiveTab();
     r.publicIndex = index;
     playMask05Audio(
       clips[index],
-      index === 1 ? 'Le Masque désigne un survivant…'
-        : index === 3 ? 'Le Masque choisit son confident…'
-        : 'Le Masque s’adresse au groupe…',
+      index >= 1 && index <= targetClips.length
+        ? 'Le Masque désigne un survivant…'
+        : index >= targetClips.length + 2
+          && index <= targetClips.length + accompliceClips.length + 1
+          ? 'Le Masque choisit son confident…'
+          : 'Le Masque s’adresse au groupe…',
       () => {
         if (currentMask05 !== r || r.stage !== 'public') return;
         r.gapTimer = setTimeout(() => {
@@ -6708,10 +6743,10 @@ syncMusicForActiveTab();
       'death-audio': 'sacrifice-refuse'
     };
     if (r.stage === 'aggressor-number') {
-      return playerDesignation(r.aggressor);
+      return playerDesignationClips(r.aggressor)[r.designationPart || 0];
     }
     if (r.stage === 'victim-number') {
-      return playerDesignation(r.victim);
+      return playerDesignationClips(r.victim)[r.designationPart || 0];
     }
     return names[r.stage] ? base + names[r.stage] + '.mp3' : null;
   }
@@ -6753,6 +6788,7 @@ syncMusicForActiveTab();
     if (!r) return;
     mask07StopAudio(r);
     r.stage = stage;
+    r.designationPart = 0;
     r.audioBroken = false;
     saveMask07Stage();
     mask07Render();
@@ -6916,6 +6952,16 @@ syncMusicForActiveTab();
   function mask07NextAudio() {
     const r = currentMask07;
     if (!r) return;
+    if (r.stage === 'aggressor-number' || r.stage === 'victim-number') {
+      const player = r.stage === 'aggressor-number' ? r.aggressor : r.victim;
+      const next = (r.designationPart || 0) + 1;
+      if (next < playerDesignationClips(player).length) {
+        mask07StopAudio(r);
+        r.designationPart = next;
+        mask07PlayAudio();
+        return;
+      }
+    }
     const index = MASK07_AUDIO_STAGES.indexOf(r.stage);
     if (index >= 0 && index < MASK07_AUDIO_STAGES.length - 1) {
       mask07SetStage(MASK07_AUDIO_STAGES[index + 1]);
@@ -7621,20 +7667,13 @@ syncMusicForActiveTab();
       running.activeAudio = null;
       if (running.intro) {
         advanceMaskIntroduction();
-      } else if (running.item.id === 'masque-004') {
-        if (segment < 2) {
-          eventAudioGapTimer = setTimeout(() => {
-            eventAudioGapTimer = null;
-            playMaskEventSegment(segment + 1, token);
-          }, 320);
-        } else {
-          showMaskDuelReady(token);
-        }
-      } else if (segment === 0) {
+      } else if (segment < running.audios.length - 1) {
         eventAudioGapTimer = setTimeout(() => {
           eventAudioGapTimer = null;
-          playMaskEventSegment(1, token);
-        }, 320);
+          playMaskEventSegment(segment + 1, token);
+        }, segment < running.designationClipCount ? 220 : 320);
+      } else if (running.item.id === 'masque-004') {
+        showMaskDuelReady(token);
       } else {
         showMaskEventResult(token);
       }
@@ -7647,11 +7686,23 @@ syncMusicForActiveTab();
           'Introduction indisponible. Vous pouvez poursuivre la partie.';
         els.maskEventPlay.classList.add('hidden');
         els.maskIntroSkip.classList.remove('hidden');
+      } else if (segment < running.designationClipCount) {
+        // Les clips de désignation peuvent être optionnels ; poursuivre
+        // vers le prénom ou le récit sans bloquer le groupe.
+        if (segment < running.audios.length - 1) {
+          playMaskEventSegment(segment + 1, token);
+        } else if (running.item.id === 'masque-004') {
+          showMaskDuelReady(token);
+        } else {
+          showMaskEventResult(token, true);
+        }
       } else if (running.item.id === 'masque-004') {
-        // Même si une désignation ou l'introduction est introuvable,
-        // l'épreuve physique reste jouable.
-        if (segment < 2) playMaskEventSegment(segment + 1, token);
-        else showMaskDuelReady(token);
+        // Même si le récit ou le gong ne charge pas, le duel reste jouable.
+        if (segment < running.audios.length - 1) {
+          playMaskEventSegment(segment + 1, token);
+        } else {
+          showMaskDuelReady(token);
+        }
       } else {
         showMaskEventResult(token, true);
       }
@@ -8471,6 +8522,7 @@ syncMusicForActiveTab();
   function radio03Stage(stage){
     const r=currentRadio03;if(!r)return;
     radio03StopAudio(r);r.stage=stage;
+    r.designationPart = 0;
     els.radio03Overlay.classList.toggle('is-hijacked',
       !['transmission','glitch'].includes(stage));
     radio03UpdatePortrait(stage);
@@ -8583,7 +8635,7 @@ syncMusicForActiveTab();
     const path=stage==='gong'?'audio/events/sfx/gong-fin-chronometre.mp3':
       stage==='glitch'?r.item.glitch:
       stage==='maskintro'?r.item.maskIntro:
-      stage==='designation'?playerDesignation(r.target):
+      stage==='designation'?playerDesignationClips(r.target)[r.designationPart||0]:
       stage==='maskepreuve'?r.item.maskChallenge:
       stage==='reaction'?(r.outcome==='success'?r.item.success:r.item.failure):null;
     if(!path)return;
@@ -8636,7 +8688,10 @@ syncMusicForActiveTab();
       }
       radio03Stage('designation');radio03PlaySegment();
     }else if(r.stage==='designation'){
-      radio03Stage('maskepreuve');radio03PlaySegment();
+      const next=(r.designationPart||0)+1;
+      if(next<playerDesignationClips(r.target).length){
+        radio03StopAudio(r);r.designationPart=next;radio03PlaySegment();
+      }else{radio03Stage('maskepreuve');radio03PlaySegment();}
     }else if(r.stage==='maskepreuve'){
       radio03Stage('choices');radio03ShowChoices();
     }else if(r.stage==='gong'){
@@ -8972,14 +9027,7 @@ syncMusicForActiveTab();
         // Les noms seront associés aux emplacements de joueurs ultérieurement.
         // Aucun fichier « Joueur X » n'est prononcé par cet animateur.
         // Deux homonymes restent identifiables par leur place pendant le tirage.
-        playerName: n => {
-          const label = playerLabel(n);
-          const names = eventSession.playerNames || [];
-          const similar = names.filter(v => v.trim()
-            && window.RdVPlayerNames?.normalized(v) ===
-              window.RdVPlayerNames?.normalized(label)).length;
-          return similar > 1 ? label + ' · J' + n : label;
-        },
+        playerName: n => playerLabel(n),
         applyDelta: (delta, source) => applyInstabilityDelta(delta, {
           source, deferThreshold: true, deferGameOver: true
         }),
