@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.14 — Le Masque connaît les survivants';
+  const VERSION = 'v1.5.15 — Présentations du Masque';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -112,7 +112,7 @@ campAudio: $('campAudio'),
     btnNew: $('btnNew'),
     eventGameCard: $('eventGameCard'),
     btnStartEvents: $('btnStartEvents'),
-    btnConfigurePlayers: $('btnConfigurePlayers'),
+    playersConfirm: $('playersConfirm'),
     btnPlayers: $('btnPlayers'),
     btnTestMaskEvent: $('btnTestMaskEvent'),
     testMaskEventSelect: $('testMaskEventSelect'),
@@ -210,6 +210,7 @@ campAudio: $('campAudio'),
     weatherEventDone: $('weatherEventDone'),
     eventGameStatus: $('eventGameStatus'),
     playersModal: $('playersModal'),
+    playersIntroHeader: $('playersIntroHeader'),
     playersClose: $('playersClose'),
     eventPlayersList: $('eventPlayersList'),
     maskEventOverlay: $('maskEventOverlay'),
@@ -4512,6 +4513,12 @@ window.addEventListener(
 
 syncMusicForActiveTab();
           updateAudioEventClock();
+          // Après une navigation hors de PARTIE, reprendre les présentations
+          // qui attendaient l'affichage de cette page (ex. après F5).
+          if (target === 'partie' && eventSession.introPhase
+            && !currentMaskEvent && !playersIntroMode) {
+            resumePendingMaskIntroIfPossible();
+          }
           renderRadioMission();
         }
       );
@@ -4739,6 +4746,7 @@ syncMusicForActiveTab();
     const defaults = {
       active: false,
       introPlayed: false,
+      introPhase: null,
       radioMission: null,
       pendingRadio002: null,
       pendingRadio003: null,
@@ -4774,6 +4782,9 @@ syncMusicForActiveTab();
       return {
         active: saved.active === true,
         introPlayed: saved.introPlayed === true,
+        introPhase: saved.active === true
+          && ['presentation','request','names','reaction','anonymous'].includes(saved.introPhase)
+          ? saved.introPhase : null,
         radioMission: saved.radioMission
           && typeof saved.radioMission.id === 'string'
           && ['travel', 'resolving', 'reward'].includes(saved.radioMission.stage)
@@ -5051,7 +5062,7 @@ syncMusicForActiveTab();
     els.btnStartEvents.disabled = eventSession.active || state.value >= 100;
     els.btnStartEvents.textContent = 'COMMENCER LA PARTIE';
     els.eventGameStatus.textContent =
-      'Personnalisez les prénoms (facultatif), puis lancez la partie.';
+      'Le Masque vous attend… Commencez la partie pour faire les présentations.';
 
     // Les interventions déjà jouées ne sont jamais révélées aux joueurs.
     const showDebug = EVENT_TEST_MODE && eventSession.active;
@@ -5152,16 +5163,41 @@ syncMusicForActiveTab();
     });
   }
 
-  function openPlayersModal() {
+  let playersIntroMode = false;
+  function openPlayersModal(introduction = false) {
     if (currentMaskEvent) return;
+    // While the Masque is collecting names, the form cannot be dismissed.
+    playersIntroMode = introduction || eventSession.introPhase === 'names';
+    els.playersModal.classList.toggle('is-intro', playersIntroMode);
+    els.playersIntroHeader.classList.toggle('hidden', !playersIntroMode);
+    els.playersConfirm.classList.toggle('hidden', !playersIntroMode);
+    els.playersClose.classList.toggle('hidden', playersIntroMode);
     renderPlayerStatuses();
     els.playersModal.classList.add('show');
-    els.playersClose.focus();
+    if (playersIntroMode) els.eventPlayersList.querySelector('input')?.focus();
+    else els.playersClose.focus();
   }
 
-  function closePlayersModal() {
-    els.playersModal.classList.remove('show');
+  function closePlayersModal(force = false) {
+    if (playersIntroMode && !force) return;
+    playersIntroMode = false;
+    els.playersModal.classList.remove('show', 'is-intro');
+    els.playersIntroHeader.classList.add('hidden');
+    els.playersConfirm.classList.add('hidden');
+    els.playersClose.classList.remove('hidden');
     updateAudioEventClock();
+  }
+
+  function confirmIntroNames() {
+    if (!eventSession.active || eventSession.introPhase !== 'names'
+      || !playersIntroMode) return;
+    const hasAnyName = eventSession.playerNames.some(name => name.trim());
+    const next = hasAnyName ? 'reaction' : 'anonymous';
+    eventSession.introPhase = next;
+    saveAudioEventSession();
+    prefetchCurrentNames();
+    closePlayersModal(true);
+    beginMaskIntroduction(next);
   }
 
   function pauseAudioEventClock() {
@@ -5194,6 +5230,7 @@ syncMusicForActiveTab();
   function audioEventClockAllowed() {
     return appStarted
       && eventSession.active
+      && !eventSession.introPhase
       && !gameOverShown
       && state.value < 100
       && document.visibilityState === 'visible'
@@ -5291,8 +5328,9 @@ syncMusicForActiveTab();
       || specialAudioActive || anyBlockingModalOpen()) return;
 
     eventSession.active = true;
-    // L'introduction est marquée comme jouée avant la lecture : F5 ne la rejoue pas.
-    eventSession.introPlayed = true;
+    // Chaque étape de l'accueil est sauvée pour reprendre après F5.
+    eventSession.introPlayed = false;
+    eventSession.introPhase = 'presentation';
     eventSession.weatherCount = 0;
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
@@ -5309,31 +5347,57 @@ syncMusicForActiveTab();
     prefetchCurrentNames();
     renderEventControls();
 
-    // Lecture immédiatement sur le geste de l'utilisateur (Android).
-    // Le chronomètre du premier événement attend la FIN de l'introduction.
-    if (!beginMaskIntroduction()) updateAudioEventClock();
+    // Lecture sur le geste de l'utilisateur (Android).
+    // Aucun tirage d'événement avant le dernier mot du Masque.
+    if (!beginMaskIntroduction('presentation')) {
+      // Un blocage temporaire de lecture ne débloque jamais le minuteur.
+      eventSession.introPhase = 'presentation';
+      saveAudioEventSession();
+    }
   }
 
-  function beginMaskIntroduction() {
-    if (!eventSession.active || currentMaskEvent || currentRadioEvent || currentWeatherEvent || state.value >= 100
-      || !isPartieTabActive() || document.visibilityState !== 'visible'
-      || specialAudioActive || anyBlockingModalOpen()) return false;
+  // Présentation en trois actes : narration → demande → formulaire → réponse.
+  // La surprise est conservée : aucune désignation de prénom à ce stade.
+  const MASK_INTRO_STAGES = Object.freeze({
+    presentation: MASK_INTRO_AUDIO,
+    request: 'audio/events/masque/introduction/masque-000-demande-prenoms.mp3',
+    reaction: 'audio/events/masque/introduction/masque-000-reaction-prenoms.mp3',
+    anonymous: 'audio/events/masque/introduction/masque-000-aucun-prenom.mp3'
+  });
+
+  function beginMaskIntroduction(stage = eventSession.introPhase || 'presentation') {
+    if (!eventSession.active || currentMaskEvent || currentRadioEvent || currentWeatherEvent
+      || state.value >= 100 || !isPartieTabActive()
+      || document.visibilityState !== 'visible' || specialAudioActive
+      || anyBlockingModalOpen()) return false;
+    if (stage !== 'names' && !MASK_INTRO_STAGES[stage]) return false;
+
+    eventSession.introPhase = stage;
+    saveAudioEventSession();
+    if (stage === 'names') {
+      openPlayersModal(true);
+      return true;
+    }
 
     const token = ++maskEventToken;
-    const audio = new Audio(MASK_INTRO_AUDIO);
+    const audio = new Audio(MASK_INTRO_STAGES[stage]);
     audio.preload = 'auto';
     audio.volume = 1;
     currentMaskEvent = {
-      token, intro: true, audios: [audio],
+      token, intro: true, introStage: stage, audios: [audio],
       activeAudio: null, segment: 0, pendingSegment: null
     };
 
     els.maskEventTitle.textContent = 'Le Masque';
     els.maskEventPortrait.src = getMaskState(state.value).src;
-    els.maskEventStatus.textContent = 'Le Masque vous accueille…';
+    els.maskEventStatus.textContent = stage === 'presentation'
+      ? 'Le Masque vous accueille…'
+      : stage === 'request' ? 'Le Masque souhaite faire votre connaissance…'
+      : 'Le Masque réagit aux présentations…';
     clearTimeout(maskClosingTimer);
     maskClosingTimer = null;
-    els.maskEventOverlay.classList.remove('closing', 'has-result', 'has-choices', 'has-generosity');
+    els.maskEventOverlay.classList.remove('closing', 'has-result',
+      'has-choices', 'has-generosity');
     els.maskEventPlay.classList.add('hidden');
     els.maskIntroSkip.classList.add('hidden');
     els.maskEventResult.classList.add('hidden');
@@ -5348,6 +5412,36 @@ syncMusicForActiveTab();
     return true;
   }
 
+  function advanceMaskIntroduction() {
+    const running = currentMaskEvent;
+    if (!running?.intro) return;
+    const stage = running.introStage;
+    if (stage === 'reaction' || stage === 'anonymous') {
+      finishMaskIntroduction();
+      return;
+    }
+    const next = stage === 'presentation' ? 'request' : 'names';
+    dismissMaskEvent(true);
+    eventSession.introPhase = next;
+    saveAudioEventSession();
+    clearTimeout(eventAudioGapTimer);
+    eventAudioGapTimer = setTimeout(() => {
+      eventAudioGapTimer = null;
+      if (eventSession.active && eventSession.introPhase === next
+        && !playersIntroMode && !currentMaskEvent) {
+        beginMaskIntroduction(next);
+      }
+    }, REDUCED_MOTION ? 0 : 430);
+  }
+
+  function resumePendingMaskIntroIfPossible() {
+    if (!eventSession.active || !eventSession.introPhase
+      || state.value >= 100 || !isPartieTabActive()
+      || document.visibilityState !== 'visible'
+      || currentMaskEvent || playersIntroMode) return false;
+    return beginMaskIntroduction(eventSession.introPhase);
+  }
+
   function finishMaskIntroduction(immediate = false) {
     const running = currentMaskEvent;
     if (!running || !running.intro) return;
@@ -5355,6 +5449,9 @@ syncMusicForActiveTab();
     const finish = () => {
       if (!currentMaskEvent || currentMaskEvent.token !== token) return;
       dismissMaskEvent();
+      eventSession.introPhase = null;
+      eventSession.introPlayed = true;
+      saveAudioEventSession();
       renderEventControls();
       updateAudioEventClock();
     };
@@ -5438,6 +5535,8 @@ syncMusicForActiveTab();
     weatherDeferredOutcomeTimer = null;
     eventSession.active = false;
     eventSession.introPlayed = false;
+    eventSession.introPhase = null;
+    closePlayersModal(true);
     eventSession.radioMission = null;
     eventSession.lastEventType = null;
     eventSession.weatherCount = 0;
@@ -7511,7 +7610,11 @@ syncMusicForActiveTab();
     running.activeAudio = audio;
     els.maskEventPlay.classList.add('hidden');
     els.maskEventStatus.textContent = running.intro
-      ? 'Le Masque vous accueille…'
+      ? (running.introStage === 'presentation'
+          ? 'Le Masque vous accueille…'
+          : running.introStage === 'request'
+            ? 'Le Masque vous invite à vous présenter…'
+            : 'Le Masque commente vos présentations…')
       : segment === 0
         ? 'Le Masque choisit sa victime…'
         : 'Le Masque dicte sa loi…';
@@ -7520,7 +7623,7 @@ syncMusicForActiveTab();
       if (!currentMaskEvent || currentMaskEvent.token !== token) return;
       running.activeAudio = null;
       if (running.intro) {
-        finishMaskIntroduction();
+        advanceMaskIntroduction();
       } else if (running.item.id === 'masque-004') {
         if (segment < 2) {
           eventAudioGapTimer = setTimeout(() => {
@@ -7580,7 +7683,11 @@ syncMusicForActiveTab();
     if (!running.activeAudio) return;
     running.activeAudio.play().then(() => {
       els.maskEventStatus.textContent = running.intro
-        ? 'Le Masque vous accueille…'
+        ? (running.introStage === 'presentation'
+            ? 'Le Masque vous accueille…'
+            : running.introStage === 'request'
+              ? 'Le Masque vous invite à vous présenter…'
+              : 'Le Masque commente vos présentations…')
         : running.item?.id === 'masque-004' && running.duelStage === 'reaction'
           ? 'Le Masque rend son verdict…'
           : 'Le Masque dicte sa loi…';
@@ -9875,7 +9982,8 @@ syncMusicForActiveTab();
 
     scheduleMaskDisturbance();
 
-    if (!resumePendingMask05IfPossible()
+    if (!resumePendingMaskIntroIfPossible()
+      && !resumePendingMask05IfPossible()
       && !resumePendingMask06IfPossible()
       && !resumePendingMask07IfPossible()
       && !resumePendingRadio02IfPossible()
@@ -10027,9 +10135,9 @@ syncMusicForActiveTab();
       );
 
     els.btnStartEvents.addEventListener('click', startAudioEvents);
-    els.btnConfigurePlayers.addEventListener('click', openPlayersModal);
-    els.btnPlayers.addEventListener('click', openPlayersModal);
-    els.playersClose.addEventListener('click', closePlayersModal);
+    els.btnPlayers.addEventListener('click', () => openPlayersModal());
+    els.playersClose.addEventListener('click', () => closePlayersModal());
+    els.playersConfirm.addEventListener('click', confirmIntroNames);
     els.testMaskEventSelect.addEventListener('change', renderEventControls);
     els.btnTestMaskEvent.addEventListener('click', () => {
       // Disponible uniquement avec ?test-events=1, sur la branche de test.
@@ -10047,7 +10155,7 @@ syncMusicForActiveTab();
       }
     });
     els.maskEventPlay.addEventListener('click', resumeMaskEventAudio);
-    els.maskIntroSkip.addEventListener('click', () => finishMaskIntroduction(true));
+    els.maskIntroSkip.addEventListener('click', advanceMaskIntroduction);
     els.maskChoiceSelf.addEventListener('click', () => chooseMaskSacrifice('self'));
     els.maskChoiceGroup.addEventListener('click', () => chooseMaskSacrifice('group'));
     els.maskEventDone.addEventListener('click', completeMaskEvent);
@@ -10183,6 +10291,11 @@ syncMusicForActiveTab();
             requestWakeLock();
           }
           handleAudioEventVisibility();
+          if (document.visibilityState === 'visible'
+            && eventSession.introPhase && !currentMaskEvent
+            && !playersIntroMode) {
+            resumePendingMaskIntroIfPossible();
+          }
         }
       );
 
@@ -10212,7 +10325,7 @@ syncMusicForActiveTab();
             return;
           }
           if (els.playersModal.classList.contains('show')) {
-            closePlayersModal();
+            if (!playersIntroMode) closePlayersModal();
             return;
           }
 

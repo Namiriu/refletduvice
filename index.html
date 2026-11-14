@@ -1413,6 +1413,44 @@
     .event-player-life[aria-pressed="true"]{border-color:#9c515c;background:#47242d;color:#f3c0c8}
     .event-player-life:focus-visible{outline:2px solid #f3c77e;outline-offset:3px}
     .event-player-help{color:#b4adb1;font-size:15px;line-height:1.4;margin:0 0 12px}
+
+    /* MASQUE 000 — scène de présentation, aucune désignation audible ici. */
+    #playersModal .players-intro-header{display:none}
+    #playersModal .players-help-intro{display:none}
+    #playersModal.is-intro .players-intro-header{display:flex;align-items:center;
+      flex-direction:column;gap:7px;margin:-6px 0 15px;text-align:center}
+    #playersModal.is-intro .players-help-default{display:none}
+    #playersModal.is-intro .players-help-intro{display:block;text-align:center;
+      margin:4px auto 16px;max-width:390px;color:#d8b5aa}
+    #playersModal.is-intro .event-player-life{display:none!important}
+    #playersModal.is-intro .event-player-row{background:linear-gradient(115deg,#24171e,#17141b);
+      border-color:#6c4655;padding:11px 13px}
+    #playersModal.is-intro .event-player-name{border-color:#855d65;background:#171117;
+      box-shadow:inset 0 0 9px #050206}
+    #playersModal.is-intro .modal-inner{border:1px solid #8d4450;
+      background:radial-gradient(ellipse at 50% 0%,#38212c 0%,#17141b 55%,#0d0b10 100%);
+      box-shadow:0 0 0 2px #28121a,0 18px 65px #000}
+    #playersModal.is-intro .modal-title{text-align:center;color:#e2b69e;
+      text-transform:uppercase;font-size:clamp(19px,5vw,24px);line-height:1.3}
+    .players-masque-seal{position:relative;width:120px;height:120px;border:4px double #c58d72;
+      border-radius:50%;overflow:hidden;box-shadow:0 0 0 5px #23151c,0 0 20px #923d50;
+      background:radial-gradient(circle,#5a3136,#1b0f1a)}
+    .players-masque-seal img{position:relative;z-index:1;width:100%;height:100%;
+      object-fit:contain;filter:contrast(1.17) saturate(.8) drop-shadow(0 3px 7px #08070b)}
+    .players-seal-glow{position:absolute;inset:0;box-shadow:inset 0 0 28px #2f071b;
+      border-radius:50%;pointer-events:none;z-index:2}
+    .players-intro-kicker{font:700 11px/1.4 var(--font-ui);
+      letter-spacing:1.4px;color:#d49e88}
+    .players-intro-tease{margin:0;font:italic 17px/1.4 var(--font-body);
+      color:#efbcb0}
+    .players-validate{width:100%;min-height:49px;border-color:#bb8567!important;
+      background:linear-gradient(#613446,#321b28)!important;color:#f4e2cc!important;
+      font-family:var(--font-ui);letter-spacing:.5px}
+    #playersModal.is-intro .modal-actions{margin-top:16px}
+    @media(max-height:720px){.players-masque-seal{width:90px;height:90px}
+      #playersModal.is-intro .players-intro-header{gap:4px;margin-bottom:7px}
+      #playersModal.is-intro .event-player-row{padding:6px 9px}
+      #playersModal.is-intro .event-player-name{min-height:32px}}
     @media(max-width:380px){.event-player-row{gap:7px;padding:9px}.event-player-life{min-width:86px;font-size:11px}}
 
     /* Mission radio : un simple onglet latéral pendant le déplacement immédiat */
@@ -1847,7 +1885,6 @@
         <h2 id="eventGameHeading" class="event-game-heading">DÉBUT DE PARTIE</h2>
         <p id="eventGameStatus" class="event-game-status">Renseignez les prénoms des survivants, puis lancez la partie.</p>
         <div class="event-game-actions">
-          <button id="btnConfigurePlayers" class="event-game-btn secondary" type="button">✎ PRÉNOMS DES JOUEURS</button>
           <button id="btnStartEvents" class="event-game-btn" type="button">COMMENCER LA PARTIE</button>
         </div>
       </section>
@@ -2088,7 +2125,7 @@
       </div>
     </section>
 
-    <div id="version">v1.5.14 — Le Masque connaît les survivants</div>
+    <div id="version">v1.5.15 — Présentations du Masque</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2218,11 +2255,21 @@
   <!-- ==================== JOUEURS / VIVANT-MORT ==================== -->
   <div id="playersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="playersTitle">
     <div class="modal-inner">
+      <div id="playersIntroHeader" class="players-intro-header hidden">
+        <div class="players-masque-seal" aria-hidden="true">
+          <img src="img/masque0.png" alt="" width="112" height="112">
+          <span class="players-seal-glow"></span>
+        </div>
+        <span class="players-intro-kicker">☽ INVITATION DU MASQUE ☾</span>
+        <p class="players-intro-tease">« Allons, allons… ne soyez pas timides ! »</p>
+      </div>
       <h2 id="playersTitle" class="modal-title">Les survivants</h2>
-      <p class="event-player-help">Renseignez les prénoms (facultatifs). Le Masque peut les prononcer si un enregistrement existe. Sinon, il dira « Joueur 1 », « Joueur 2 », etc. Les prénoms peuvent être modifiés pendant la partie, sans changer les statuts.</p>
-      <p class="event-player-help">Utilisez le bouton VIVANT / MORT pour signaler un décès ou une résurrection.</p>
+      <p class="event-player-help players-help-default">Renseignez les prénoms (facultatifs). Le Masque peut les prononcer si un enregistrement existe. Sinon, il dira « Joueur 1 », « Joueur 2 », etc. Les prénoms peuvent être modifiés pendant la partie, sans changer les statuts.</p>
+      <p class="event-player-help players-help-default">Utilisez le bouton VIVANT / MORT pour signaler un décès ou une résurrection.</p>
+      <p class="event-player-help players-help-intro">Présentez-vous à votre hôte. Les prénoms sont facultatifs et pourront être modifiés pendant la partie.</p>
       <div id="eventPlayersList" class="event-players"></div>
       <div class="modal-actions">
+        <button id="playersConfirm" class="modal-btn players-validate hidden" type="button">✦ VALIDER LES PRÉSENTATIONS ✦</button>
         <button id="playersClose" class="modal-btn" type="button">Fermer</button>
       </div>
     </div>

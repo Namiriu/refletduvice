@@ -1,4 +1,4 @@
-const CACHE = 'instability-v109';
+const CACHE = 'instability-v110';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -119,6 +119,9 @@ const ASSETS = [
 
   // Introduction : le Masque accueille les joueurs au lancement
   './audio/events/masque/introduction/masque-000-presentation.mp3',
+  './audio/events/masque/introduction/masque-000-demande-prenoms.mp3',
+  './audio/events/masque/introduction/masque-000-reaction-prenoms.mp3',
+  './audio/events/masque/introduction/masque-000-aucun-prenom.mp3',
 
   // Événements audio — Le Masque (prototype hors connexion)
   './audio/events/masque/designations/joueur-1.mp3',
@@ -283,6 +286,9 @@ const SHELL_ASSETS = [
 ];
 const MEDIA_ASSETS = ASSETS.filter(asset => !SHELL_ASSETS.includes(asset));
 const MEDIA_REVISIONS = {
+  "./audio/events/masque/introduction/masque-000-aucun-prenom.mp3": "c54bdd4c481d5660d78d542bf3532773dfc6e78a",
+  "./audio/events/masque/introduction/masque-000-demande-prenoms.mp3": "19f3229ff850c9daa646058dec245b664eeefa4e",
+  "./audio/events/masque/introduction/masque-000-reaction-prenoms.mp3": "2131974e14b9022e0dd5b8a01f635b2792a5e018",
   "./audio/events/radio/radio-005-accepter.mp3": "2f50b033ae414006e01ae4f54cc92569dd2c5bc5",
   "./audio/events/radio/radio-005-choix.mp3": "bb7bf70d9a8531adb3ea79edffb187a1b7d51094",
   "./audio/events/radio/radio-005-colere.mp3": "f96b488dfe7c0d16aa0607fd7bb5afcbc6fe9201",
