@@ -1414,44 +1414,140 @@
     .event-player-life:focus-visible{outline:2px solid #f3c77e;outline-offset:3px}
     .event-player-help{color:#b4adb1;font-size:15px;line-height:1.4;margin:0 0 12px}
 
-    /* MASQUE 000 — scène de présentation, aucune désignation audible ici. */
-    #playersModal .players-intro-header{display:none}
+    /* MASQUE-000 — invitation : portrait flottant au-dessus du cadre entier. */
+    #playersModal .players-intro-header,
+    #playersModal .players-intro-tease,
     #playersModal .players-help-intro{display:none}
-    #playersModal.is-intro .players-intro-header{display:flex;align-items:center;
-      flex-direction:column;gap:7px;margin:-6px 0 15px;text-align:center}
-    #playersModal.is-intro .players-help-default{display:none}
-    #playersModal.is-intro .players-help-intro{display:block;text-align:center;
-      margin:4px auto 16px;max-width:390px;color:#d8b5aa}
+    #playersModal.is-intro{
+      box-sizing:border-box;
+      align-items:center;
+      padding:clamp(74px,12dvh,110px) 12px 12px;
+      overflow-y:auto;
+      overflow-x:hidden;
+    }
+    #playersModal.is-intro .modal-inner{
+      position:relative;
+      box-sizing:border-box;
+      width:min(100%,420px);
+      max-height:none;
+      overflow:visible;
+      padding:clamp(65px,10dvh,86px) 14px 14px;
+      border:2px solid #925764;
+      border-radius:22px;
+      background:
+        radial-gradient(ellipse at 50% 0%,#3b2532 0%,#201621 39%,#100e14 100%);
+      box-shadow:0 0 0 3px #23131b,0 16px 50px #000, inset 0 0 22px #230d1c;
+    }
+    #playersModal.is-intro .players-intro-header{
+      position:absolute;
+      display:block;
+      z-index:3;
+      left:50%;
+      top:clamp(-94px,-11dvh,-76px);
+      width:clamp(164px,24dvh,194px);
+      height:clamp(164px,24dvh,194px);
+      margin:0;
+      transform:translateX(-50%);
+      pointer-events:none;
+    }
+    #playersModal.is-intro .players-masque-art{
+      display:block;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      /* L'image n'est plus limitée à un médaillon rond. Le bord fondu
+         l'intègre au décor même lorsque le PNG source est rectangulaire. */
+      -webkit-mask-image:radial-gradient(ellipse 67% 70% at 50% 48%,#000 49%,transparent 95%);
+      mask-image:radial-gradient(ellipse 67% 70% at 50% 48%,#000 49%,transparent 95%);
+      filter:drop-shadow(0 7px 14px rgba(0,0,0,.85));
+    }
+    #playersModal.is-intro .players-intro-tease{
+      display:block;
+      margin:0 0 8px;
+      font:italic clamp(15px,3.8vw,17px)/1.24 var(--font-body);
+      text-align:center;
+      color:#f0c0af;
+      text-wrap:balance;
+    }
+    #playersModal.is-intro .players-help-default,
+    #playersModal.is-intro #playersTitle{display:none}
+    #playersModal.is-intro .players-help-intro{
+      display:block;
+      margin:0 auto 13px;
+      max-width:330px;
+      text-align:center;
+      color:#cbaba9;
+      font:clamp(12px,3vw,13px)/1.36 var(--font-body);
+      text-wrap:pretty;
+    }
+    #playersModal.is-intro .event-players{gap:7px}
     #playersModal.is-intro .event-player-life{display:none!important}
-    #playersModal.is-intro .event-player-row{background:linear-gradient(115deg,#24171e,#17141b);
-      border-color:#6c4655;padding:11px 13px}
-    #playersModal.is-intro .event-player-name{border-color:#855d65;background:#171117;
-      box-shadow:inset 0 0 9px #050206}
-    #playersModal.is-intro .modal-inner{border:1px solid #8d4450;
-      background:radial-gradient(ellipse at 50% 0%,#38212c 0%,#17141b 55%,#0d0b10 100%);
-      box-shadow:0 0 0 2px #28121a,0 18px 65px #000}
-    #playersModal.is-intro .modal-title{text-align:center;color:#e2b69e;
-      text-transform:uppercase;font-size:clamp(19px,5vw,24px);line-height:1.3}
-    .players-masque-seal{position:relative;width:120px;height:120px;border:4px double #c58d72;
-      border-radius:50%;overflow:hidden;box-shadow:0 0 0 5px #23151c,0 0 20px #923d50;
-      background:radial-gradient(circle,#5a3136,#1b0f1a)}
-    .players-masque-seal img{position:relative;z-index:1;width:100%;height:100%;
-      object-fit:contain;filter:contrast(1.17) saturate(.8) drop-shadow(0 3px 7px #08070b)}
-    .players-seal-glow{position:absolute;inset:0;box-shadow:inset 0 0 28px #2f071b;
-      border-radius:50%;pointer-events:none;z-index:2}
-    .players-intro-kicker{font:700 11px/1.4 var(--font-ui);
-      letter-spacing:1.4px;color:#d49e88}
-    .players-intro-tease{margin:0;font:italic 17px/1.4 var(--font-body);
-      color:#efbcb0}
-    .players-validate{width:100%;min-height:49px;border-color:#bb8567!important;
-      background:linear-gradient(#613446,#321b28)!important;color:#f4e2cc!important;
-      font-family:var(--font-ui);letter-spacing:.5px}
-    #playersModal.is-intro .modal-actions{margin-top:16px}
-    @media(max-height:720px){.players-masque-seal{width:90px;height:90px}
-      #playersModal.is-intro .players-intro-header{gap:4px;margin-bottom:7px}
-      #playersModal.is-intro .event-player-row{padding:6px 9px}
-      #playersModal.is-intro .event-player-name{min-height:32px}}
-    @media(max-width:380px){.event-player-row{gap:7px;padding:9px}.event-player-life{min-width:86px;font-size:11px}}
+    #playersModal.is-intro .event-player-row{
+      box-sizing:border-box;
+      min-height:0;
+      padding:7px 11px;
+      border:1px solid #6e4855;
+      border-radius:9px;
+      background:linear-gradient(115deg,#281923,#1a141d);
+      cursor:default;
+    }
+    #playersModal.is-intro .event-player-identity{gap:3px}
+    #playersModal.is-intro .event-player-number{
+      color:#e2b6b5;
+      font-size:10px;
+      line-height:1.1;
+    }
+    #playersModal.is-intro .event-player-name{
+      box-sizing:border-box;
+      min-height:34px;
+      height:34px;
+      padding:6px 9px;
+      border:1px solid #865b69;
+      border-radius:7px;
+      background:#150f17;
+      box-shadow:inset 0 0 9px #09040a;
+      color:#f5eded;
+      font-size:15px;
+    }
+    #playersModal.is-intro .modal-actions{margin-top:12px}
+    #playersModal.is-intro .players-validate{
+      width:100%;
+      min-height:46px;
+      padding:9px 8px;
+      border:1px solid #bd8872!important;
+      border-radius:11px;
+      background:linear-gradient(#67374a,#3a202c)!important;
+      color:#f4e2cc!important;
+      font:700 clamp(11px,3.1vw,14px)/1.25 var(--font-ui);
+      letter-spacing:.15px;
+    }
+    #playersModal.is-intro .players-validate:focus-visible{
+      outline:2px solid #f5c695;
+      outline-offset:3px;
+    }
+    @media(max-height:700px){
+      #playersModal.is-intro{padding-top:68px;padding-bottom:7px}
+      #playersModal.is-intro .modal-inner{padding:62px 12px 10px}
+      #playersModal.is-intro .players-intro-header{
+        top:-69px;width:154px;height:154px;
+      }
+      #playersModal.is-intro .players-intro-tease{font-size:14px;margin-bottom:5px}
+      #playersModal.is-intro .players-help-intro{
+        font-size:12px;line-height:1.25;margin-bottom:7px;
+      }
+      #playersModal.is-intro .event-players{gap:5px}
+      #playersModal.is-intro .event-player-row{padding:5px 9px}
+      #playersModal.is-intro .event-player-name{height:30px;min-height:30px}
+      #playersModal.is-intro .modal-actions{margin-top:8px}
+      #playersModal.is-intro .players-validate{min-height:40px}
+    }
+    @media(max-width:360px){
+      #playersModal.is-intro .modal-inner{padding-left:10px;padding-right:10px}
+      #playersModal.is-intro .players-intro-tease{font-size:14px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      #playersModal.is-intro .players-masque-art{animation:none}
+    }
 
     /* Mission radio : un simple onglet latéral pendant le déplacement immédiat */
     .radio-mission-tab{position:fixed;right:0;top:54%;transform:translateY(-50%);z-index:8800;display:flex;align-items:flex-start;flex-direction:row-reverse;gap:0;max-width:min(93vw,356px);font-family:var(--font-ui)}
@@ -2124,7 +2220,7 @@
       </div>
     </section>
 
-    <div id="version">v1.5.16 — Démarrage sans spoilers</div>
+    <div id="version">v1.5.17 — Présentations compactes du Masque</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
@@ -2254,15 +2350,12 @@
   <!-- ==================== JOUEURS / VIVANT-MORT ==================== -->
   <div id="playersModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="playersTitle">
     <div class="modal-inner">
-      <div id="playersIntroHeader" class="players-intro-header hidden">
-        <div class="players-masque-seal" aria-hidden="true">
-          <img src="img/masque0.png" alt="" width="112" height="112">
-          <span class="players-seal-glow"></span>
-        </div>
-        <span class="players-intro-kicker">☽ INVITATION DU MASQUE ☾</span>
-        <p class="players-intro-tease">« Allons, allons… ne soyez pas timides ! »</p>
+      <div id="playersIntroHeader" class="players-intro-header hidden" aria-hidden="true">
+        <img class="players-masque-art" src="img/masque0.png" alt=""
+             width="194" height="194">
       </div>
       <h2 id="playersTitle" class="modal-title">Les survivants</h2>
+      <p class="players-intro-tease">« Allons, allons… ne soyez pas timides ! »</p>
       <p class="event-player-help players-help-default">Renseignez les prénoms (facultatifs). Le Masque peut les prononcer si un enregistrement existe. Sinon, il dira « Joueur 1 », « Joueur 2 », etc. Les prénoms peuvent être modifiés pendant la partie, sans changer les statuts.</p>
       <p class="event-player-help players-help-default">Utilisez le bouton VIVANT / MORT pour signaler un décès ou une résurrection.</p>
       <p class="event-player-help players-help-intro">Présentez-vous à votre hôte. Les prénoms sont facultatifs et pourront être modifiés pendant la partie.</p>
