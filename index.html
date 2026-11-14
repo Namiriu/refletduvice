@@ -1443,11 +1443,13 @@
       display:block;
       z-index:3;
       left:50%;
-      top:clamp(-94px,-11dvh,-76px);
+      /* Le haut du cadre traverse exactement le milieu de l'image :
+         moitié du Masque au-dessus, moitié devant le panneau. */
+      top:0;
       width:clamp(164px,24dvh,194px);
       height:clamp(164px,24dvh,194px);
       margin:0;
-      transform:translateX(-50%);
+      transform:translate(-50%,-50%);
       pointer-events:none;
     }
     #playersModal.is-intro .players-masque-art{
@@ -1526,10 +1528,10 @@
       outline-offset:3px;
     }
     @media(max-height:700px){
-      #playersModal.is-intro{padding-top:68px;padding-bottom:7px}
+      #playersModal.is-intro{padding-top:80px;padding-bottom:7px}
       #playersModal.is-intro .modal-inner{padding:62px 12px 10px}
       #playersModal.is-intro .players-intro-header{
-        top:-69px;width:154px;height:154px;
+        top:0;width:154px;height:154px;
       }
       #playersModal.is-intro .players-intro-tease{font-size:14px;margin-bottom:5px}
       #playersModal.is-intro .players-help-intro{
@@ -2220,7 +2222,7 @@
       </div>
     </section>
 
-    <div id="version">v1.5.17 — Présentations compactes du Masque</div>
+    <div id="version">v1.5.18 — Masque à cheval sur le cadre</div>
   </main>
 
   <!-- ==================== DOSSIER BESTIAIRE ==================== -->
