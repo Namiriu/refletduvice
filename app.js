@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.24 — Préparation sonore au lancement';
+  const VERSION = 'v1.5.25 — Fin de partie après trois décès';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -313,6 +313,7 @@ campAudio: $('campAudio'),
     actionModalClose: $('actionModalClose'),
 
     gameover: $('gameover'),
+    gameoverText: $('gameoverText'),
     goYes: $('goYes'),
     goNo: $('goNo'),
 
@@ -1501,8 +1502,7 @@ function syncAmbientVolume() {
         state.campLeft
       }/2`;
 
-    const gameOver =
-      state.value >= 100;
+    const gameOver = state.value >= 100 || gameOverShown;
 
     els.btnRitual.disabled =
       !isReflet()
@@ -4357,27 +4357,28 @@ window.addEventListener(
   // =========================================================
 
   function checkGameOver() {
-    if (
-      state.value < 100
-    ) {
-      return false;
-    }
+    const instabilityDefeat = state.value >= 100;
+    const survivorsDefeat = livingPlayerNumbers().length <= 1;
+    if (!instabilityDefeat && !survivorsDefeat) return false;
 
     stopAudioEventsForGameOver();
 
     if (!gameOverShown) {
-      gameOverShown =
-        true;
+      gameOverShown = true;
+      // La même fenêtre et les mêmes boutons servent aux deux défaites.
+      // L'Instabilité reste prioritaire si les deux limites sont atteintes.
+      els.gameoverText.textContent = instabilityDefeat
+        ? 'Vous êtes complètement happés par le Vice. Impossible d’en ressortir…'
+        : 'Trois survivants ont succombé. Le dernier ne peut poursuivre seul. '
+          + 'Le Reflet du Vice a eu raison de votre groupe…';
 
       closeDossier();
       closeOpenCreature();
       closeActionModal();
       closeJournal();
+      closePlayersModal(true);
 
-      els.gameover
-        .classList
-        .add('show');
-
+      els.gameover.classList.add('show');
       els.goYes.focus();
     }
 
@@ -5423,7 +5424,8 @@ syncMusicForActiveTab();
         saveAudioEventSession();
         renderPlayerStatuses();
         renderEventControls();
-        updateAudioEventClock();
+        // Défaite immédiate au troisième décès coché manuellement.
+        if (!checkGameOver()) updateAudioEventClock();
       });
       row.append(identity, toggle);
       els.eventPlayersList.appendChild(row);
@@ -5846,7 +5848,7 @@ syncMusicForActiveTab();
     clearTimeout(maskDeferredOutcomeTimer);
     maskDeferredOutcomeTimer = null;
     if (!eventSession.active && !currentMaskEvent && !currentMask05 && !currentMask06 && !currentMask07
-      && !eventSession.pendingMask006 && !eventSession.pendingMask007 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
+      && !currentCoin && !eventSession.pendingMask006 && !eventSession.pendingMask007 && !currentRadioEvent && !currentRadio02 && !currentRadio03 && !currentWeatherEvent
       && !eventSession.pendingWeather && !eventSession.pendingRadio002
       && !eventSession.pendingRadio003 && !eventSession.pendingRadio004 && !currentRadio04
       && !eventSession.pendingRadio005 && !currentRadio05) return;
@@ -5854,6 +5856,8 @@ syncMusicForActiveTab();
     dismissMaskEvent(true);
     dismissMask05();
     dismissMask06();
+    dismissMask07();
+    dismissCoin();
     dismissRadioEvent(true);
     dismissRadio02();
     dismissRadio03();
@@ -7307,6 +7311,9 @@ syncMusicForActiveTab();
     eventSession.remainingMs = delay;
     saveAudioEventSession();
     renderEventControls();
+    // Attendre que le Masque ait fini son verdict : ne pas couper sa voix
+    // au moment où il annonce la mort du troisième survivant.
+    if (checkGameOver()) return;
     updateAudioEventClock();
     if (state.musicOn) syncMusicForActiveTab();
   }
@@ -10356,9 +10363,13 @@ syncMusicForActiveTab();
     }
 
     if (
-      state.value >= 100 && !currentWeatherEvent && !currentRadio02
-      && !currentRadio03 && !currentRadio04 && !currentRadio05 && !currentMask05 && !currentMask06 && !currentMask07
+      (state.value >= 100 || livingPlayerNumbers().length <= 1)
+      && !currentMaskEvent && !currentWeatherEvent && !currentRadioEvent
+      && !currentRadio02 && !currentRadio03 && !currentRadio04
+      && !currentRadio05 && !currentMask05 && !currentMask06
+      && !currentMask07 && !currentCoin
     ) {
+      // Une partie déjà perdue doit rester perdue après une actualisation.
       checkGameOver();
     }
   }
