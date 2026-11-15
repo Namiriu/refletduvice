@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.25 — Fin de partie après trois décès';
+  const VERSION = 'v1.5.26 — Démarrage rapide administrateur';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -113,6 +113,7 @@ campAudio: $('campAudio'),
     btnNew: $('btnNew'),
     eventGameCard: $('eventGameCard'),
     btnStartEvents: $('btnStartEvents'),
+    btnAdminStartEvents: $('btnAdminStartEvents'),
     playersConfirm: $('playersConfirm'),
     btnPlayers: $('btnPlayers'),
     btnAdmin: $('btnAdmin'),
@@ -5328,6 +5329,9 @@ syncMusicForActiveTab();
     els.eventGameCard.classList.toggle('hidden', eventSession.active);
     els.btnStartEvents.disabled = eventSession.active || state.value >= 100;
     els.btnStartEvents.textContent = 'COMMENCER LA PARTIE';
+    els.btnAdminStartEvents.classList.toggle('hidden', eventSession.active);
+    els.btnAdminStartEvents.disabled = eventSession.active || state.value >= 100
+      || gameOverShown || alive <= 1;
 
     // Les interventions déjà jouées ne sont jamais révélées aux joueurs.
     const showDebug = adminUnlocked && eventSession.active;
@@ -5602,15 +5606,30 @@ syncMusicForActiveTab();
     }
   }
 
-  function startAudioEvents() {
-    if (eventSession.active || state.value >= 100
+  function startAdminAudioEvents() {
+    if (!adminUnlocked || !els.adminModal.classList.contains('show')
+      || els.btnAdminStartEvents.disabled) return;
+
+    closeAdminModal();
+    // Le panneau administrateur est disponible depuis tous les onglets :
+    // revenir automatiquement sur PARTIE pour respecter les gardes existantes.
+    if (!isPartieTabActive()) {
+      document.querySelector('.tab-btn[data-tab="partie"]')?.click();
+    }
+    startAudioEvents(true);
+  }
+
+  function startAudioEvents(skipIntro = false) {
+    if (eventSession.active || state.value >= 100 || gameOverShown
+      || livingPlayerNumbers().length <= 1
       || document.visibilityState !== 'visible' || !isPartieTabActive()
       || specialAudioActive || anyBlockingModalOpen()) return;
 
     eventSession.active = true;
-    // Chaque étape de l'accueil est sauvée pour reprendre après F5.
-    eventSession.introPlayed = false;
-    eventSession.introPhase = 'presentation';
+    // L'admin peut sauter uniquement la présentation ; la partie, ses
+    // événements et son premier délai restent configurés normalement.
+    eventSession.introPlayed = skipIntro;
+    eventSession.introPhase = skipIntro ? null : 'presentation';
     eventSession.weatherCount = 0;
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
@@ -5626,6 +5645,13 @@ syncMusicForActiveTab();
     saveAudioEventSession();
     prefetchCurrentNames();
     renderEventControls();
+
+    if (skipIntro) {
+      // Le premier tirage conserve le délai normal (10–13 min par défaut)
+      // et démarre dès le clic administrateur, sans lire le Masque.
+      updateAudioEventClock();
+      return;
+    }
 
     // Lecture sur le geste de l'utilisateur (Android).
     // Aucun tirage d'événement avant le dernier mot du Masque.
@@ -10501,7 +10527,8 @@ syncMusicForActiveTab();
         requestNewGame
       );
 
-    els.btnStartEvents.addEventListener('click', startAudioEvents);
+    els.btnStartEvents.addEventListener('click', () => startAudioEvents());
+    els.btnAdminStartEvents.addEventListener('click', startAdminAudioEvents);
     els.btnPlayers.addEventListener('click', () => openPlayersModal());
     els.btnAdmin.addEventListener('click', openAdminModal);
     els.adminClose.addEventListener('click', closeAdminModal);
