@@ -1,4 +1,4 @@
-const CACHE = 'instability-v122';
+const CACHE = 'instability-v123';
 const MEDIA_CACHE = 'instability-media-v1';
 const MEDIA_REVISIONS_KEY = './__rdv_media_revisions_v1__.json';
 const RUNTIME_CACHE = 'instability-runtime-v1';
@@ -18,6 +18,7 @@ const ASSETS = [
   './icons/icon-192.png',
 
   './img/bg.webp',
+  './img/brume-avant-masque.webp',
 
   // Masques d'Instabilité
   './img/masque0.png',
@@ -283,7 +284,8 @@ const SHELL_ASSETS = [
   './prenoms.js',
   './bestiaire-data.js',
   './manifest.webmanifest',
-  './icons/icon-192.png'
+  './icons/icon-192.png',
+  './img/brume-avant-masque.webp'
 ];
 const MEDIA_ASSETS = ASSETS.filter(asset => !SHELL_ASSETS.includes(asset));
 const MEDIA_REVISIONS = {
