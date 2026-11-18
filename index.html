@@ -153,7 +153,32 @@
       backface-visibility:hidden;
     }
 
-    #maskImage{opacity:1}
+    #maskImage{opacity:1;transition:opacity .78s ease}
+
+    /* Avant la rencontre : brume transparente et discrètement mouvante.
+       Le Masque reste chargé pour ses transitions, mais est invisible. */
+    .mask-mist{
+      position:absolute;z-index:5;top:-3%;left:-16%;
+      width:132%;height:106%;object-fit:contain;
+      pointer-events:none;user-select:none;
+      -webkit-user-drag:none;
+      opacity:0;transition:opacity .84s ease;
+      filter:drop-shadow(0 0 16px rgba(66,31,20,.2));
+      animation:mask-mist-drift 8.5s ease-in-out infinite alternate;
+      transform-origin:center;
+    }
+    .mask-stage.mask-unrevealed .mask-mist{opacity:.98}
+    .mask-stage.mask-unrevealed #maskImage,
+    .mask-stage.mask-unrevealed #maskImageNext{opacity:0!important}
+    @keyframes mask-mist-drift{
+      0%{transform:translate3d(-2%,1.2%,0) scale(.965)}
+      50%{transform:translate3d(1.4%,-1%,0) scale(1.02)}
+      100%{transform:translate3d(-.8%,.6%,0) scale(.99)}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .mask-mist{animation:none;transition:none}
+      #maskImage{transition:none}
+    }
 
     #maskImageNext{
       z-index:3;
@@ -2110,8 +2135,10 @@
           <div class="mask-column">
             <div id="subjectId" class="subject-id">SUJET #01</div>
 
-            <div id="maskContainer" class="mask-stage">
+            <div id="maskContainer" class="mask-stage mask-unrevealed">
               <div id="maskAura" class="mask-aura" aria-hidden="true"></div>
+              <img id="maskMist" class="mask-mist" src="img/brume-avant-masque.webp"
+                   alt="" aria-hidden="true" draggable="false">
 
               <img
                 id="maskImage"
@@ -2323,7 +2350,7 @@
     </section>
 
     <div class="app-bottom-controls">
-      <div id="version">v1.5.26 — Démarrage rapide administrateur</div>
+      <div id="version">v1.5.27 — Révélation du Masque après introduction</div>
       <button id="btnAdmin" class="admin-lock" type="button" aria-label="Ouvrir le panneau administrateur"
               title="Administration" aria-haspopup="dialog" aria-controls="adminModal">
         <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none"

@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.26 — Démarrage rapide administrateur';
+  const VERSION = 'v1.5.27 — Révélation du Masque après introduction';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -1217,7 +1217,16 @@ function syncAmbientVolume() {
     }
   }
 
+  function syncMaskReveal() {
+    // Le Masque n'est visible dans l'interface qu'une fois sa présentation
+    // complète terminée. Un démarrage admin valide directement cette étape.
+    const revealed = eventSession.introPlayed === true;
+    els.maskContainer.classList.toggle('mask-unrevealed', !revealed);
+    els.maskImage.setAttribute('aria-hidden', String(!revealed));
+  }
+
   function updateMask() {
+    syncMaskReveal();
     startMaskTransition(
       getMaskState(state.value)
     );
@@ -5630,6 +5639,7 @@ syncMusicForActiveTab();
     // événements et son premier délai restent configurés normalement.
     eventSession.introPlayed = skipIntro;
     eventSession.introPhase = skipIntro ? null : 'presentation';
+    syncMaskReveal();
     eventSession.weatherCount = 0;
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
@@ -5757,6 +5767,7 @@ syncMusicForActiveTab();
       dismissMaskEvent();
       eventSession.introPhase = null;
       eventSession.introPlayed = true;
+      syncMaskReveal();
       saveAudioEventSession();
       renderEventControls();
       updateAudioEventClock();
