@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.27 — Révélation du Masque après introduction';
+  const VERSION = 'v1.5.28 — Le Miroir aveugle';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -79,6 +79,9 @@
     subjectId: $('subjectId'),
     instabilityButtons: $('instabilityButtons'),
 
+    instabilityRevealArea: $('instabilityRevealArea'),
+    instabilityLayout: $('instabilityLayout'),
+    mirrorWaiting: $('mirrorWaiting'),
     maskContainer: $('maskContainer'),
     maskImage: $('maskImage'),
     maskImageNext: $('maskImageNext'),
@@ -1217,12 +1220,24 @@ function syncAmbientVolume() {
     }
   }
 
-  function syncMaskReveal() {
-    // Le Masque n'est visible dans l'interface qu'une fois sa présentation
-    // complète terminée. Un démarrage admin valide directement cette étape.
+  let mirrorRevealInitialized = false;
+  function syncMaskReveal(immediate = false) {
+    // L'interface Sujet et Instabilité reste entièrement cachée jusqu'à
+    // la conclusion de l'introduction (ou saute l'attente en mode admin).
     const revealed = eventSession.introPlayed === true;
-    els.maskContainer.classList.toggle('mask-unrevealed', !revealed);
+    const area = els.instabilityRevealArea;
+    if (immediate || !mirrorRevealInitialized) {
+      area.classList.add('mirror-instant');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        area.classList.remove('mirror-instant');
+      }));
+    }
+    area.classList.toggle('is-concealed', !revealed);
+    els.instabilityLayout.inert = !revealed;
+    els.instabilityLayout.setAttribute('aria-hidden', String(!revealed));
+    els.mirrorWaiting.setAttribute('aria-hidden', String(revealed));
     els.maskImage.setAttribute('aria-hidden', String(!revealed));
+    mirrorRevealInitialized = true;
   }
 
   function updateMask() {
@@ -5639,7 +5654,7 @@ syncMusicForActiveTab();
     // événements et son premier délai restent configurés normalement.
     eventSession.introPlayed = skipIntro;
     eventSession.introPhase = skipIntro ? null : 'presentation';
-    syncMaskReveal();
+    syncMaskReveal(skipIntro);
     eventSession.weatherCount = 0;
     eventSession.nextWeatherEligibleAt = 0;
     eventSession.pendingWeather = null;
