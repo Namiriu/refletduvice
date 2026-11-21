@@ -5152,9 +5152,8 @@ syncMusicForActiveTab();
     showConfirm(
       'Réinitialiser le Bestiaire ?',
       'Êtes-vous sûr de vouloir réinitialiser le Bestiaire ? '
-      + 'Les ' + count + ' créature' + (count > 1 ? 's' : '')
-      + ' recensée' + (count > 1 ? 's' : '')
-      + ' seront à nouveau verrouillées et leurs noms disparaîtront. '
+      + 'Les créatures déjà recensées (actuellement : ' + count + ') '
+      + 'seront à nouveau verrouillées et leurs noms disparaîtront. '
       + 'Cette action est définitive sur cet appareil, sauf si vous les recensez à nouveau. '
       + 'La partie en cours ne sera pas réinitialisée.',
       resetBestiaireUnlocks
