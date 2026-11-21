@@ -2023,6 +2023,9 @@
       background:#26202a;border-color:#765361}
     .admin-force .event-test-select option{background:#17131a;color:#eee}
     .admin-force .event-test-btn{width:100%;background:#6e3748;color:#f4e2e5;border-color:#af7284}
+    .admin-reset-bestiary{width:100%;border-color:#985463;background:#322126;color:#f2cbd0}
+    .admin-reset-bestiary:hover{background:#45262e;border-color:#c27888}
+    .admin-reset-bestiary:focus-visible{outline:2px solid #f0a5b5;outline-offset:3px}
     @media(max-width:390px){
       .admin-dialog{padding:14px 12px}
       .admin-actions{grid-template-columns:1fr}
@@ -2372,7 +2375,7 @@
     </section>
 
     <div class="app-bottom-controls">
-      <div id="version">v1.5.28 — Le Miroir aveugle</div>
+      <div id="version">v1.5.29 — Réinitialisation du Bestiaire</div>
       <button id="btnAdmin" class="admin-lock" type="button" aria-label="Ouvrir le panneau administrateur"
               title="Administration" aria-haspopup="dialog" aria-controls="adminModal">
         <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none"
@@ -2603,6 +2606,12 @@
           <button id="btnTestMaskEvent" class="utility-btn event-test-btn hidden" type="button">TESTER LE MASQUE</button>
         </div>
         <p id="adminForceStatus" class="admin-message" aria-live="polite"></p>
+        <h3>GESTION DU BESTIAIRE</h3>
+        <p class="admin-caption">Réinitialise uniquement les créatures recensées sur cet appareil.
+          Les noms et les dossiers se verrouillent à nouveau. Les parties et les autres réglages
+          ne sont pas affectés.</p>
+        <button id="btnAdminResetBestiaire" class="admin-secondary admin-reset-bestiary"
+                type="button">RÉINITIALISER LE BESTIAIRE</button>
       </div>
     </div>
   </div>
