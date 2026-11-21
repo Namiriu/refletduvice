@@ -7,7 +7,7 @@
 
   const STEPS = [5, 10, 15, 20];
   const THRESHOLD = 50;
-  const VERSION = 'v1.5.28 — Le Miroir aveugle';
+  const VERSION = 'v1.5.29 — Réinitialisation du Bestiaire';
   const AMBIENT_VOLUME = 0.55;
   const DUCK_VOLUME = 0.06;
   const BESTIAIRE_AMBIENT_VOLUME = 0.30;
@@ -140,6 +140,7 @@ campAudio: $('campAudio'),
     adminDefaults: $('adminDefaults'),
     adminStatus: $('adminStatus'),
     adminForceStatus: $('adminForceStatus'),
+    btnAdminResetBestiaire: $('btnAdminResetBestiaire'),
     btnTestMaskEvent: $('btnTestMaskEvent'),
     testMaskEventSelect: $('testMaskEventSelect'),
     radioMissionTab: $('radioMissionTab'),
@@ -5141,6 +5142,45 @@ syncMusicForActiveTab();
     renderEventControls();
     updateAudioEventClock();
     els.btnAdmin.focus();
+  }
+
+  function confirmResetBestiaire() {
+    // Outil privé : une confirmation explicite précède toute écriture.
+    if (!adminUnlocked || !els.adminModal.classList.contains('show')) return;
+    const count = unlockedCreatureSlugs.size;
+    closeAdminModal();
+    showConfirm(
+      'Réinitialiser le Bestiaire ?',
+      'Êtes-vous sûr de vouloir réinitialiser le Bestiaire ? '
+      + 'Les ' + count + ' créature' + (count > 1 ? 's' : '')
+      + ' recensée' + (count > 1 ? 's' : '')
+      + ' seront à nouveau verrouillées et leurs noms disparaîtront. '
+      + 'Cette action est définitive sur cet appareil, sauf si vous les recensez à nouveau. '
+      + 'La partie en cours ne sera pas réinitialisée.',
+      resetBestiaireUnlocks
+    );
+  }
+
+  function resetBestiaireUnlocks() {
+    // Ne supprime ni les ressources du Bestiaire ni les sauvegardes de partie.
+    // Effacer uniquement la progression des créatures recensées.
+    try {
+      localStorage.removeItem(BESTIAIRE_UNLOCK_KEY);
+    } catch (_) {
+      showInfo('Réinitialisation impossible',
+        'Impossible de modifier le stockage local. Les créatures recensées ont été conservées.');
+      return;
+    }
+    unlockedCreatureSlugs = new Set();
+    els.bestiaireSearch.value = '';
+    els.recensementInput.value = '';
+    els.recensementError.textContent = '';
+    els.recensementPanel.classList.add('hidden');
+    els.btnRecenser.setAttribute('aria-expanded', 'false');
+    renderBestiaire('');
+    showInfo('Bestiaire réinitialisé',
+      'Toutes les créatures sont à nouveau verrouillées et leurs noms sont masqués. '
+      + 'Vous pourrez les recenser de nouveau pendant vos prochaines parties.');
   }
 
   function unlockAdmin() {
@@ -10567,6 +10607,7 @@ syncMusicForActiveTab();
     els.adminUnlock.addEventListener('click', unlockAdmin);
     els.adminSave.addEventListener('click', saveAdminConfig);
     els.adminDefaults.addEventListener('click', restoreAdminDefaults);
+    els.btnAdminResetBestiaire.addEventListener('click', confirmResetBestiaire);
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && els.adminModal.classList.contains('show')) {
         closeAdminModal();
